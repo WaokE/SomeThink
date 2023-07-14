@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from "react";
-import MindMap from "./components/MindMap";
+import Canvas from "./components/Canvas/Canvas";
+import TopBar from "./components/TopBar/TopBar";
+import ToolBar from "./components/ToolBar/ToolBar";
 
 function App() {
   return (
     <div>
-      <MindMap />
+      <TopBar />
+      <div style={{ display: "grid", gridTemplateColumns: "auto 1fr" }}>
+        <ToolBar />
+        <Canvas />
+      </div>
     </div>
   );
 }
