@@ -11,28 +11,14 @@ const options = {
   },
 };
 
-function randomColor() {
-  const red = Math.floor(Math.random() * 256)
-    .toString(16)
-    .padStart(2, "0");
-  const green = Math.floor(Math.random() * 256)
-    .toString(16)
-    .padStart(2, "0");
-  const blue = Math.floor(Math.random() * 256)
-    .toString(16)
-    .padStart(2, "0");
-  return `#${red}${green}${blue}`;
-}
-
 const MindMap = () => {
   const createNode = (x, y) => {
-    const color = randomColor();
     setState(({ graph: { nodes, edges }, counter, ...rest }) => {
       const id = counter + 1;
       const from = Math.floor(Math.random() * (counter - 1)) + 1;
       return {
         graph: {
-          nodes: [...nodes, { id, label: `Node ${id}`, color, x, y }],
+          nodes: [...nodes, { id, label: `Node ${id}`, x, y }],
           edges: [...edges, { from, to: id }],
         },
         counter: id,
@@ -44,11 +30,11 @@ const MindMap = () => {
     counter: 5,
     graph: {
       nodes: [
-        { id: 1, label: "Node 1", color: "#e04141" },
-        { id: 2, label: "Node 2", color: "#e09c41" },
-        { id: 3, label: "Node 3", color: "#e0df41" },
-        { id: 4, label: "Node 4", color: "#7be041" },
-        { id: 5, label: "Node 5", color: "#41e0c9" },
+        { id: 1, label: "Node 1" },
+        { id: 2, label: "Node 2" },
+        { id: 3, label: "Node 3" },
+        { id: 4, label: "Node 4" },
+        { id: 5, label: "Node 5" },
       ],
       edges: [
         { from: 1, to: 2 },
