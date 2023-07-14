@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import MindMap from "./components/MindMap";
+import Canvas from "./components/Canvas/Canvas";
 
 function App() {
   return (
     <div>
-      <MindMap />
+      <Canvas />
     </div>
   );
 }
