@@ -59,7 +59,7 @@ const MindMap = () => {
   const { graph, events } = state;
   return (
     <div>
-      <Graph graph={graph} options={options} events={events} style={{ height: "640px" }} />
+      <Graph graph={graph} options={options} events={events} style={{ height: "100vh" }} />
     </div>
   );
 };

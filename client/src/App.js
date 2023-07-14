@@ -7,7 +7,7 @@ function App() {
   return (
     <div>
       <TopBar />
-      <div>
+      <div style={{ display: "grid", gridTemplateColumns: "auto 1fr" }}>
         <ToolBar />
         <Canvas />
       </div>
