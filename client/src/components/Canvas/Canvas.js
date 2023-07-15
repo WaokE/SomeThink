@@ -1,11 +1,12 @@
+import React from 'react';
 import MindMap from "./MindMap";
 
-const Canvas = () => {
+const Canvas = React.forwardRef((props, ref) => {
   return (
-    <div>
+    <div ref={ref}>
       <MindMap />
     </div>
   );
-};
+});
 
 export default Canvas;
