@@ -23,7 +23,6 @@ const options = {
   configure: {
     enable: true,
   },
-
 };
 
 const MindMap = () => {
@@ -41,6 +40,34 @@ const MindMap = () => {
       };
     });
   };
+
+  const handleDoubleClick = (event) => {
+    if (event.nodes.length > 0) {
+      const selectedNodeId = event.nodes[0];
+      const newLabel = prompt("새로운 노드 이름을 입력하세요");
+      modifyNode(selectedNodeId, newLabel);
+    }
+  };
+
+  const modifyNode = (nodeId, newLabel) => {
+    setState((prevState) => {
+      const updatedNodes = prevState.graph.nodes.map((node) => {
+        if (node.id === nodeId) {
+          return { ...node, label: newLabel };
+        }
+        return node;
+      });
+
+      return {
+        ...prevState,
+        graph: {
+          ...prevState.graph,
+          nodes: updatedNodes,
+        },
+      };
+    });
+  };
+
   const [state, setState] = useState({
     counter: 5,
     graph: {
@@ -58,9 +85,7 @@ const MindMap = () => {
         console.log(edges);
         // alert("Selected node: " + nodes);
       },
-      doubleClick: ({ pointer: { canvas } }) => {
-        createNode(canvas.x, canvas.y);
-      },
+      doubleClick: handleDoubleClick,
     },
   });
   const { graph, events } = state;
