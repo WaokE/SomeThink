@@ -1,6 +1,8 @@
+// TopBar.js
+import React from 'react';
 import "./TopBar.css"
 
-function TopBar() {
+function TopBar({ onExportClick }) {
   return (
     <div className="topbar-background">
       <div className="code">
@@ -11,7 +13,7 @@ function TopBar() {
           <button>Button 1</button>
         </div>
         <div className="export-btn">
-          <button>EXPORT</button>
+          <button onClick={onExportClick}>EXPORT</button>
         </div>
       </div>
     </div>

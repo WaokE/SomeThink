@@ -23,6 +23,7 @@ const options = {
   configure: {
     enable: true,
   },
+
 };
 
 const MindMap = () => {
