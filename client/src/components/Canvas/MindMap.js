@@ -2,6 +2,8 @@ import Graph from "react-graph-vis";
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 
+import NodeContextMenu from "./NodeContextMenu";
+
 const options = {
   layout: {
     hierarchical: false,
@@ -26,6 +28,9 @@ const options = {
 };
 
 const MindMap = () => {
+  const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
+  const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
+
   const createNode = (x, y) => {
     setState(({ graph: { nodes, edges }, counter, ...rest }) => {
       const id = counter + 1;
@@ -41,10 +46,15 @@ const MindMap = () => {
     });
   };
 
-  const handleContextMenu = ({ event }) => {
+  const handleNodeContextMenu = ({ event, nodes }) => {
     event.preventDefault();
-    // Show dropdown menu or perform desired action
-    console.log("Right click!");
+    console.log(nodes);
+    if (nodes.length > 0) {
+      const xPos = event.clientX;
+      const yPos = event.clientY;
+      setContextMenuPos({ xPos, yPos });
+      setIsNodeContextMenuVisible(true);
+    }
   };
 
   const handleDoubleClick = (event) => {
@@ -53,6 +63,10 @@ const MindMap = () => {
       const newLabel = prompt("새로운 노드 이름을 입력하세요");
       modifyNode(selectedNodeId, newLabel);
     }
+  };
+
+  const closeContextMenu = () => {
+    setIsNodeContextMenuVisible(false);
   };
 
   const modifyNode = (nodeId, newLabel) => {
@@ -85,20 +99,21 @@ const MindMap = () => {
     },
     events: {
       select: ({ nodes, edges }) => {
-        console.log("Selected nodes:");
-        console.log(nodes);
-        console.log("Selected edges:");
-        console.log(edges);
+        // console.log("Selected nodes:");
+        // console.log(nodes);
+        // console.log("Selected edges:");
+        // console.log(edges);
         // alert("Selected node: " + nodes);
       },
       doubleClick: handleDoubleClick,
-      oncontext: handleContextMenu,
+      oncontext: handleNodeContextMenu,
     },
   });
   const { graph, events } = state;
   return (
     <div>
       <Graph graph={graph} options={options} events={events} style={{ height: "100vh" }} />
+      {isNodeContextMenuVisible && <NodeContextMenu xPos={contextMenuPos.xPos} yPos={contextMenuPos.yPos} onClose={closeContextMenu} />}
     </div>
   );
 };
