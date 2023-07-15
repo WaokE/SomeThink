@@ -41,6 +41,12 @@ const MindMap = () => {
     });
   };
 
+  const handleContextMenu = ({ event }) => {
+    event.preventDefault();
+    // Show dropdown menu or perform desired action
+    console.log("Right click!");
+  };
+
   const handleDoubleClick = (event) => {
     if (event.nodes.length > 0) {
       const selectedNodeId = event.nodes[0];
@@ -86,6 +92,7 @@ const MindMap = () => {
         // alert("Selected node: " + nodes);
       },
       doubleClick: handleDoubleClick,
+      oncontext: handleContextMenu,
     },
   });
   const { graph, events } = state;
