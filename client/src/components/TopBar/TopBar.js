@@ -1,25 +1,19 @@
+import "./TopBar.css"
+
 function TopBar() {
   return (
-    <div style={{ display: "flex", flexDirection: "row", backgroundColor: "red" }}>
-      상단바 시작
-      <button>Button 1</button>
-      <button>Button 2</button>
-      <button>Button 3</button>
-      <button>Button 3</button>
-      <button>Button 3</button>
-      <button>Button 3</button>
-      <button>Button 3</button>
-      <button>Button 3</button>
-      <button>Button 3</button>
-      <button>Button 3</button>
-      <button>Button 3</button>
-      <button>Button 3</button>
-      <button>Button 3</button>
-      <button>Button 3</button>
-      <button>Button 3</button>
-      <button>Button 3</button>
-      <button>Button 3</button>
-      상단바 종료
+    <div className="topbar-background">
+      <div className="code">
+        #CODE
+      </div>
+      <div className="topbar-menu">
+        <div className="member-info">
+          <button>Button 1</button>
+        </div>
+        <div className="export-btn">
+          <button>EXPORT</button>
+        </div>
+      </div>
     </div>
   );
 }

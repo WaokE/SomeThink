@@ -1,0 +1,26 @@
+.topbar-background {
+    display: flex;
+    flex-direction: row;
+    background-color: #BDBDBD;
+    padding: 30px;
+    justify-content: space-between;
+}
+
+.code {
+    display: inline;
+}
+
+.topbar-menu {
+    display: flex;
+    flex-direction: row;
+    align-items: center; /* 중앙 정렬을 위해 추가 */
+}
+
+.member-info {
+    display: inline;
+}
+
+.export-btn {
+    display: inline;
+    margin-left: 20px; /* 왼쪽 여백을 20px로 지정 */
+}
