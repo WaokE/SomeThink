@@ -1,14 +1,34 @@
 import "./ToolBar.css"
 
 function ToolBar() {
+
+  const makeNode = () => {
+    console.log("make node");
+  };
+  const makeText = () => {
+    console.log("make Text");
+  };
+  const makeImage = () => {
+    console.log("make Image");
+  };
+  const makePostit = () => {
+    console.log("make Postit");
+  };
+  const makeComment = () => {
+    console.log("make Comment");
+  };
+  const makeTimre = () => {
+    console.log("make Timer");
+  };
+
   return (
     <div className="toolbar">
-      <button>Button 1</button>
-      <button>Button 2</button>
-      <button>Button 3</button>
-      <button>Button 4</button>
-      <button>Button 5</button>
-      <button>Button 6</button>
+      <button className="create-node button"  onClick={makeNode}></button>
+      <button className="create-text button" onClick={makeText}></button>
+      <button className="create-image button" onClick={makeImage}></button>
+      <button className="create-memo button" onClick={makePostit}></button>
+      <button className="create-comment button" onClick={makeComment}></button>
+      <button className="create-timer button" onClick={makeTimre}></button>
     </div>
   );
 }
