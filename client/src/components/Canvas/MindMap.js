@@ -1,5 +1,5 @@
 import Graph from "react-graph-vis";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 
 import NodeContextMenu from "./NodeContextMenu";
@@ -37,15 +37,13 @@ const options = {
     interaction: {
         multiselect: false,
     },
-    // configure: {
-    //     enabled: true,
-    // },
 };
 
 const MindMap = () => {
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
     const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] =
         useState(false);
+    const contextMenuRef = useRef(null);
 
     const createNode = (x, y, selectedNodeId) => {
         setState((prevState) => {
@@ -112,6 +110,23 @@ const MindMap = () => {
         });
     };
 
+    const handleClickOutside = (event) => {
+        if (
+            contextMenuRef.current &&
+            !contextMenuRef.current.contains(event.target)
+        ) {
+            setIsNodeContextMenuVisible(false);
+        }
+    };
+
+    useEffect(() => {
+        document.addEventListener("click", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("click", handleClickOutside);
+        };
+    }, []);
+
     const deleteNode = (nodeId) => {
         setState((prevState) => {
             const updatedNodes = prevState.graph.nodes.filter(
@@ -172,14 +187,24 @@ const MindMap = () => {
                 style={{ height: "100vh" }}
             />
             {isNodeContextMenuVisible && (
-                <NodeContextMenu
-                    xPos={contextMenuPos.xPos}
-                    yPos={contextMenuPos.yPos}
-                    selectedNodeId={contextMenuPos.selectedNodeId}
-                    onClose={closeContextMenu}
-                    deleteNode={deleteNode}
-                    createNode={createNode}
-                />
+                <div
+                    ref={contextMenuRef}
+                    className="context-menu"
+                    style={{
+                        position: "absolute",
+                        left: contextMenuPos.xPos,
+                        top: contextMenuPos.yPos,
+                    }}
+                >
+                    <NodeContextMenu
+                        xPos={contextMenuPos.xPos}
+                        yPos={contextMenuPos.yPos}
+                        selectedNodeId={contextMenuPos.selectedNodeId}
+                        onClose={closeContextMenu}
+                        deleteNode={deleteNode}
+                        createNode={createNode}
+                    />
+                </div>
             )}
         </div>
     );

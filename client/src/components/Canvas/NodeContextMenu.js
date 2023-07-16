@@ -26,16 +26,10 @@ const NodeContextMenu = ({
     };
 
     return (
-        <div
-            className="context-menu"
-            style={{ top: yPos, left: xPos, position: "absolute", zIndex: 1 }}
-            onClick={onClose}
-        >
-            <ul>
-                <li onClick={handleAddChildNode}>자식 노드 추가</li>
-                <li onClick={handleDeleteNode}>노드 제거</li>
-            </ul>
-        </div>
+        <ul>
+            <li onClick={handleAddChildNode}>자식 노드 추가</li>
+            <li onClick={handleDeleteNode}>노드 제거</li>
+        </ul>
     );
 };
 
