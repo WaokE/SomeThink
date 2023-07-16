@@ -1,7 +1,7 @@
 import "./TopBar.css";
 import { useState } from "react";
 
-function TopBar() {
+function TopBar({ onExportClick }) {
     const [animalInput, setAnimalInput] = useState("");
     const [result, setResult] = useState();
 
@@ -42,7 +42,7 @@ function TopBar() {
                     <button>Button 1</button>
                 </div>
                 <div className="export-btn">
-                    <button>EXPORT</button>
+                    <button onClick={onExportClick}>EXPORT</button>
                 </div>
             </div>
         </div>
