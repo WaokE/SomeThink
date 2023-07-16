@@ -1,7 +1,5 @@
 import Graph from "react-graph-vis";
 import React, { useState, useEffect, useRef } from "react";
-import ReactDOM from "react-dom";
-
 import NodeContextMenu from "./NodeContextMenu";
 
 const options = {
@@ -40,50 +38,53 @@ const options = {
 };
 
 const MindMap = () => {
+    const [graph, setGraph] = useState({
+        nodes: [
+            { id: 1, label: "Node 1", x: 0, y: 0 },
+        ],
+        edges: [],
+    });
+
+    const [selectedNode, setSelectedNode] = useState(null);
+    const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
-    const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] =
-        useState(false);
     const contextMenuRef = useRef(null);
 
-    const createNode = (x, y, selectedNodeId) => {
-        setState((prevState) => {
-            const id = prevState.counter + 1;
-            return {
-                graph: {
-                    nodes: [
-                        ...prevState.graph.nodes,
-                        { id, label: `Node ${id}`, x, y },
-                    ],
-                    edges: [
-                        ...prevState.graph.edges,
-                        { from: selectedNodeId, to: id },
-                    ],
-                },
-                counter: id,
-                rootNode: prevState.rootNode,
-                events: prevState.events,
-            };
-        });
-    };
-
-    const handleNodeContextMenu = ({ event, nodes }) => {
-        event.preventDefault();
-
-        if (nodes.length > 0) {
-            const xPos = event.clientX;
-            const yPos = event.clientY;
-            const selectedNodeId = nodes[0];
-            setContextMenuPos({ xPos, yPos, selectedNodeId });
-            setIsNodeContextMenuVisible(true);
+    const state = {
+        graph: graph,
+        events: {
+            select: ({ nodes }) => {
+                if (nodes.length === 1) {
+                    setSelectedNode(nodes[0]);
+                    setContextMenuPos(prevState => ({
+                        ...prevState,
+                        selectedNodeId: nodes[0],
+                    }));
+                    setIsNodeContextMenuVisible(true);
+                }
+            },
+            deselect: () => {
+                setIsNodeContextMenuVisible(false);
+            },
         }
     };
 
-    const handleDoubleClick = (event) => {
-        if (event.nodes.length > 0) {
-            const selectedNodeId = event.nodes[0];
-            const newLabel = prompt("새로운 노드 이름을 입력하세요");
-            if (newLabel === null) return;
-            modifyNode(selectedNodeId, newLabel);
+    const deleteNode = (nodeId) => {
+        setGraph(prevGraph => ({
+            nodes: prevGraph.nodes.filter(node => node.id !== nodeId),
+            edges: prevGraph.edges.filter(edge => edge.from !== nodeId && edge.to !== nodeId),
+        }));
+    };
+
+    const createNode = (x, y) => {
+        if (selectedNode != null) {
+            setGraph(prevGraph => {
+                const newNodeId = prevGraph.nodes.length ? Math.max(...prevGraph.nodes.map(node => node.id)) + 1 : 1;
+                return {
+                    nodes: [...prevGraph.nodes, { id: newNodeId, label: `Node ${newNodeId}`, x: x, y: y }],
+                    edges: [...prevGraph.edges, { from: selectedNode, to: newNodeId }],
+                };
+            });
         }
     };
 
@@ -91,93 +92,18 @@ const MindMap = () => {
         setIsNodeContextMenuVisible(false);
     };
 
-    const modifyNode = (nodeId, newLabel) => {
-        setState((prevState) => {
-            const updatedNodes = prevState.graph.nodes.map((node) => {
-                if (node.id === nodeId) {
-                    return { ...node, label: newLabel };
-                }
-                return node;
-            });
-
-            return {
-                ...prevState,
-                graph: {
-                    ...prevState.graph,
-                    nodes: updatedNodes,
-                },
-            };
-        });
-    };
-
-    const handleClickOutside = (event) => {
-        if (
-            contextMenuRef.current &&
-            !contextMenuRef.current.contains(event.target)
-        ) {
-            setIsNodeContextMenuVisible(false);
-        }
-    };
-
     useEffect(() => {
-        document.addEventListener("click", handleClickOutside);
+        const handleAddNode = (event) => {
+            createNode(event.detail.x, event.detail.y);
+        };
+
+        window.addEventListener('addNode', handleAddNode);
 
         return () => {
-            document.removeEventListener("click", handleClickOutside);
+            window.removeEventListener('addNode', handleAddNode);
         };
-    }, []);
+    }, [selectedNode]);
 
-    const deleteNode = (nodeId) => {
-        setState((prevState) => {
-            const updatedNodes = prevState.graph.nodes.filter(
-                (node) => node.id !== nodeId
-            );
-            const updatedEdges = prevState.graph.edges.filter(
-                (edge) => edge.from !== nodeId && edge.to !== nodeId
-            );
-
-            return {
-                ...prevState,
-                graph: {
-                    ...prevState.graph,
-                    nodes: updatedNodes,
-                    edges: updatedEdges,
-                },
-            };
-        });
-    };
-
-    const [state, setState] = useState(() => {
-        const rootNode = {
-            id: 1,
-            label: "Root",
-            x: 0,
-            y: 0,
-            physics: true,
-            fixed: true,
-            color: "#f5b252",
-        };
-        return {
-            counter: 1,
-            graph: {
-                nodes: [rootNode],
-                edges: [],
-            },
-            rootNode,
-            events: {
-                select: ({ nodes, edges }) => {
-                    console.log("Selected nodes:");
-                    console.log(nodes);
-                    console.log("Selected edges:");
-                    console.log(edges);
-                },
-                doubleClick: handleDoubleClick,
-                oncontext: handleNodeContextMenu,
-            },
-        };
-    });
-
-    const { graph, events } = state;
     return (
         <div>
             <Graph
