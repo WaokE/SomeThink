@@ -41,8 +41,7 @@ const options = {
 
 const MindMap = () => {
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
-    const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] =
-        useState(false);
+    const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
     const contextMenuRef = useRef(null);
 
     const createNode = (x, y, selectedNodeId) => {
@@ -50,14 +49,8 @@ const MindMap = () => {
             const id = prevState.counter + 1;
             return {
                 graph: {
-                    nodes: [
-                        ...prevState.graph.nodes,
-                        { id, label: `Node ${id}`, x, y },
-                    ],
-                    edges: [
-                        ...prevState.graph.edges,
-                        { from: selectedNodeId, to: id },
-                    ],
+                    nodes: [...prevState.graph.nodes, { id, label: `Node ${id}`, x, y }],
+                    edges: [...prevState.graph.edges, { from: selectedNodeId, to: id }],
                 },
                 counter: id,
                 rootNode: prevState.rootNode,
@@ -111,10 +104,7 @@ const MindMap = () => {
     };
 
     const handleClickOutside = (event) => {
-        if (
-            contextMenuRef.current &&
-            !contextMenuRef.current.contains(event.target)
-        ) {
+        if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
             setIsNodeContextMenuVisible(false);
         }
     };
@@ -127,14 +117,10 @@ const MindMap = () => {
         };
     }, []);
 
-    const deleteNode = (nodeId) => {
+    const deleteSingleNode = (nodeId) => {
         setState((prevState) => {
-            const updatedNodes = prevState.graph.nodes.filter(
-                (node) => node.id !== nodeId
-            );
-            const updatedEdges = prevState.graph.edges.filter(
-                (edge) => edge.from !== nodeId && edge.to !== nodeId
-            );
+            const updatedNodes = prevState.graph.nodes.filter((node) => node.id !== nodeId);
+            const updatedEdges = prevState.graph.edges.filter((edge) => edge.from !== nodeId && edge.to !== nodeId);
 
             return {
                 ...prevState,
@@ -145,6 +131,15 @@ const MindMap = () => {
                 },
             };
         });
+    };
+
+    const deleteNodes = (nodeId) => {
+        const childNodes = state.graph.edges.filter((edge) => edge.from === nodeId).map((edge) => edge.to);
+        childNodes.forEach((childNodeId) => {
+            deleteSingleNode(childNodeId);
+            deleteNodes(childNodeId);
+        });
+        deleteSingleNode(nodeId);
     };
 
     const [state, setState] = useState(() => {
@@ -180,12 +175,7 @@ const MindMap = () => {
     const { graph, events } = state;
     return (
         <div>
-            <Graph
-                graph={state.graph}
-                options={options}
-                events={state.events}
-                style={{ height: "100vh" }}
-            />
+            <Graph graph={state.graph} options={options} events={state.events} style={{ height: "100vh" }} />
             {isNodeContextMenuVisible && (
                 <div
                     ref={contextMenuRef}
@@ -201,7 +191,7 @@ const MindMap = () => {
                         yPos={contextMenuPos.yPos}
                         selectedNodeId={contextMenuPos.selectedNodeId}
                         onClose={closeContextMenu}
-                        deleteNode={deleteNode}
+                        deleteNode={deleteNodes}
                         createNode={createNode}
                     />
                 </div>
