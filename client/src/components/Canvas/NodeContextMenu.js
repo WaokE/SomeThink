@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import "./NodeContextMenu.css";
 
@@ -9,9 +9,11 @@ const NodeContextMenu = ({
     onClose,
     deleteNode,
     createNode,
+    setIsCreatingText,
+    handleAddImageNode,
 }) => {
     const handleDeleteNode = () => {
-        if (selectedNodeId != 1) {
+        if (selectedNodeId !== 1) {
             deleteNode(selectedNodeId);
         } else {
             alert("루트 노드는 삭제할 수 없습니다!");
@@ -24,11 +26,36 @@ const NodeContextMenu = ({
         createNode(x, y, selectedNodeId);
         onClose();
     };
+    const handleAddTextNode = () => {
+        setIsCreatingText(true);
+        onClose();
+    };
+
+    const [imageUrl, setImageUrl] = useState("");
+
+    const handleImageInputChange = (event) => {
+        setImageUrl(event.target.value);
+    };
+
+    const handleAddImage = () => {
+        handleAddImageNode({ imageUrl });
+        onClose();
+    };
 
     return (
         <ul>
             <li onClick={handleAddChildNode}>자식 노드 추가</li>
             <li onClick={handleDeleteNode}>노드 제거</li>
+            <li onClick={handleAddTextNode}>텍스트 추가</li>
+            <li>
+                <label htmlFor="imageUrl">이미지 URL:</label>
+                <input
+                    type="text"
+                    value={imageUrl}
+                    onChange={handleImageInputChange}
+                />
+                <button onClick={handleAddImage}>이미지 추가</button>
+            </li>
         </ul>
     );
 };
