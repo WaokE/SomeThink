@@ -13,7 +13,6 @@ const options = {
         size: 30,
         mass: 1,
         color: "#FBD85D",
-        fixed: false,
     },
     edges: {
         arrows: {
@@ -36,10 +35,10 @@ const options = {
         },
     },
     interaction: {
-        multiselect: true,
+        multiselect: false,
     },
     // configure: {
-    //   enabled: true,
+    //     enabled: true,
     // },
 };
 
@@ -63,8 +62,8 @@ const MindMap = () => {
                     ],
                 },
                 counter: id,
-                rootNode: prevState.rootNode, // 루트 노드 정보 유지
-                events: prevState.events, // 이벤트 핸들러 유지
+                rootNode: prevState.rootNode,
+                events: prevState.events,
             };
         });
     };
@@ -75,7 +74,7 @@ const MindMap = () => {
         if (nodes.length > 0) {
             const xPos = event.clientX;
             const yPos = event.clientY;
-            const selectedNodeId = nodes[0]; // 첫 번째 선택된 노드의 ID를 가져옴
+            const selectedNodeId = nodes[0];
             setContextMenuPos({ xPos, yPos, selectedNodeId });
             setIsNodeContextMenuVisible(true);
         }
@@ -162,20 +161,21 @@ const MindMap = () => {
             },
         };
     });
+
     const { graph, events } = state;
     return (
         <div>
             <Graph
-                graph={graph}
+                graph={state.graph}
                 options={options}
-                events={events}
+                events={state.events}
                 style={{ height: "100vh" }}
             />
             {isNodeContextMenuVisible && (
                 <NodeContextMenu
                     xPos={contextMenuPos.xPos}
                     yPos={contextMenuPos.yPos}
-                    selectedNodeId={contextMenuPos.nodeId}
+                    selectedNodeId={contextMenuPos.selectedNodeId}
                     onClose={closeContextMenu}
                     deleteNode={deleteNode}
                     createNode={createNode}
