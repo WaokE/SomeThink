@@ -4,7 +4,11 @@ import "./NodeContextMenu.css";
 
 const NodeContextMenu = ({ xPos, yPos, selectedNodeId, onClose, deleteNode }) => {
     const handleDeleteNode = () => {
-        deleteNode(selectedNodeId);
+        if (selectedNodeId != 1) {
+            deleteNode(selectedNodeId);
+        } else {
+            alert("루트 노드는 삭제할 수 없습니다!");
+        }
         onClose();
     };
     return (
