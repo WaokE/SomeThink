@@ -61,6 +61,7 @@ const MindMap = () => {
         if (event.nodes.length > 0) {
             const selectedNodeId = event.nodes[0];
             const newLabel = prompt("새로운 노드 이름을 입력하세요");
+            if(newLabel === null) return;
             modifyNode(selectedNodeId, newLabel);
         }
     };
