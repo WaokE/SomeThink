@@ -13,7 +13,6 @@ const options = {
         size: 30,
         mass: 1,
         color: "#FBD85D",
-        fixed: false,
     },
     edges: {
         arrows: {
@@ -23,60 +22,37 @@ const options = {
         },
         color: "#000000",
     },
-    physics: {
+    configure: {
         enabled: true,
-        solver: "barnesHut",
-        barnesHut: {
-            centralGravity: -0.1,
-            springConstant: 1,
-            damping: 0.09,
-            avoidOverlap: 0.5,
-            maxVelocity: 5,
-            minVelocity: 0.5,
-        },
     },
-    interaction: {
-        multiselect: true,
-    },
-    // configure: {
-    //   enabled: true,
-    // },
 };
 
 const MindMap = () => {
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
-    const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] =
-        useState(false);
+    const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
 
-    const createNode = (x, y, selectedNodeId) => {
-        setState((prevState) => {
-            const id = prevState.counter + 1;
+    const createNode = (x, y) => {
+        setState(({ graph: { nodes, edges }, counter, ...rest }) => {
+            const id = counter + 1;
+            const from = Math.floor(Math.random() * (counter - 1)) + 1;
             return {
                 graph: {
-                    nodes: [
-                        ...prevState.graph.nodes,
-                        { id, label: `Node ${id}`, x, y },
-                    ],
-                    edges: [
-                        ...prevState.graph.edges,
-                        { from: selectedNodeId, to: id },
-                    ],
+                    nodes: [...nodes, { id, label: `Node ${id}`, x, y }],
+                    edges: [...edges, { from, to: id }],
                 },
                 counter: id,
-                rootNode: prevState.rootNode, // 루트 노드 정보 유지
-                events: prevState.events, // 이벤트 핸들러 유지
+                ...rest,
             };
         });
     };
 
     const handleNodeContextMenu = ({ event, nodes }) => {
         event.preventDefault();
-
+        console.log(nodes);
         if (nodes.length > 0) {
             const xPos = event.clientX;
             const yPos = event.clientY;
-            const selectedNodeId = nodes[0]; // 첫 번째 선택된 노드의 ID를 가져옴
-            setContextMenuPos({ xPos, yPos, selectedNodeId });
+            setContextMenuPos({ xPos, yPos, nodeId: nodes[0] });
             setIsNodeContextMenuVisible(true);
         }
     };
@@ -85,7 +61,7 @@ const MindMap = () => {
         if (event.nodes.length > 0) {
             const selectedNodeId = event.nodes[0];
             const newLabel = prompt("새로운 노드 이름을 입력하세요");
-            if (newLabel === null) return;
+            if(newLabel === null) return;
             modifyNode(selectedNodeId, newLabel);
         }
     };
@@ -115,12 +91,8 @@ const MindMap = () => {
 
     const deleteNode = (nodeId) => {
         setState((prevState) => {
-            const updatedNodes = prevState.graph.nodes.filter(
-                (node) => node.id !== nodeId
-            );
-            const updatedEdges = prevState.graph.edges.filter(
-                (edge) => edge.from !== nodeId && edge.to !== nodeId
-            );
+            const updatedNodes = prevState.graph.nodes.filter((node) => node.id !== nodeId);
+            const updatedEdges = prevState.graph.edges.filter((edge) => edge.from !== nodeId && edge.to !== nodeId);
 
             return {
                 ...prevState,
@@ -133,44 +105,31 @@ const MindMap = () => {
         });
     };
 
-    const [state, setState] = useState(() => {
-        const rootNode = {
-            id: 1,
-            label: "Root",
-            x: 0,
-            y: 0,
-            physics: true,
-            fixed: true,
-            color: "#f5b252",
-        };
-        return {
-            counter: 1,
-            graph: {
-                nodes: [rootNode],
-                edges: [],
+    const [state, setState] = useState({
+        counter: 5,
+        graph: {
+            nodes: [
+                { id: 1, label: "Node 1" },
+                { id: 2, label: "Node 2" },
+            ],
+            edges: [{ from: 1, to: 2 }],
+        },
+        events: {
+            select: ({ nodes, edges }) => {
+                // console.log("Selected nodes:");
+                // console.log(nodes);
+                // console.log("Selected edges:");
+                // console.log(edges);
+                // alert("Selected node: " + nodes);
             },
-            rootNode,
-            events: {
-                select: ({ nodes, edges }) => {
-                    console.log("Selected nodes:");
-                    console.log(nodes);
-                    console.log("Selected edges:");
-                    console.log(edges);
-                },
-                doubleClick: handleDoubleClick,
-                oncontext: handleNodeContextMenu,
-            },
-        };
+            doubleClick: handleDoubleClick,
+            oncontext: handleNodeContextMenu,
+        },
     });
     const { graph, events } = state;
     return (
         <div>
-            <Graph
-                graph={graph}
-                options={options}
-                events={events}
-                style={{ height: "100vh" }}
-            />
+            <Graph graph={graph} options={options} events={events} style={{ height: "100vh" }} />
             {isNodeContextMenuVisible && (
                 <NodeContextMenu
                     xPos={contextMenuPos.xPos}
@@ -178,7 +137,6 @@ const MindMap = () => {
                     selectedNodeId={contextMenuPos.nodeId}
                     onClose={closeContextMenu}
                     deleteNode={deleteNode}
-                    createNode={createNode}
                 />
             )}
         </div>
