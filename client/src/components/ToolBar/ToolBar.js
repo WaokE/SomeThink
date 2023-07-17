@@ -1,6 +1,7 @@
+import React from "react";
 import "./ToolBar.css"
 
-function ToolBar() {
+const ToolBar = () => {
 
   const makeNode = () => {
     console.log("make node");
