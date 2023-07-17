@@ -187,7 +187,7 @@ const MindMap = () => {
         window.addEventListener("addNode", handleAddNode);
         return () => {
             document.removeEventListener("click", handleClickOutside);
-            window.removeEventListener('addNode', handleAddNode);
+            window.removeEventListener("addNode", handleAddNode);
         };
     }, [selectedNode]);
 
@@ -267,6 +267,7 @@ const MindMap = () => {
             ...prevLabels,
         ]);
 
+        const allNodeLabels = state.graph.nodes.map((node) => node.label);
         try {
             const response = await fetch("/api/generate", {
                 method: "POST",
@@ -274,7 +275,8 @@ const MindMap = () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    keyword: connectedNodeLabels.join(", "),
+                    connectedKeywords: connectedNodeLabels.join(", "),
+                    allKeywords: allNodeLabels.join(", "),
                 }),
             });
 
