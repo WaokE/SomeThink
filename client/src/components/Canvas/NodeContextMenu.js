@@ -6,11 +6,13 @@ const NodeContextMenu = ({
     xPos,
     yPos,
     selectedNodeId,
+    selectedNode,
     onClose,
     deleteNode,
     createNode,
     setIsCreatingText,
     handleAddImageNode,
+    handleNodeSelect,
 }) => {
     const handleDeleteNode = () => {
         if (selectedNodeId !== 1) {
@@ -42,11 +44,17 @@ const NodeContextMenu = ({
         onClose();
     };
 
+    const handleairecommend = () => {
+        handleNodeSelect({ nodes: [selectedNodeId] });
+        onClose();
+    };
+
     return (
         <ul>
             <li onClick={handleAddChildNode}>자식 노드 추가</li>
             <li onClick={handleDeleteNode}>노드 제거</li>
             <li onClick={handleAddTextNode}>텍스트 추가</li>
+            <li onClick={handleairecommend}>ai 추천 노드</li>
             <li>
                 <label htmlFor="imageUrl">이미지 URL:</label>
                 <input
