@@ -4,6 +4,7 @@ function ToolBar() {
 
   const makeNode = () => {
     console.log("make node");
+    window.dispatchEvent(new CustomEvent('addNode', { detail: { x: 0, y: 0 }}));
   };
   const makeText = () => {
     console.log("make Text");

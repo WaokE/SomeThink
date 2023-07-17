@@ -47,8 +47,9 @@ const MindMap = () => {
     const [isCreatingText, setIsCreatingText] = useState(false);
     const [result, setResult] = useState("");
     const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
+    const [selectedNode, setSelectedNode] = useState(null);
 
-    const createNode = (x, y, selectedNodeId) => {
+    const createNode = (x, y) => {
         setState((prevState) => {
             const id = prevState.counter + 1;
 
@@ -67,7 +68,7 @@ const MindMap = () => {
                     ],
                     edges: [
                         ...prevState.graph.edges,
-                        { from: selectedNodeId, to: id },
+                        { from: selectedNode, to: id },
                     ],
                 },
                 counter: id,
@@ -179,12 +180,16 @@ const MindMap = () => {
     };
 
     useEffect(() => {
+        const handleAddNode = (event) => {
+            createNode(event.detail.x, event.detail.y);
+        };
         document.addEventListener("click", handleClickOutside);
-
+        window.addEventListener("addNode", handleAddNode);
         return () => {
             document.removeEventListener("click", handleClickOutside);
+            window.removeEventListener('addNode', handleAddNode);
         };
-    }, []);
+    }, [selectedNode]);
 
     const deleteSingleNode = (nodeId) => {
         setState((prevState) => {
@@ -329,10 +334,13 @@ const MindMap = () => {
             rootNode,
             events: {
                 select: ({ nodes, edges }) => {
-                    // console.log("Selected nodes:");
-                    // console.log(nodes);
-                    // console.log("Selected edges:");
-                    // console.log(edges);
+                    if (nodes.length === 1) {
+                        setSelectedNode(nodes[0]);
+                        setContextMenuPos(prevState => ({
+                            ...prevState,
+                            selectedNodeId: nodes[0],
+                        }));
+                    }
                 },
                 doubleClick: handleDoubleClick,
                 oncontext: handleNodeContextMenu,
