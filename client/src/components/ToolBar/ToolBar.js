@@ -1,9 +1,11 @@
+import React from "react";
 import "./ToolBar.css"
 
-function ToolBar() {
+const ToolBar = () => {
 
   const makeNode = () => {
     console.log("make node");
+    window.dispatchEvent(new CustomEvent('addNode', { detail: { x: 0, y: 0 }}));
   };
   const makeText = () => {
     console.log("make Text");
