@@ -135,7 +135,12 @@ const MindMap = () => {
             const selectedNodeId = event.nodes[0];
             const newLabel = prompt("새로운 노드 이름을 입력하세요");
             if (newLabel === null) return;
-            modifyNode(selectedNodeId, newLabel);
+            modifyNode(
+                selectedNodeId,
+                newLabel,
+                event.pointer.canvas.x,
+                event.pointer.canvas.y
+            );
         }
     };
 
@@ -143,11 +148,11 @@ const MindMap = () => {
         setIsNodeContextMenuVisible(false);
     };
 
-    const modifyNode = (nodeId, newLabel) => {
+    const modifyNode = (nodeId, newLabel, x, y) => {
         setState((prevState) => {
             const updatedNodes = prevState.graph.nodes.map((node) => {
                 if (node.id === nodeId) {
-                    return { ...node, label: newLabel };
+                    return { ...node, label: newLabel, x, y };
                 }
                 return node;
             });
