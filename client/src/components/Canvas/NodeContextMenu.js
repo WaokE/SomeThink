@@ -3,8 +3,6 @@ import React, { useState } from "react";
 import "./NodeContextMenu.css";
 
 const NodeContextMenu = ({
-    xPos,
-    yPos,
     selectedNodeId,
     selectedNode,
     onClose,
@@ -23,9 +21,7 @@ const NodeContextMenu = ({
         onClose();
     };
     const handleAddChildNode = () => {
-        const x = xPos + 100;
-        const y = yPos + 100;
-        createNode(x, y, selectedNodeId);
+        createNode(selectedNodeId);
         onClose();
     };
     const handleAddTextNode = () => {
