@@ -45,6 +45,8 @@ const MindMap = () => {
         useState(false);
     const contextMenuRef = useRef(null);
     const [isCreatingText, setIsCreatingText] = useState(false);
+    const [result, setResult] = useState("");
+    const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
 
     const createNode = (x, y, selectedNodeId) => {
         setState((prevState) => {
@@ -215,6 +217,99 @@ const MindMap = () => {
         deleteSingleNode(nodeId);
     };
 
+    const handleNodeSelect = async ({ nodes }) => {
+        if (nodes.length === 0) {
+            return;
+        }
+
+        const clickedNodeId = nodes[0];
+        const clickedNode = state.graph.nodes.find(
+            (node) => node.id === clickedNodeId
+        );
+
+        if (!clickedNode) {
+            return;
+        }
+
+        const connectedNodeIds = [clickedNodeId];
+        let currentNodeId = clickedNodeId;
+
+        while (currentNodeId !== 1) {
+            const parentNodeId = state.graph.edges.find(
+                (edge) => edge.to === currentNodeId
+            )?.from;
+
+            if (!parentNodeId) {
+                break;
+            }
+
+            connectedNodeIds.push(parentNodeId);
+            currentNodeId = parentNodeId;
+        }
+
+        const rootLabel = state.graph.nodes.find(
+            (node) => node.id === 1
+        )?.label;
+        const connectedNodeLabels = connectedNodeIds.map(
+            (nodeId) =>
+                state.graph.nodes.find((node) => node.id === nodeId)?.label
+        );
+
+        setSelectedNodeLabels((prevLabels) => [
+            clickedNode.label,
+            ...connectedNodeLabels,
+            rootLabel,
+            ...prevLabels,
+        ]);
+
+        try {
+            const response = await fetch("/api/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    keyword: connectedNodeLabels.join(", "),
+                }),
+            });
+
+            const data = await response.json();
+            if (response.status !== 200) {
+                throw (
+                    data.error ||
+                    new Error(`Request failed with status ${response.status}`)
+                );
+            }
+
+            const newNodeLabels = data.result.split(",");
+            const newNodes = newNodeLabels.map((label, index) => ({
+                id: state.counter + 1 + index,
+                label: label.trim(),
+                x: clickedNode.x + 100 * (index + 1),
+                y: clickedNode.y + 100,
+                physics: true,
+                color: "#FBD85D",
+            }));
+
+            const newEdges = newNodes.map((node) => ({
+                from: clickedNodeId,
+                to: node.id,
+            }));
+
+            setState((prevState) => ({
+                ...prevState,
+                counter: prevState.counter + newNodeLabels.length,
+                graph: {
+                    nodes: [...prevState.graph.nodes, ...newNodes],
+                    edges: [...prevState.graph.edges, ...newEdges],
+                },
+            }));
+        } catch (error) {
+            console.error(error);
+            alert(error.message);
+        }
+    };
+
     const [state, setState] = useState(() => {
         const rootNode = {
             id: 1,
@@ -248,6 +343,7 @@ const MindMap = () => {
     const { graph, events } = state;
     return (
         <div>
+            <div>{result}</div>
             <Graph
                 graph={state.graph}
                 options={options}
@@ -272,11 +368,13 @@ const MindMap = () => {
                         xPos={contextMenuPos.xPos}
                         yPos={contextMenuPos.yPos}
                         selectedNodeId={contextMenuPos.selectedNodeId}
+                        selectedNode={contextMenuPos.selectedNode}
                         onClose={closeContextMenu}
                         deleteNode={deleteNodes}
                         createNode={createNode}
                         setIsCreatingText={setIsCreatingText}
                         handleAddImageNode={handleAddImageNode}
+                        handleNodeSelect={handleNodeSelect}
                     />
                 </div>
             )}
