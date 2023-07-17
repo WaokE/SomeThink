@@ -1,5 +1,7 @@
 import Graph from "react-graph-vis";
 import React, { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
+
 import NodeContextMenu from "./NodeContextMenu";
 
 const options = {
@@ -38,16 +40,9 @@ const options = {
 };
 
 const MindMap = () => {
-    const [graph, setGraph] = useState({
-        nodes: [
-            { id: 1, label: "Node 1", x: 0, y: 0 },
-        ],
-        edges: [],
-    });
-
-    const [selectedNode, setSelectedNode] = useState(null);
-    const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
+    const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] =
+        useState(false);
     const contextMenuRef = useRef(null);
     const [isCreatingText, setIsCreatingText] = useState(false);
     const [result, setResult] = useState("");
@@ -353,6 +348,7 @@ const MindMap = () => {
         };
     });
 
+    const { graph, events } = state;
     return (
         <div>
             <div>{result}</div>
