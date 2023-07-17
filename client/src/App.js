@@ -1,22 +1,30 @@
-import React, { useEffect, useState } from "react";
+import React, { useRef } from "react";
+import Canvas from "./components/Canvas/Canvas";
+import TopBar from "./components/TopBar/TopBar";
+import ToolBar from "./components/ToolBar/ToolBar";
+import html2canvas from 'html2canvas';
+import fileDownload from 'js-file-download';
 
 function App() {
-  const [backendData, setBackedData] = useState([{}]);
+  const captureRef = useRef(null);
 
-  useEffect(() => {
-    fetch("/api")
-      .then((response) => response.json())
-      .then((data) => {
-        setBackedData(data);
+  const handleExportClick = () => {
+    if (captureRef.current) {
+      html2canvas(captureRef.current).then(canvas => {
+        canvas.toBlob(blob => {
+          fileDownload(blob, 'screenshot.png');
+        });
       });
-  }, []);
+    }
+  };
+
   return (
     <div>
-      {typeof backendData.users === "undefined" ? (
-        <p> Loading... </p>
-      ) : (
-        backendData.users.map((user, i) => <p key={i}>{user}</p>)
-      )}
+      <TopBar onExportClick={handleExportClick} />
+        <div style={{ display: "grid", gridTemplateColumns: "auto 1fr" }}>
+      <ToolBar />
+      <Canvas ref={captureRef} />
+      </div>
     </div>
   );
 }
