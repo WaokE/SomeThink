@@ -16,7 +16,7 @@ module.exports = async function (req, res) {
         return;
     }
 
-    const keyword = req.body.keyword || "";
+    const keyword = req.body.connectedKeywords || "";
     if (keyword.trim().length === 0) {
         res.status(400).json({
             error: {
@@ -29,7 +29,7 @@ module.exports = async function (req, res) {
     try {
         const completion = await openaiApi.createCompletion({
             model: "text-davinci-003",
-            prompt: generatePrompt(keyword),
+            prompt: generatePrompt(keyword, req.body.allKeywords),
             temperature: 1.0,
             max_tokens: 100, // 원하는 길이로 설정
         });
@@ -50,13 +50,14 @@ module.exports = async function (req, res) {
     }
 };
 
-function generatePrompt(keyword) {
+function generatePrompt(keyword, allKeywords) {
     console.log(keyword);
     return `If I provide keywords from the sub-concepts to the higher-level concepts in my mind map, 
     please analyze those keywords and recommend two more specific and closely related keywords. 
     These recommended keywords should be nouns, and even if there is no specific information about the main topic, 
     please make sure to provide two keyword recommendations.
-    
+    If the keyword that I'm trying to recommend is in the [${allKeywords}] list, please recommend a different keyword instead.
+
     Question: Felidae, Mammal, Animal, Biology
     Answer: Tiger, Domestic Cat"
   
