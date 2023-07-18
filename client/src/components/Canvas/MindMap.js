@@ -65,7 +65,7 @@ const MindMap = () => {
 
     useEffect(() => {
         const ydoc = new Y.Doc();
-        const provider = new WebsocketProvider("ws://localhost:1234", "Test ", ydoc);
+        const provider = new WebsocketProvider("ws://localhost:1234", "Test 12122232321", ydoc);
         const ymap = ydoc.getMap("MindMap");
 
         ymap.observe((MindMapEvent) => {
@@ -76,18 +76,20 @@ const MindMap = () => {
                 };
 
                 ymapRef.current.forEach((value, key) => {
-                    const updatedData = JSON.parse(ymap.get(key));
-                    const node = updatedData.node;
-                    const edge = updatedData.edge;
-
-                    updatedGraph.nodes.push(node);
-                    updatedGraph.edges.push(edge);
+                    if (key.startsWith("Node")) {
+                        const node = JSON.parse(value);
+                        console.log(node);
+                        updatedGraph.nodes.push(node);
+                    } else if (key.startsWith("Edge")) {
+                        const edge = JSON.parse(value);
+                        console.log(edge);
+                        updatedGraph.edges.push(edge);
+                    }
                 });
 
                 return {
                     ...prevState,
                     graph: updatedGraph,
-                    counter: prevState.counter + 1,
                 };
             });
         });
@@ -105,21 +107,24 @@ const MindMap = () => {
 
         setState((prevState) => {
             ymapRef.current.set(
-                `Node ${prevState.counter + 1}`,
+                `Node ${prevState.counter}`,
                 JSON.stringify({
-                    node: {
-                        id: prevState.counter + 1,
-                        label: `Node ${prevState.counter + 1}`,
-                        x: selectedNode.x,
-                        y: selectedNode.y + 100,
-                        color: "#FBD85D",
-                    },
-                    edge: { from: selectedNodeId, to: prevState.counter + 1 },
+                    id: prevState.counter,
+                    label: `Node ${prevState.counter}`,
+                    x: selectedNode.x,
+                    y: selectedNode.y + 100,
+                    color: "#FBD85D",
                 })
+            );
+
+            ymapRef.current.set(
+                `Edge ${selectedNodeId} to ${prevState.counter}`,
+                JSON.stringify({ from: selectedNodeId, to: prevState.counter })
             );
 
             return {
                 ...prevState,
+                counter: prevState.counter + 1,
             };
         });
     };
@@ -367,7 +372,7 @@ const MindMap = () => {
 
     const [state, setState] = useState(() => {
         return {
-            counter: 1,
+            counter: 2,
             graph: {
                 nodes: [rootNode],
                 edges: [],
