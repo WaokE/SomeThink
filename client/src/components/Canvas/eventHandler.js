@@ -7,7 +7,7 @@ export const handleDoubleClick = (event, modifyNode) => {
     }
 };
 
-export const handleNodeDragEnd = (event, setState) => {
+export const handleNodeDragEnd = (event, ymapRef) => {
     const { nodes, pointer } = event;
     if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
         return;
@@ -16,26 +16,8 @@ export const handleNodeDragEnd = (event, setState) => {
     const nodeId = nodes[0];
     const { x, y } = pointer.canvas;
 
-    setState((prevState) => {
-        const updatedNodes = prevState.graph.nodes.map((node) => {
-            if (node.id === nodeId) {
-                return {
-                    ...node,
-                    x,
-                    y,
-                };
-            }
-            return node;
-        });
-
-        return {
-            ...prevState,
-            graph: {
-                ...prevState.graph,
-                nodes: updatedNodes,
-            },
-        };
-    });
+    const movedNode = ymapRef.current.get(`Node ${nodeId}`);
+    ymapRef.current.set(`Node ${nodeId}`, JSON.stringify({ ...JSON.parse(movedNode), x: x, y: y }));
 };
 
 export const handleClickOutside = (contextMenuRef, setIsNodeContextMenuVisible) => (event) => {

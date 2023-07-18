@@ -73,7 +73,7 @@ const MindMap = () => {
 
     useEffect(() => {
         const ydoc = new Y.Doc();
-        const provider = new WebsocketProvider("ws://localhost:1234", "T", ydoc);
+        const provider = new WebsocketProvider("ws://localhost:1234", "Te", ydoc);
         const ymap = ydoc.getMap("MindMap");
         ymap.set("Node 1", JSON.stringify(rootNode));
         ymap.set("Counter", 2);
@@ -305,7 +305,7 @@ const MindMap = () => {
                 options={options}
                 events={{
                     ...state.events,
-                    dragEnd: (events) => handleNodeDragEnd(events, setState),
+                    dragEnd: (events) => handleNodeDragEnd(events, ymapRef),
                     drag: handleCanvasDrag,
                     click: (events) =>
                         handleAddTextNode(events, isCreatingText, setState, setIsCreatingText),
