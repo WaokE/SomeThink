@@ -41,6 +41,16 @@ const options = {
     },
 };
 
+const rootNode = {
+    id: 1,
+    label: "Root",
+    x: 0,
+    y: 0,
+    physics: false,
+    fixed: true,
+    color: "#f5b252",
+};
+
 const MindMap = () => {
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
     const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
@@ -55,21 +65,32 @@ const MindMap = () => {
 
     useEffect(() => {
         const ydoc = new Y.Doc();
-        const provider = new WebsocketProvider("ws://localhost:1234", "Test Room", ydoc);
+        const provider = new WebsocketProvider("ws://localhost:1234", "Test Room123", ydoc);
         const ymap = ydoc.getMap("MindMap");
 
         ymap.observe((MindMapEvent) => {
             MindMapEvent.changes.keys.forEach((change, key) => {
                 setState((prevState) => {
-                    const updatedDate = JSON.parse(ymap.get(key));
-                    const updatedNode = updatedDate.node;
-                    const updatedEdge = updatedDate.edge;
+                    // ymap에 변동이 생길 때마다 state를 업데이트하는 로직을 구현합니다.
+                    const updatedGraph = {
+                        nodes: [rootNode],
+                        edges: [],
+                    };
+
+                    // ymap에 저장된 데이터를 기반으로 업데이트된 그래프 정보를 생성합니다.
+                    ymapRef.current.forEach((value, key) => {
+                        const updatedData = JSON.parse(ymap.get(key));
+                        const node = updatedData.node;
+                        const edge = updatedData.edge;
+
+                        updatedGraph.nodes.push(node);
+                        updatedGraph.edges.push(edge);
+                    });
+
                     return {
                         ...prevState,
-                        graph: {
-                            nodes: [...prevState.graph.nodes, updatedNode],
-                            edges: [...prevState.graph.edges, updatedEdge],
-                        },
+                        graph: updatedGraph,
+                        counter: updatedGraph.nodes.length, // 새로운 노드 수에 맞게 카운터를 설정합니다.
                     };
                 });
             });
@@ -363,15 +384,6 @@ const MindMap = () => {
     };
 
     const [state, setState] = useState(() => {
-        const rootNode = {
-            id: 1,
-            label: "Root",
-            x: 0,
-            y: 0,
-            physics: false,
-            fixed: true,
-            color: "#f5b252",
-        };
         return {
             counter: 1,
             graph: {
