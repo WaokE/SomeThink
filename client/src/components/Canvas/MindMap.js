@@ -65,7 +65,7 @@ const MindMap = () => {
 
     useEffect(() => {
         const ydoc = new Y.Doc();
-        const provider = new WebsocketProvider("ws://localhost:1234", "Test 121222322321", ydoc);
+        const provider = new WebsocketProvider("ws://localhost:1234", "T", ydoc);
         const ymap = ydoc.getMap("MindMap");
         ymap.set("Node 1", JSON.stringify(rootNode));
         ymap.set("Counter", 2);
@@ -102,6 +102,7 @@ const MindMap = () => {
 
     const createNode = (selectedNodeId) => {
         const selectedNode = state.graph.nodes.find((node) => node.id === selectedNodeId);
+        const nodeCount = ymapRef.current.get("Counter");
 
         if (!selectedNode) {
             return;
@@ -109,10 +110,10 @@ const MindMap = () => {
 
         setState((prevState) => {
             ymapRef.current.set(
-                `Node ${prevState.counter}`,
+                `Node ${nodeCount}`,
                 JSON.stringify({
-                    id: prevState.counter,
-                    label: `Node ${prevState.counter}`,
+                    id: nodeCount,
+                    label: `Node ${nodeCount}`,
                     x: selectedNode.x,
                     y: selectedNode.y + 100,
                     color: "#FBD85D",
@@ -120,15 +121,13 @@ const MindMap = () => {
             );
 
             ymapRef.current.set(
-                `Edge ${selectedNodeId} to ${prevState.counter}`,
-                JSON.stringify({ from: selectedNodeId, to: prevState.counter })
+                `Edge ${selectedNodeId} to ${nodeCount}`,
+                JSON.stringify({ from: selectedNodeId, to: nodeCount })
             );
 
-            return {
-                ...prevState,
-                counter: prevState.counter + 1,
-            };
+            return prevState;
         });
+        ymapRef.current.set("Counter", nodeCount + 1);
     };
 
     const handleNodeDragEnd = (event) => {
