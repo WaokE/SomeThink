@@ -36,7 +36,9 @@ const NodeContextMenu = ({
     };
 
     const handleAddImage = () => {
-        handleAddImageNode({ imageUrl });
+        console.log(imageUrl);
+        const updateFunction = handleAddImageNode(imageUrl);
+        updateFunction();
         onClose();
     };
 
@@ -53,11 +55,7 @@ const NodeContextMenu = ({
             <li onClick={handleairecommend}>ai 추천 노드</li>
             <li>
                 <label htmlFor="imageUrl">이미지 URL:</label>
-                <input
-                    type="text"
-                    value={imageUrl}
-                    onChange={handleImageInputChange}
-                />
+                <input type="text" value={imageUrl} onChange={handleImageInputChange} />
                 <button onClick={handleAddImage}>이미지 추가</button>
             </li>
         </ul>

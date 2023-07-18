@@ -1,6 +1,15 @@
 import Graph from "react-graph-vis";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import ReactDOM from "react-dom";
+import {
+    handleDoubleClick,
+    handleNodeDragEnd,
+    handleClickOutside,
+    handleCanvasDrag,
+    handleAddTextNode,
+    handleAddImageNode as handleAddImageNodeOriginal,
+    handleNodeContextMenu,
+} from "./eventHandler";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
 
@@ -26,15 +35,6 @@ const options = {
     },
     physics: {
         enabled: false,
-        // solver: "barnesHut",
-        // barnesHut: {
-        //     centralGravity: -0.1,
-        //     springConstant: 1,
-        //     damping: 0.09,
-        //     avoidOverlap: 0.5,
-        // },
-        // maxVelocity: 5,
-        // minVelocity: 0.5,
     },
     interaction: {
         multiselect: false,
@@ -59,6 +59,15 @@ const MindMap = () => {
     const [result, setResult] = useState("");
     const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
     const [selectedNode, setSelectedNode] = useState(null);
+    const memoizedHandleClickOutside = useCallback(
+        handleClickOutside(contextMenuRef, setIsNodeContextMenuVisible),
+        [contextMenuRef, setIsNodeContextMenuVisible]
+    );
+    const handleAddImageNode = (imageUrl) => handleAddImageNodeOriginal({ imageUrl, setState });
+    const openNodeContextMenu = handleNodeContextMenu(
+        setContextMenuPos,
+        setIsNodeContextMenuVisible
+    );
 
     const ydocRef = useRef(null);
     const ymapRef = useRef(null);
@@ -130,106 +139,6 @@ const MindMap = () => {
         ymapRef.current.set("Counter", nodeCount + 1);
     };
 
-    const handleNodeDragEnd = (event) => {
-        const { nodes, pointer } = event;
-        if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
-            return;
-        }
-        console.log(event);
-        const nodeId = nodes[0];
-        const { x, y } = pointer.canvas;
-
-        setState((prevState) => {
-            const updatedNodes = prevState.graph.nodes.map((node) => {
-                if (node.id === nodeId) {
-                    return {
-                        ...node,
-                        x,
-                        y,
-                    };
-                }
-                return node;
-            });
-
-            return {
-                ...prevState,
-                graph: {
-                    ...prevState.graph,
-                    nodes: updatedNodes,
-                },
-            };
-        });
-    };
-
-    const handleCanvasDrag = (event) => {
-        // 캔버스 드래그가 진행 중일 때 호출되는 함수
-        // 캔버스가 이동되지만 좌표는 저장하지 않습니다.
-    };
-
-    const handleAddTextNode = (event) => {
-        if (!isCreatingText) return;
-        const { pointer } = event;
-        const label = prompt("");
-        if (label) {
-            const newNode = {
-                shape: "text",
-                label: label,
-                x: pointer.canvas.x,
-                y: pointer.canvas.y,
-                physics: false,
-                font: {
-                    size: 30,
-                },
-            };
-            setState((prevState) => ({
-                ...prevState,
-                graph: {
-                    ...prevState.graph,
-                    nodes: [...prevState.graph.nodes, newNode],
-                },
-            }));
-            setIsCreatingText(false);
-        }
-    };
-
-    const handleAddImageNode = ({ imageUrl }) => {
-        const newNode = {
-            shape: "image",
-            image: imageUrl,
-            x: 0,
-            y: -100,
-            physics: false,
-        };
-        setState((prevState) => ({
-            ...prevState,
-            graph: {
-                ...prevState.graph,
-                nodes: [...prevState.graph.nodes, newNode],
-            },
-        }));
-    };
-
-    const handleNodeContextMenu = ({ event, nodes }) => {
-        event.preventDefault();
-
-        if (nodes.length > 0) {
-            const xPos = event.clientX;
-            const yPos = event.clientY;
-            const selectedNodeId = nodes[0];
-            setContextMenuPos({ xPos, yPos, selectedNodeId });
-            setIsNodeContextMenuVisible(true);
-        }
-    };
-
-    const handleDoubleClick = (event) => {
-        if (event.nodes.length > 0) {
-            const selectedNodeId = event.nodes[0];
-            const newLabel = prompt("새로운 노드 이름을 입력하세요");
-            if (newLabel === null) return;
-            modifyNode(selectedNodeId, newLabel, event.pointer.canvas.x, event.pointer.canvas.y);
-        }
-    };
-
     const closeContextMenu = () => {
         setIsNodeContextMenuVisible(false);
     };
@@ -253,23 +162,17 @@ const MindMap = () => {
         });
     };
 
-    const handleClickOutside = (event) => {
-        if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
-            setIsNodeContextMenuVisible(false);
-        }
-    };
-
     useEffect(() => {
         const handleAddNode = (event) => {
             createNode(selectedNode);
         };
-        document.addEventListener("click", handleClickOutside);
+        document.addEventListener("click", memoizedHandleClickOutside);
         window.addEventListener("addNode", handleAddNode);
         return () => {
             document.removeEventListener("click", handleClickOutside);
             window.removeEventListener("addNode", handleAddNode);
         };
-    }, [selectedNode]);
+    }, [selectedNode, memoizedHandleClickOutside]);
 
     const deleteSingleNode = (nodeId) => {
         ymapRef.current.delete(`Node ${nodeId}`);
@@ -389,8 +292,8 @@ const MindMap = () => {
                         }));
                     }
                 },
-                doubleClick: handleDoubleClick,
-                oncontext: handleNodeContextMenu,
+                doubleClick: (events) => handleDoubleClick(events, modifyNode),
+                oncontext: openNodeContextMenu,
             },
         };
     });
@@ -406,8 +309,9 @@ const MindMap = () => {
                     ...state.events,
                     dragEnd: handleNodeDragEnd,
                     drag: handleCanvasDrag,
-                    click: handleAddTextNode,
-                    oncontext: handleNodeContextMenu,
+                    click: (events) =>
+                        handleAddTextNode(events, isCreatingText, setState, setIsCreatingText),
+                    oncontext: openNodeContextMenu,
                 }}
                 style={{ height: "100vh" }}
             />
