@@ -56,7 +56,6 @@ const MindMap = () => {
     const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
     const contextMenuRef = useRef(null);
     const [isCreatingText, setIsCreatingText] = useState(false);
-    const [result, setResult] = useState("");
     const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
     const [selectedNode, setSelectedNode] = useState(null);
     const memoizedHandleClickOutside = useCallback(
@@ -301,13 +300,12 @@ const MindMap = () => {
     const { graph, events } = state;
     return (
         <div>
-            <div>{result}</div>
             <Graph
                 graph={state.graph}
                 options={options}
                 events={{
                     ...state.events,
-                    dragEnd: handleNodeDragEnd,
+                    dragEnd: (events) => handleNodeDragEnd(events, setState),
                     drag: handleCanvasDrag,
                     click: (events) =>
                         handleAddTextNode(events, isCreatingText, setState, setIsCreatingText),
