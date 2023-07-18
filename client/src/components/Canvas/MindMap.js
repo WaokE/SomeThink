@@ -65,32 +65,30 @@ const MindMap = () => {
 
     useEffect(() => {
         const ydoc = new Y.Doc();
-        const provider = new WebsocketProvider("ws://localhost:1234", "Test Room123", ydoc);
+        const provider = new WebsocketProvider("ws://localhost:1234", "Test Room1234", ydoc);
         const ymap = ydoc.getMap("MindMap");
 
         ymap.observe((MindMapEvent) => {
-            MindMapEvent.changes.keys.forEach((change, key) => {
-                setState((prevState) => {
-                    const updatedGraph = {
-                        nodes: [rootNode],
-                        edges: [],
-                    };
+            setState((prevState) => {
+                const updatedGraph = {
+                    nodes: [rootNode],
+                    edges: [],
+                };
 
-                    ymapRef.current.forEach((value, key) => {
-                        const updatedData = JSON.parse(ymap.get(key));
-                        const node = updatedData.node;
-                        const edge = updatedData.edge;
+                ymapRef.current.forEach((value, key) => {
+                    const updatedData = JSON.parse(ymap.get(key));
+                    const node = updatedData.node;
+                    const edge = updatedData.edge;
 
-                        updatedGraph.nodes.push(node);
-                        updatedGraph.edges.push(edge);
-                    });
-
-                    return {
-                        ...prevState,
-                        graph: updatedGraph,
-                        counter: prevState.counter + 1,
-                    };
+                    updatedGraph.nodes.push(node);
+                    updatedGraph.edges.push(edge);
                 });
+
+                return {
+                    ...prevState,
+                    graph: updatedGraph,
+                    counter: prevState.counter + 1,
+                };
             });
         });
 
