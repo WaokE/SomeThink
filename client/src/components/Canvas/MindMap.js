@@ -71,13 +71,11 @@ const MindMap = () => {
         ymap.observe((MindMapEvent) => {
             MindMapEvent.changes.keys.forEach((change, key) => {
                 setState((prevState) => {
-                    // ymap에 변동이 생길 때마다 state를 업데이트하는 로직을 구현합니다.
                     const updatedGraph = {
                         nodes: [rootNode],
                         edges: [],
                     };
 
-                    // ymap에 저장된 데이터를 기반으로 업데이트된 그래프 정보를 생성합니다.
                     ymapRef.current.forEach((value, key) => {
                         const updatedData = JSON.parse(ymap.get(key));
                         const node = updatedData.node;
@@ -90,7 +88,7 @@ const MindMap = () => {
                     return {
                         ...prevState,
                         graph: updatedGraph,
-                        counter: updatedGraph.nodes.length, // 새로운 노드 수에 맞게 카운터를 설정합니다.
+                        counter: prevState.counter + 1,
                     };
                 });
             });
