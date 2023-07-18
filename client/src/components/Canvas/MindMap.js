@@ -9,6 +9,7 @@ import {
     handleAddTextNode,
     handleAddImageNode as handleAddImageNodeOriginal,
     handleNodeContextMenu,
+    handleNodeDragging,
 } from "./eventHandler";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
@@ -305,6 +306,7 @@ const MindMap = () => {
                 options={options}
                 events={{
                     ...state.events,
+                    dragging: (events) => handleNodeDragging(events, ymapRef),
                     dragEnd: (events) => handleNodeDragEnd(events, ymapRef),
                     drag: handleCanvasDrag,
                     click: (events) =>
