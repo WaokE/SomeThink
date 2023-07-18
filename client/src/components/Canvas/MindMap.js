@@ -65,7 +65,7 @@ const MindMap = () => {
 
     useEffect(() => {
         const ydoc = new Y.Doc();
-        const provider = new WebsocketProvider("ws://localhost:1234", "Test Room1234", ydoc);
+        const provider = new WebsocketProvider("ws://localhost:1234", "Test Room123212324", ydoc);
         const ymap = ydoc.getMap("MindMap");
 
         ymap.observe((MindMapEvent) => {
@@ -117,9 +117,9 @@ const MindMap = () => {
                     edge: { from: selectedNodeId, to: prevState.counter + 1 },
                 })
             );
+
             return {
                 ...prevState,
-                counter: prevState.counter + 1,
             };
         });
     };
