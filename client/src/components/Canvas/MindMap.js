@@ -1,5 +1,3 @@
-//node ./node_modules/y-websocket/bin/server.js
-
 import Graph from "react-graph-vis";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import ReactDOM from "react-dom";
@@ -54,6 +52,30 @@ const rootNode = {
     color: "#f5b252",
 };
 
+const PreventRefresh = () => {
+    useEffect(() => {
+        const handleBeforeUnload = (event) => {
+            event.preventDefault();
+            event.returnValue = ""; // 이 줄은 최신 버전의 Chrome에서 필요합니다.
+        };
+
+        const handleUnload = () => {
+            // 페이지를 떠날 때 처리할 작업을 여기에 추가합니다.
+            // 예를 들어, 변경된 데이터를 저장하거나 서버에 업데이트를 요청하는 등의 작업을 수행할 수 있습니다.
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        window.addEventListener("unload", handleUnload);
+
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+            window.removeEventListener("unload", handleUnload);
+        };
+    }, []);
+
+    return <></>;
+};
+
 const MindMap = () => {
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
     const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
@@ -75,13 +97,13 @@ const MindMap = () => {
     const ymapRef = useRef(null);
 
     useEffect(() => {
-        const ydoc = new Y.Doc();
-        const provider = new WebsocketProvider("ws://localhost:1234", "6", ydoc);
-        const ymap = ydoc.getMap("MindMap");
-        ymap.set("Node 1", JSON.stringify(rootNode));
-        ymap.set("Counter", 2);
+        ydocRef.current = new Y.Doc();
+        const provider = new WebsocketProvider("ws://localhost:1234", "1123123123123123", ydocRef.current);
+        ymapRef.current = ydocRef.current.getMap("MindMap");
+        ymapRef.current.set("Node 1", JSON.stringify(rootNode));
+        ymapRef.current.set("Counter", 2);
 
-        ymap.observe((MindMapEvent) => {
+        ymapRef.current.observe((event) => {
             setSelectedNode(null);
             setSelectedNodeLabels([]);
 
@@ -105,9 +127,6 @@ const MindMap = () => {
                 graph: updatedGraph,
             }));
         });
-
-        ydocRef.current = ydoc;
-        ymapRef.current = ymap;
     }, []);
 
     const createNode = (selectedNodeId) => {
@@ -169,8 +188,8 @@ const MindMap = () => {
 
     const deleteNodes = (nodeId) => {
         const childNodes = Array.from(ymapRef.current.keys())
-            .filter((key) => key.startsWith(`Edge `) && key.endsWith(` to ${nodeId}`))
-            .map((key) => key.split(" ")[2]);
+            .filter((key) => key.startsWith(`Edge ${nodeId} to `))
+            .map((key) => key.split(" ")[3]);
 
         childNodes.forEach((childNodeId) => {
             deleteSingleNode(childNodeId);
@@ -311,6 +330,7 @@ const MindMap = () => {
     const { graph, events } = state;
     return (
         <div>
+            <PreventRefresh />
             <Graph
                 graph={state.graph}
                 options={options}
