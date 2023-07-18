@@ -133,6 +133,7 @@ const MindMap = () => {
         );
 
         ymapRef.current.set("Counter", nodeCount + 1);
+        setSelectedNode(null);
     };
 
     const closeContextMenu = () => {
@@ -149,6 +150,9 @@ const MindMap = () => {
 
     useEffect(() => {
         const handleAddNode = (event) => {
+            if (!selectedNode) {
+                return;
+            }
             createNode(selectedNode);
         };
         document.addEventListener("click", memoizedHandleClickOutside);
@@ -347,4 +351,3 @@ const MindMap = () => {
 };
 
 export default MindMap;
-

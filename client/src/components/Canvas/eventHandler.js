@@ -12,7 +12,6 @@ export const handleNodeDragEnd = (event, ymapRef) => {
     if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
         return;
     }
-    console.log(event);
     const nodeId = nodes[0];
     const { x, y } = pointer.canvas;
 
@@ -25,7 +24,6 @@ export const handleNodeDragging = (event, ymapRef) => {
     if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
         return;
     }
-    console.log(event);
     const nodeId = nodes[0];
     const { x, y } = pointer.canvas;
 
@@ -73,8 +71,6 @@ export const handleAddTextNode = (event, isCreatingText, setState, setIsCreating
 export const handleAddImageNode =
     ({ imageUrl, setState }) =>
     () => {
-        console.log("imageUrl");
-        console.log(imageUrl);
         const newNode = {
             shape: "image",
             image: imageUrl,
