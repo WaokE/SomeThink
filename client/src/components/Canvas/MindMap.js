@@ -1,6 +1,8 @@
 import Graph from "react-graph-vis";
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
+import { WebsocketProvider } from "y-websocket";
+import * as Y from "yjs";
 
 import NodeContextMenu from "./NodeContextMenu";
 
@@ -39,47 +41,93 @@ const options = {
     },
 };
 
+const rootNode = {
+    id: 1,
+    label: "Root",
+    x: 0,
+    y: 0,
+    physics: false,
+    fixed: true,
+    color: "#f5b252",
+};
+
 const MindMap = () => {
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
-    const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] =
-        useState(false);
+    const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
     const contextMenuRef = useRef(null);
     const [isCreatingText, setIsCreatingText] = useState(false);
     const [result, setResult] = useState("");
     const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
     const [selectedNode, setSelectedNode] = useState(null);
 
+    const ydocRef = useRef(null);
+    const ymapRef = useRef(null);
+
+    useEffect(() => {
+        const ydoc = new Y.Doc();
+        const provider = new WebsocketProvider("ws://localhost:1234", "T", ydoc);
+        const ymap = ydoc.getMap("MindMap");
+        ymap.set("Node 1", JSON.stringify(rootNode));
+        ymap.set("Counter", 2);
+
+        ymap.observe((MindMapEvent) => {
+            setState((prevState) => {
+                const updatedGraph = {
+                    nodes: [],
+                    edges: [],
+                };
+
+                ymapRef.current.forEach((value, key) => {
+                    if (key.startsWith("Node")) {
+                        const node = JSON.parse(value);
+                        console.log(node);
+                        updatedGraph.nodes.push(node);
+                    } else if (key.startsWith("Edge")) {
+                        const edge = JSON.parse(value);
+                        console.log(edge);
+                        updatedGraph.edges.push(edge);
+                    }
+                });
+
+                return {
+                    ...prevState,
+                    graph: updatedGraph,
+                };
+            });
+        });
+
+        ydocRef.current = ydoc;
+        ymapRef.current = ymap;
+    }, []);
+
     const createNode = (selectedNodeId) => {
-        const id = state.counter + 1;
-        const selectedNode = state.graph.nodes.find(
-            (node) => node.id === selectedNodeId
-        );
+        const selectedNode = state.graph.nodes.find((node) => node.id === selectedNodeId);
+        const nodeCount = ymapRef.current.get("Counter");
 
         if (!selectedNode) {
             return;
         }
 
-        const newNode = {
-            id,
-            label: `Node ${id}`,
-            x: selectedNode.x,
-            y: selectedNode.y + 100,
-            color: "#FBD85D",
-        };
+        setState((prevState) => {
+            ymapRef.current.set(
+                `Node ${nodeCount}`,
+                JSON.stringify({
+                    id: nodeCount,
+                    label: `Node ${nodeCount}`,
+                    x: selectedNode.x,
+                    y: selectedNode.y + 100,
+                    color: "#FBD85D",
+                })
+            );
 
-        const newEdge = { from: selectedNodeId, to: id };
-        console.log(newNode);
+            ymapRef.current.set(
+                `Edge ${selectedNodeId} to ${nodeCount}`,
+                JSON.stringify({ from: selectedNodeId, to: nodeCount })
+            );
 
-        setState((prevState) => ({
-            ...prevState,
-            graph: {
-                nodes: [...prevState.graph.nodes, newNode],
-                edges: [...prevState.graph.edges, newEdge],
-            },
-            counter: id,
-            rootNode: prevState.rootNode,
-            events: prevState.events,
-        }));
+            return prevState;
+        });
+        ymapRef.current.set("Counter", nodeCount + 1);
     };
 
     const handleNodeDragEnd = (event) => {
@@ -178,12 +226,7 @@ const MindMap = () => {
             const selectedNodeId = event.nodes[0];
             const newLabel = prompt("새로운 노드 이름을 입력하세요");
             if (newLabel === null) return;
-            modifyNode(
-                selectedNodeId,
-                newLabel,
-                event.pointer.canvas.x,
-                event.pointer.canvas.y
-            );
+            modifyNode(selectedNodeId, newLabel, event.pointer.canvas.x, event.pointer.canvas.y);
         }
     };
 
@@ -211,10 +254,7 @@ const MindMap = () => {
     };
 
     const handleClickOutside = (event) => {
-        if (
-            contextMenuRef.current &&
-            !contextMenuRef.current.contains(event.target)
-        ) {
+        if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
             setIsNodeContextMenuVisible(false);
         }
     };
@@ -232,23 +272,7 @@ const MindMap = () => {
     }, [selectedNode]);
 
     const deleteSingleNode = (nodeId) => {
-        setState((prevState) => {
-            const updatedNodes = prevState.graph.nodes.filter(
-                (node) => node.id !== nodeId
-            );
-            const updatedEdges = prevState.graph.edges.filter(
-                (edge) => edge.from !== nodeId && edge.to !== nodeId
-            );
-
-            return {
-                ...prevState,
-                graph: {
-                    ...prevState.graph,
-                    nodes: updatedNodes,
-                    edges: updatedEdges,
-                },
-            };
-        });
+        ymapRef.current.delete(`Node ${nodeId}`);
     };
 
     const deleteNodes = (nodeId) => {
@@ -268,9 +292,7 @@ const MindMap = () => {
         }
 
         const clickedNodeId = nodes[0];
-        const clickedNode = state.graph.nodes.find(
-            (node) => node.id === clickedNodeId
-        );
+        const clickedNode = state.graph.nodes.find((node) => node.id === clickedNodeId);
 
         if (!clickedNode) {
             return;
@@ -280,9 +302,7 @@ const MindMap = () => {
         let currentNodeId = clickedNodeId;
 
         while (currentNodeId !== 1) {
-            const parentNodeId = state.graph.edges.find(
-                (edge) => edge.to === currentNodeId
-            )?.from;
+            const parentNodeId = state.graph.edges.find((edge) => edge.to === currentNodeId)?.from;
 
             if (!parentNodeId) {
                 break;
@@ -292,12 +312,9 @@ const MindMap = () => {
             currentNodeId = parentNodeId;
         }
 
-        const rootLabel = state.graph.nodes.find(
-            (node) => node.id === 1
-        )?.label;
+        const rootLabel = state.graph.nodes.find((node) => node.id === 1)?.label;
         const connectedNodeLabels = connectedNodeIds.map(
-            (nodeId) =>
-                state.graph.nodes.find((node) => node.id === nodeId)?.label
+            (nodeId) => state.graph.nodes.find((node) => node.id === nodeId)?.label
         );
 
         setSelectedNodeLabels((prevLabels) => [
@@ -322,10 +339,7 @@ const MindMap = () => {
 
             const data = await response.json();
             if (response.status !== 200) {
-                throw (
-                    data.error ||
-                    new Error(`Request failed with status ${response.status}`)
-                );
+                throw data.error || new Error(`Request failed with status ${response.status}`);
             }
 
             const newNodeLabels = data.result.split(",");
@@ -358,17 +372,8 @@ const MindMap = () => {
     };
 
     const [state, setState] = useState(() => {
-        const rootNode = {
-            id: 1,
-            label: "Root",
-            x: 0,
-            y: 0,
-            physics: false,
-            fixed: true,
-            color: "#f5b252",
-        };
         return {
-            counter: 1,
+            counter: 2,
             graph: {
                 nodes: [rootNode],
                 edges: [],
