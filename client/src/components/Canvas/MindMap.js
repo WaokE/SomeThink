@@ -65,7 +65,7 @@ const MindMap = () => {
 
     useEffect(() => {
         const ydoc = new Y.Doc();
-        const provider = new WebsocketProvider("ws://localhost:1234", "Test Room123212324", ydoc);
+        const provider = new WebsocketProvider("ws://localhost:1234", "Test ", ydoc);
         const ymap = ydoc.getMap("MindMap");
 
         ymap.observe((MindMapEvent) => {
@@ -266,21 +266,7 @@ const MindMap = () => {
     }, [selectedNode]);
 
     const deleteSingleNode = (nodeId) => {
-        setState((prevState) => {
-            const updatedNodes = prevState.graph.nodes.filter((node) => node.id !== nodeId);
-            const updatedEdges = prevState.graph.edges.filter(
-                (edge) => edge.from !== nodeId && edge.to !== nodeId
-            );
-
-            return {
-                ...prevState,
-                graph: {
-                    ...prevState.graph,
-                    nodes: updatedNodes,
-                    edges: updatedEdges,
-                },
-            };
-        });
+        ymapRef.current.delete(`Node ${nodeId}`);
     };
 
     const deleteNodes = (nodeId) => {
