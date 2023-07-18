@@ -9,6 +9,7 @@ import {
     handleAddTextNode,
     handleAddImageNode as handleAddImageNodeOriginal,
     handleNodeContextMenu,
+    handleNodeDragging,
 } from "./eventHandler";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
@@ -142,22 +143,22 @@ const MindMap = () => {
         setIsNodeContextMenuVisible(false);
     };
 
-    const modifyNode = (nodeId, newLabel, x, y) => {
+    const modifyNode = (nodeId, newLabel) => {
         setState((prevState) => {
             const updatedNodes = prevState.graph.nodes.map((node) => {
                 if (node.id === nodeId) {
-                    return { ...node, label: newLabel, x, y };
+                    ymapRef.current.set(
+                        `Node ${nodeId}`,
+                        JSON.stringify({
+                            ...node,
+                            label: newLabel,
+                        })
+                    );
+                    return { ...node, label: newLabel };
                 }
                 return node;
             });
-
-            return {
-                ...prevState,
-                graph: {
-                    ...prevState.graph,
-                    nodes: updatedNodes,
-                },
-            };
+            return { ...prevState, graph: { ...prevState.graph, nodes: updatedNodes } };
         });
     };
 
@@ -305,6 +306,7 @@ const MindMap = () => {
                 options={options}
                 events={{
                     ...state.events,
+                    dragging: (events) => handleNodeDragging(events, ymapRef),
                     dragEnd: (events) => handleNodeDragEnd(events, ymapRef),
                     drag: handleCanvasDrag,
                     click: (events) =>

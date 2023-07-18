@@ -20,6 +20,19 @@ export const handleNodeDragEnd = (event, ymapRef) => {
     ymapRef.current.set(`Node ${nodeId}`, JSON.stringify({ ...JSON.parse(movedNode), x: x, y: y }));
 };
 
+export const handleNodeDragging = (event, ymapRef) => {
+    const { nodes, pointer } = event;
+    if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
+        return;
+    }
+    console.log(event);
+    const nodeId = nodes[0];
+    const { x, y } = pointer.canvas;
+
+    const movedNode = ymapRef.current.get(`Node ${nodeId}`);
+    ymapRef.current.set(`Node ${nodeId}`, JSON.stringify({ ...JSON.parse(movedNode), x: x, y: y }));
+};
+
 export const handleClickOutside = (contextMenuRef, setIsNodeContextMenuVisible) => (event) => {
     if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
         setIsNodeContextMenuVisible(false);
