@@ -65,13 +65,15 @@ const MindMap = () => {
 
     useEffect(() => {
         const ydoc = new Y.Doc();
-        const provider = new WebsocketProvider("ws://localhost:1234", "Test 12122232321", ydoc);
+        const provider = new WebsocketProvider("ws://localhost:1234", "Test 121222322321", ydoc);
         const ymap = ydoc.getMap("MindMap");
+        ymap.set("Node 1", JSON.stringify(rootNode));
+        ymap.set("Counter", 2);
 
         ymap.observe((MindMapEvent) => {
             setState((prevState) => {
                 const updatedGraph = {
-                    nodes: [rootNode],
+                    nodes: [],
                     edges: [],
                 };
 
