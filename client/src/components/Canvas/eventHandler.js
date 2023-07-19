@@ -21,22 +21,38 @@ export const handleDoubleClick = (event, ymapRef, modifyNode) => {
                 textField.focus();
 
                 const handleKeyDown = (e) => {
-                    if (e.key === "Enter" || e.key === "Escape") {
-                        const selectedNodeId = event.nodes[0];
-                        modifyNode(selectedNodeId, textField.value);
+                    if (e.key === "Enter") {
+                        const newLabel = textField.value.trim();
+                        if (newLabel === "") {
+                            // Show an alert if the user tries to set an empty label
+                            alert("키워드를 입력해주세요");
+                            textField.value = node.label; // Revert the text field value to the original label
+                        } else {
+                            modifyNode(selectedNodeId, newLabel);
+                            document.body.removeChild(textField);
+                            document.removeEventListener("mousedown", handleOutside);
+                            textField.removeEventListener("keydown", handleKeyDown);
+                        }
+                    } else if (e.key === "Escape") {
                         document.body.removeChild(textField);
                         document.removeEventListener("mousedown", handleOutside);
-                        textField.removeEventListener("keydown", handleKeyDown); // Remove the event listener after updating the label.
+                        textField.removeEventListener("keydown", handleKeyDown);
                     }
                 };
 
                 const handleOutside = (e) => {
                     if (!textField.contains(e.target)) {
-                        const selectedNodeId = event.nodes[0];
-                        modifyNode(selectedNodeId, textField.value);
-                        document.body.removeChild(textField);
-                        document.removeEventListener("mousedown", handleOutside);
-                        textField.removeEventListener("keydown", handleKeyDown); // Remove the event listener after updating the label.
+                        const newLabel = textField.value.trim();
+                        if (newLabel === "") {
+                            // Show an alert if the user tries to set an empty label
+                            alert("키워드를 입력해주세요");
+                            textField.value = node.label; // Revert the text field value to the original label
+                        } else {
+                            modifyNode(selectedNodeId, newLabel);
+                            document.body.removeChild(textField);
+                            document.removeEventListener("mousedown", handleOutside);
+                            textField.removeEventListener("keydown", handleKeyDown);
+                        }
                     }
                 };
 
