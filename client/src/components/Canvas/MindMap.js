@@ -141,12 +141,10 @@ const MindMap = () => {
     }, []);
 
     const deleteEdge = (selectedEdge) => {
-        // console.log(selectedEdge);
         selectedEdge.forEach((edge) => {
-            const temp = edge.split(" ");
-            console.log(temp);
-            const from = temp[0];
-            const to = temp[2];
+            const splitedEdge = edge.split(" ");
+            const from = splitedEdge[0];
+            const to = splitedEdge[2];
             ymapRef.current.delete(`Edge ${from} to ${to}`);
         });
         setIsEdgeContextMenuVisible(false);
