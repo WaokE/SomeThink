@@ -15,6 +15,7 @@ import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
 
 import NodeContextMenu from "./NodeContextMenu";
+import EdgeContextMenu from "./EdgeContextMenu";
 
 const options = {
     layout: {
@@ -79,18 +80,24 @@ const PreventRefresh = () => {
 const MindMap = () => {
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
     const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
+    const [isEdgeContextMenuVisible, setIsEdgeContextMenuVisible] = useState(false);
     const contextMenuRef = useRef(null);
     const [isCreatingText, setIsCreatingText] = useState(false);
     const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
     const [selectedNode, setSelectedNode] = useState(null);
     const memoizedHandleClickOutside = useCallback(
-        handleClickOutside(contextMenuRef, setIsNodeContextMenuVisible),
+        handleClickOutside(
+            contextMenuRef,
+            setIsNodeContextMenuVisible,
+            setIsEdgeContextMenuVisible
+        ),
         [contextMenuRef, setIsNodeContextMenuVisible]
     );
     const handleAddImageNode = (imageUrl) => handleAddImageNodeOriginal({ imageUrl, ymapRef });
     const openNodeContextMenu = handleNodeContextMenu(
         setContextMenuPos,
-        setIsNodeContextMenuVisible
+        setIsNodeContextMenuVisible,
+        setIsEdgeContextMenuVisible
     );
 
     const ydocRef = useRef(null);
@@ -129,6 +136,16 @@ const MindMap = () => {
         });
     }, []);
 
+    const deleteEdge = (selectedEdge) => {
+        selectedEdge.forEach((edge) => {
+            const splitedEdge = edge.split(" ");
+            const from = splitedEdge[0];
+            const to = splitedEdge[2];
+            ymapRef.current.delete(`Edge ${from} to ${to}`);
+        });
+        setIsEdgeContextMenuVisible(false);
+    };
+
     const createNode = (selectedNodeId) => {
         const selectedNode = ymapRef.current.get(`Node ${selectedNodeId}`);
         const nodeCount = ymapRef.current.get("Counter");
@@ -148,15 +165,23 @@ const MindMap = () => {
         ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
         ymapRef.current.set(
             `Edge ${selectedNodeId} to ${nodeCount}`,
-            JSON.stringify({ from: selectedNodeId, to: nodeCount })
+            JSON.stringify({
+                from: selectedNodeId,
+                to: nodeCount,
+                id: `${selectedNodeId} to ${nodeCount}`,
+            })
         );
 
         ymapRef.current.set("Counter", nodeCount + 1);
         setSelectedNode(null);
     };
 
-    const closeContextMenu = () => {
+    const closeNodeContextMenu = () => {
         setIsNodeContextMenuVisible(false);
+    };
+
+    const closeEdgeContextMenu = () => {
+        setIsEdgeContextMenuVisible(false);
     };
 
     const modifyNode = (nodeId, newLabel) => {
@@ -336,6 +361,8 @@ const MindMap = () => {
     return (
         <div>
             <PreventRefresh />
+            <h2 id="eventSpanHeading"></h2>
+            <pre id="eventSpanContent"></pre>
             <Graph
                 graph={state.graph}
                 options={options}
@@ -369,12 +396,29 @@ const MindMap = () => {
                 >
                     <NodeContextMenu
                         selectedNodeId={contextMenuPos.selectedNodeId}
-                        onClose={closeContextMenu}
+                        onClose={closeNodeContextMenu}
                         deleteNode={deleteNodes}
                         createNode={createNode}
                         setIsCreatingText={setIsCreatingText}
                         handleAddImageNode={handleAddImageNode}
                         handleNodeSelect={handleNodeSelect}
+                    />
+                </div>
+            )}
+            {isEdgeContextMenuVisible && (
+                <div
+                    ref={contextMenuRef}
+                    className="context-menu"
+                    style={{
+                        position: "absolute",
+                        left: contextMenuPos.xPos,
+                        top: contextMenuPos.yPos,
+                    }}
+                >
+                    <EdgeContextMenu
+                        selectedEdge={contextMenuPos.selectedEdge}
+                        onClose={closeEdgeContextMenu}
+                        deleteEdge={deleteEdge}
                     />
                 </div>
             )}

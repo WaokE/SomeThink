@@ -31,11 +31,13 @@ export const handleNodeDragging = (event, ymapRef) => {
     ymapRef.current.set(`Node ${nodeId}`, JSON.stringify({ ...JSON.parse(movedNode), x: x, y: y }));
 };
 
-export const handleClickOutside = (contextMenuRef, setIsNodeContextMenuVisible) => (event) => {
-    if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
-        setIsNodeContextMenuVisible(false);
-    }
-};
+export const handleClickOutside =
+    (contextMenuRef, setIsNodeContextMenuVisible, setIsEdgeContextMenuVisible) => (event) => {
+        if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
+            setIsNodeContextMenuVisible(false);
+            setIsEdgeContextMenuVisible(false);
+        }
+    };
 
 export const handleCanvasDrag = (event) => {
     // 캔버스 드래그가 진행 중일 때 호출되는 함수
@@ -95,8 +97,12 @@ export const handleAddImageNode =
         }));
     };
 
-export const handleNodeContextMenu = (setContextMenuPos, setIsNodeContextMenuVisible) => {
-    return ({ event, nodes }) => {
+export const handleNodeContextMenu = (
+    setContextMenuPos,
+    setIsNodeContextMenuVisible,
+    setIsEdgeContextMenuVisible
+) => {
+    return ({ event, nodes, edges }) => {
         event.preventDefault();
 
         if (nodes.length > 0) {
@@ -105,6 +111,14 @@ export const handleNodeContextMenu = (setContextMenuPos, setIsNodeContextMenuVis
             const selectedNodeId = nodes[0];
             setContextMenuPos({ xPos, yPos, selectedNodeId });
             setIsNodeContextMenuVisible(true);
+        }
+
+        if (nodes.length === 0 && edges.length > 0) {
+            const xPos = event.clientX;
+            const yPos = event.clientY;
+            const selectedEdge = edges;
+            setContextMenuPos({ xPos, yPos, selectedEdge });
+            setIsEdgeContextMenuVisible(true);
         }
     };
 };
