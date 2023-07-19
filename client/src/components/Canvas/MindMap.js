@@ -394,7 +394,7 @@ const MindMap = () => {
                 const edge = {
                     from: clickedNodeId,
                     to: node.id,
-                    id: `Edge ${clickedNodeId} to ${node.id}`,
+                    id: `${clickedNodeId} to ${node.id}`,
                 };
                 const edgeKey = `Edge ${clickedNodeId} to ${node.id}`;
                 ymapRef.current.set(edgeKey, JSON.stringify(edge));
