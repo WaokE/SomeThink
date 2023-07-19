@@ -126,7 +126,10 @@ const MindMap = () => {
                 );
             },
             addNode: false,
+            editNode: false,
+            editEdge: false,
             deleteNode: false,
+            deleteEdge: false,
         },
     };
 
