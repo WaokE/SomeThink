@@ -3,10 +3,10 @@ import "./ToolBar.css";
 
 const ToolBar = () => {
     const makeNode = () => {
-        window.dispatchEvent(new CustomEvent("addNode", { detail: { x: 0, y: 0 } }));
+        window.dispatchEvent(new CustomEvent("addNode"));
     };
     const makeText = () => {
-        console.log("make Text");
+        window.dispatchEvent(new CustomEvent("addText"));
     };
     const makeImage = () => {
         console.log("make Image");
