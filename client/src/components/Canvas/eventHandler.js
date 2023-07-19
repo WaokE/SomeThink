@@ -42,12 +42,21 @@ export const handleCanvasDrag = (event) => {
     // 캔버스가 이동되지만 좌표는 저장하지 않습니다.
 };
 
-export const handleAddTextNode = (event, isCreatingText, setState, setIsCreatingText) => {
+export const handleAddTextNode = (
+    event,
+    isCreatingText,
+    ymapRef,
+    setState,
+    setSelectedNode,
+    setIsCreatingText
+) => {
     if (!isCreatingText) return;
     const { pointer } = event;
     const label = prompt("");
     if (label) {
+        const nodeCount = ymapRef.current.get("Counter");
         const newNode = {
+            id: nodeCount,
             shape: "text",
             label: label,
             x: pointer.canvas.x,
@@ -57,13 +66,12 @@ export const handleAddTextNode = (event, isCreatingText, setState, setIsCreating
                 size: 30,
             },
         };
-        setState((prevState) => ({
-            ...prevState,
-            graph: {
-                ...prevState.graph,
-                nodes: [...prevState.graph.nodes, newNode],
-            },
-        }));
+        ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
+        ymapRef.current.set("Counter", nodeCount + 1);
+
+        setSelectedNode(null);
+        setIsCreatingText(false);
+    } else {
         setIsCreatingText(false);
     }
 };

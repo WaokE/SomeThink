@@ -98,7 +98,7 @@ const MindMap = () => {
 
     useEffect(() => {
         ydocRef.current = new Y.Doc();
-        const provider = new WebsocketProvider("ws://localhost:1234", "1123123123123123", ydocRef.current);
+        const provider = new WebsocketProvider("ws://localhost:1234", "17", ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
         ymapRef.current.set("Node 1", JSON.stringify(rootNode));
         ymapRef.current.set("Counter", 2);
@@ -174,11 +174,16 @@ const MindMap = () => {
             }
             createNode(selectedNode);
         };
+        const __handleAddTextNode = (event) => {
+            setIsCreatingText(true);
+        };
         document.addEventListener("click", memoizedHandleClickOutside);
         window.addEventListener("addNode", handleAddNode);
+        window.addEventListener("addText", __handleAddTextNode);
         return () => {
             document.removeEventListener("click", handleClickOutside);
             window.removeEventListener("addNode", handleAddNode);
+            window.removeEventListener("addText", __handleAddTextNode);
         };
     }, [selectedNode, memoizedHandleClickOutside]);
 
@@ -340,7 +345,14 @@ const MindMap = () => {
                     dragEnd: (events) => handleNodeDragEnd(events, ymapRef),
                     drag: handleCanvasDrag,
                     click: (events) =>
-                        handleAddTextNode(events, isCreatingText, setState, setIsCreatingText),
+                        handleAddTextNode(
+                            events,
+                            isCreatingText,
+                            ymapRef,
+                            setState,
+                            setSelectedNode,
+                            setIsCreatingText
+                        ),
                     oncontext: openNodeContextMenu,
                 }}
                 style={{ height: "100vh" }}
