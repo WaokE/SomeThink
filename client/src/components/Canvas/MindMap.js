@@ -17,41 +17,7 @@ import * as Y from "yjs";
 import NodeContextMenu from "./NodeContextMenu";
 import EdgeContextMenu from "./EdgeContextMenu";
 
-const options = {
-    layout: {
-        hierarchical: false,
-    },
-    nodes: {
-        shape: "circle",
-        size: 30,
-        mass: 1,
-        color: "#FBD85D",
-    },
-    edges: {
-        arrows: {
-            to: {
-                enabled: false,
-            },
-        },
-        color: "#000000",
-    },
-    physics: {
-        enabled: false,
-    },
-    interaction: {
-        multiselect: false,
-    },
-};
-
-const rootNode = {
-    id: 1,
-    label: "Root",
-    x: 0,
-    y: 0,
-    physics: false,
-    fixed: true,
-    color: "#f5b252",
-};
+import "./MindMap.css";
 
 const PreventRefresh = () => {
     useEffect(() => {
@@ -77,7 +43,103 @@ const PreventRefresh = () => {
     return <></>;
 };
 
+const isCyclic = (graph, fromNode, toNode) => {
+    const insertEdge = `Edge ${fromNode} to ${toNode}`;
+    graph.push(insertEdge);
+    const visited = new Set();
+    let dfsq = ["1"];
+    while (dfsq.length > 0) {
+        const current = dfsq.shift();
+        if (visited.has(current)) {
+            return false;
+        }
+        visited.add(current);
+        graph.forEach((edge) => {
+            if (edge.startsWith(`Edge ${current} to `)) {
+                dfsq.push(edge.split(" ")[3]);
+            }
+        });
+    }
+    return true;
+};
+
 const MindMap = () => {
+    const options = {
+        layout: {
+            hierarchical: false,
+        },
+        nodes: {
+            shape: "circle",
+            size: 30,
+            mass: 1,
+            color: "#FBD85D",
+        },
+        edges: {
+            arrows: {
+                to: {
+                    enabled: false,
+                },
+            },
+            color: "#000000",
+        },
+        physics: {
+            enabled: false,
+        },
+        interaction: {
+            multiselect: false,
+        },
+        manipulation: {
+            enabled: true,
+            initiallyActive: true,
+            addEdge: (data, callback) => {
+                const fromNode = data.from;
+                const toNode = data.to;
+                if (fromNode === toNode) {
+                    alert("자기 자신을 가리키는 엣지는 만들 수 없습니다!");
+                    return;
+                }
+                if (
+                    ymapRef.current.has(`Edge ${fromNode} to ${toNode}`) ||
+                    ymapRef.current.has(`Edge ${toNode} to ${fromNode}`)
+                ) {
+                    alert("이미 존재하는 엣지입니다!");
+                    return;
+                }
+                if (
+                    !isCyclic(
+                        Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
+                        fromNode,
+                        toNode
+                    )
+                ) {
+                    alert("순환 구조를 만들 수 없습니다!");
+                    return;
+                }
+
+                ymapRef.current.set(
+                    `Edge ${fromNode} to ${toNode}`,
+                    JSON.stringify({
+                        from: fromNode,
+                        to: toNode,
+                        id: `${fromNode} to ${toNode}`,
+                    })
+                );
+            },
+            addNode: false,
+            deleteNode: false,
+        },
+    };
+
+    const rootNode = {
+        id: 1,
+        label: "Root",
+        x: 0,
+        y: 0,
+        physics: false,
+        fixed: true,
+        color: "#f5b252",
+    };
+
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
     const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
     const [isEdgeContextMenuVisible, setIsEdgeContextMenuVisible] = useState(false);
@@ -312,7 +374,7 @@ const MindMap = () => {
             const nodeCount = Number(ymapRef.current.get("Counter"));
 
             const newNodes = newNodeLabels.map((label, index) => {
-                const nodeId = nodeCount + index + 1;
+                const nodeId = nodeCount + index++;
                 const newNode = {
                     id: nodeId,
                     label: label.trim(),
