@@ -126,7 +126,6 @@ const MindMap = () => {
                 );
             },
             addNode: false,
-            editNode: false,
             editEdge: false,
             deleteNode: false,
             deleteEdge: false,
@@ -395,10 +394,10 @@ const MindMap = () => {
                 const edge = {
                     from: clickedNodeId,
                     to: node.id,
+                    id: `${clickedNodeId} to ${node.id}`,
                 };
-
-                const edgeId = `Edge ${clickedNodeId} to ${node.id}`;
-                ymapRef.current.set(edgeId, JSON.stringify(edge));
+                const edgeKey = `Edge ${clickedNodeId} to ${node.id}`;
+                ymapRef.current.set(edgeKey, JSON.stringify(edge));
 
                 return edge;
             });
