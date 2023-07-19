@@ -147,7 +147,7 @@ const MindMap = () => {
     };
 
     const createNode = (selectedNodeId) => {
-        const selectedNode = ymapRef.current.get(`Node ${selectedNodeId}`);
+        const selectedNode = JSON.parse(ymapRef.current.get(`Node ${selectedNodeId}`));
         const nodeCount = ymapRef.current.get("Counter");
 
         if (!selectedNode) {
