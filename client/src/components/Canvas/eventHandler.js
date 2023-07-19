@@ -125,22 +125,20 @@ export const handleAddTextNode = (
 };
 
 export const handleAddImageNode =
-    ({ imageUrl, setState }) =>
+    ({ imageUrl, ymapRef }) =>
     () => {
+        const nodeCount = ymapRef.current.get("Counter");
         const newNode = {
+            id: nodeCount,
             shape: "image",
             image: imageUrl,
             x: 0,
-            y: -100,
+            y: 0,
             physics: false,
         };
-        setState((prevState) => ({
-            ...prevState,
-            graph: {
-                ...prevState.graph,
-                nodes: [...prevState.graph.nodes, newNode],
-            },
-        }));
+
+        ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
+        ymapRef.current.set("Counter", nodeCount + 1);
     };
 
 export const handleNodeContextMenu = (
