@@ -351,7 +351,7 @@ const MindMap = () => {
                         }));
                     }
                 },
-                doubleClick: (events) => handleDoubleClick(events, modifyNode),
+                doubleClick: (events) => handleDoubleClick(events, ymapRef, modifyNode),
                 oncontext: openNodeContextMenu,
             },
         };

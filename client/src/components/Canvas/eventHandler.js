@@ -1,9 +1,55 @@
-export const handleDoubleClick = (event, modifyNode) => {
+export const handleDoubleClick = (event, ymapRef, modifyNode) => {
     if (event.nodes.length > 0) {
         const selectedNodeId = event.nodes[0];
-        const newLabel = prompt("새로운 노드 이름을 입력하세요");
-        if (newLabel === null) return;
-        modifyNode(selectedNodeId, newLabel, event.pointer.canvas.x, event.pointer.canvas.y);
+        const nodeData = ymapRef.current.get(`Node ${selectedNodeId}`);
+        if (nodeData) {
+            const node = JSON.parse(nodeData);
+            const canvas = document.querySelector(".vis-network canvas");
+            if (canvas) {
+                const canvasRect = canvas.getBoundingClientRect();
+                const textField = document.createElement("input");
+                textField.value = node.label;
+                textField.style.position = "absolute";
+                textField.style.top = `${canvasRect.top + canvasRect.height / 2}px`;
+                textField.style.left = `${canvasRect.left + canvasRect.width / 2}px`;
+                textField.style.transform = "translate(-50%, -50%)";
+                textField.style.width = "150px";
+                textField.style.height = "30px";
+                textField.style.zIndex = "10";
+                textField.style.textAlign = "center";
+                document.body.appendChild(textField);
+                textField.focus();
+
+                const handleKeyDown = (e) => {
+                    if (e.key === "Enter" || e.key === "Escape") {
+                        const selectedNodeId = event.nodes[0];
+                        modifyNode(selectedNodeId, textField.value);
+                        document.body.removeChild(textField);
+                        document.removeEventListener("mousedown", handleOutside);
+                        textField.removeEventListener("keydown", handleKeyDown); // Remove the event listener after updating the label.
+                    }
+                };
+
+                const handleOutside = (e) => {
+                    if (!textField.contains(e.target)) {
+                        const selectedNodeId = event.nodes[0];
+                        modifyNode(selectedNodeId, textField.value);
+                        document.body.removeChild(textField);
+                        document.removeEventListener("mousedown", handleOutside);
+                        textField.removeEventListener("keydown", handleKeyDown); // Remove the event listener after updating the label.
+                    }
+                };
+
+                // Add keydown event listener to the textarea
+                textField.addEventListener("keydown", handleKeyDown);
+
+                // Prevent the click event from propagating to the document when the user clicks inside the textarea
+                textField.addEventListener("click", (e) => e.stopPropagation());
+
+                // Add mousedown event listener to the document
+                document.addEventListener("mousedown", handleOutside);
+            }
+        }
     }
 };
 
