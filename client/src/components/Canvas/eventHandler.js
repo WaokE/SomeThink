@@ -31,11 +31,13 @@ export const handleNodeDragging = (event, ymapRef) => {
     ymapRef.current.set(`Node ${nodeId}`, JSON.stringify({ ...JSON.parse(movedNode), x: x, y: y }));
 };
 
-export const handleClickOutside = (contextMenuRef, setIsNodeContextMenuVisible) => (event) => {
-    if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
-        setIsNodeContextMenuVisible(false);
-    }
-};
+export const handleClickOutside =
+    (contextMenuRef, setIsNodeContextMenuVisible, setIsEdgeContextMenuVisible) => (event) => {
+        if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
+            setIsNodeContextMenuVisible(false);
+            setIsEdgeContextMenuVisible(false);
+        }
+    };
 
 export const handleCanvasDrag = (event) => {
     // 캔버스 드래그가 진행 중일 때 호출되는 함수

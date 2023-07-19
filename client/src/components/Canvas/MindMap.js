@@ -86,7 +86,11 @@ const MindMap = () => {
     const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
     const [selectedNode, setSelectedNode] = useState(null);
     const memoizedHandleClickOutside = useCallback(
-        handleClickOutside(contextMenuRef, setIsNodeContextMenuVisible),
+        handleClickOutside(
+            contextMenuRef,
+            setIsNodeContextMenuVisible,
+            setIsEdgeContextMenuVisible
+        ),
         [contextMenuRef, setIsNodeContextMenuVisible]
     );
     const handleAddImageNode = (imageUrl) => handleAddImageNodeOriginal({ imageUrl, ymapRef });
@@ -178,8 +182,11 @@ const MindMap = () => {
         setSelectedNode(null);
     };
 
-    const closeContextMenu = () => {
+    const closeNodeContextMenu = () => {
         setIsNodeContextMenuVisible(false);
+    };
+
+    const closeEdgeContextMenu = () => {
         setIsEdgeContextMenuVisible(false);
     };
 
@@ -383,7 +390,7 @@ const MindMap = () => {
                 >
                     <NodeContextMenu
                         selectedNodeId={contextMenuPos.selectedNodeId}
-                        onClose={closeContextMenu}
+                        onClose={closeNodeContextMenu}
                         deleteNode={deleteNodes}
                         createNode={createNode}
                         setIsCreatingText={setIsCreatingText}
@@ -404,7 +411,7 @@ const MindMap = () => {
                 >
                     <EdgeContextMenu
                         selectedEdge={contextMenuPos.selectedEdge}
-                        onClose={closeContextMenu}
+                        onClose={closeEdgeContextMenu}
                         deleteEdge={deleteEdge}
                     />
                 </div>
