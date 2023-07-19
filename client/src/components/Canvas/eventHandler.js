@@ -67,7 +67,8 @@ export const handleDoubleClick = (event, ymapRef, modifyNode) => {
             }
         }
     }
-};
+  };
+  
 
 export const handleNodeDragEnd = (event, ymapRef) => {
     const { nodes, pointer } = event;
