@@ -87,8 +87,12 @@ export const handleAddImageNode =
         }));
     };
 
-export const handleNodeContextMenu = (setContextMenuPos, setIsNodeContextMenuVisible) => {
-    return ({ event, nodes }) => {
+export const handleNodeContextMenu = (
+    setContextMenuPos,
+    setIsNodeContextMenuVisible,
+    setIsEdgeContextMenuVisible
+) => {
+    return ({ event, nodes, edges }) => {
         event.preventDefault();
 
         if (nodes.length > 0) {
@@ -97,6 +101,14 @@ export const handleNodeContextMenu = (setContextMenuPos, setIsNodeContextMenuVis
             const selectedNodeId = nodes[0];
             setContextMenuPos({ xPos, yPos, selectedNodeId });
             setIsNodeContextMenuVisible(true);
+        }
+
+        if (nodes.length === 0 && edges.length > 0) {
+            const xPos = event.clientX;
+            const yPos = event.clientY;
+            const selectedEdge = edges;
+            setContextMenuPos({ xPos, yPos, selectedEdge });
+            setIsEdgeContextMenuVisible(true);
         }
     };
 };
