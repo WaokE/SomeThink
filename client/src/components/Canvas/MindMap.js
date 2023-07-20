@@ -369,11 +369,6 @@ const MindMap = () => {
 
         textField.id = "createNodeTextField";
 
-        const canvasRect = document.querySelector(".vis-network canvas").getBoundingClientRect();
-        textField.style.top = `${canvasRect.top + canvasRect.height / 2}px`;
-        textField.style.left = `${canvasRect.left + canvasRect.width / 2}px`;
-        textField.style.transform = "translate(-50%, -50%)";
-
         document.body.appendChild(textField);
         textField.focus();
     };

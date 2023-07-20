@@ -1,11 +1,15 @@
 export const createTextInput = (initialValue, onEnter, onCancel) => {
     const textField = document.createElement("input");
+    const canvasRect = document.querySelector(".vis-network canvas").getBoundingClientRect();
     textField.value = initialValue;
     textField.style.position = "absolute";
     textField.style.width = "150px";
     textField.style.height = "30px";
     textField.style.zIndex = "10";
     textField.style.textAlign = "center";
+    textField.style.top = `${canvasRect.top + canvasRect.height / 2}px`;
+    textField.style.left = `${canvasRect.left + canvasRect.width / 2}px`;
+    textField.style.transform = "translate(-50%, -50%)";
 
     const handleKeyDown = (e) => {
         if (e.key === "Enter") {
@@ -63,10 +67,6 @@ export const handleDoubleClick = (event, ymapRef, modifyNode) => {
                         document.body.removeChild(textField);
                     }
                 );
-
-                textField.style.top = `${canvasRect.top + canvasRect.height / 2}px`;
-                textField.style.left = `${canvasRect.left + canvasRect.width / 2}px`;
-                textField.style.transform = "translate(-50%, -50%)";
 
                 document.body.appendChild(textField);
                 textField.focus();
@@ -133,6 +133,8 @@ export const handleAddTextNode = (
 
     const { pointer } = event;
     const createTextCallback = (label) => {
+        setIsCreatingText(false);
+
         if (label) {
             const nodeCount = ymapRef.current.get("Counter");
             const newNode = {
@@ -151,19 +153,27 @@ export const handleAddTextNode = (
             ymapRef.current.set("Counter", nodeCount + 1);
 
             setSelectedNode(null);
-            setIsCreatingText(false);
-        } else {
-            setIsCreatingText(false);
         }
     };
 
-    const textField = createTextInput("", createTextCallback, () => {
+    const handleTextInputBlur = () => {
         setIsCreatingText(false);
-    });
+    };
 
-    textField.style.top = `${pointer.canvas.y}px`;
-    textField.style.left = `${pointer.canvas.x}px`;
-    textField.style.transform = "translate(-50%, -50%)";
+    const textField = createTextInput(
+        "",
+        (newLabel) => {
+            if (newLabel === "") {
+                alert("키워드를 입력해주세요");
+            } else {
+                createTextCallback(newLabel);
+            }
+            document.body.removeChild(textField);
+        },
+        () => {
+            document.body.removeChild(textField);
+        }
+    );
 
     document.body.appendChild(textField);
     textField.focus();
