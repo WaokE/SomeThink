@@ -77,7 +77,7 @@ const MindMap = () => {
         edges: {
             arrows: {
                 to: {
-                    enabled: false,
+                    enabled: true,
                 },
             },
             color: "#000000",
@@ -116,20 +116,25 @@ const MindMap = () => {
                     return;
                 }
 
+                let createdEdge;
                 if (
                     checkIsConnectedToRoot(
                         Array.from(ymapRef.current.keys()).filter((key) => key.startsWith(`Edge`)),
                         toNode
                     )
                 ) {
-                    console.log("connected to root");
-                    // createEdge(fromNode, toNode);
+                    createEdge(toNode, fromNode);
+                    createdEdge = `Edge ${toNode} to ${fromNode}`;
+                    console.log("toNode is connected to root");
                 } else {
-                    console.log("not connected to root");
-                    // createEdge(toNode, fromNode);
+                    createEdge(fromNode, toNode);
+                    createdEdge = `Edge ${fromNode} to ${toNode}`;
+                    console.log("toNode is not connected to root");
                 }
-                createEdge(fromNode, toNode);
-                sortEdgesCorrectly(fromNode, toNode);
+                sortEdgesCorrectly(
+                    Array.from(ymapRef.current.keys()).filter((key) => key.startsWith(`Edge`)),
+                    createdEdge
+                );
             },
             addNode: false,
             editEdge: false,
@@ -175,7 +180,11 @@ const MindMap = () => {
 
     useEffect(() => {
         ydocRef.current = new Y.Doc();
-        const provider = new WebsocketProvider("wss://somethink.online", "17", ydocRef.current);
+        const provider = new WebsocketProvider(
+            "ws://localhost:1234",
+            "123123123123",
+            ydocRef.current
+        );
         ymapRef.current = ydocRef.current.getMap("MindMap");
         ymapRef.current.set("Node 1", JSON.stringify(rootNode));
         ymapRef.current.set("Counter", 2);
@@ -245,8 +254,38 @@ const MindMap = () => {
         );
     };
 
-    const sortEdgesCorrectly = (fromNode, toNode) => {
+    const sortEdgesCorrectly = (edges, createdEdge) => {
         // TODO: 엣지를 생성한 후, 엣지들의 from, to를 올바르게 정렬하는 함수를 구현
+        let edgeList = edges.filter((edge) => edge != createdEdge);
+        let newEdgeList = [];
+        let bfsq = [`${createdEdge.split(" ")[3]}`];
+        while (bfsq.length > 0) {
+            const current = bfsq.shift();
+            edgeList.forEach((edge) => {
+                if (edge.startsWith(`Edge ${current} to `)) {
+                    newEdgeList.push(edge);
+                    ymapRef.current.delete(edge);
+                    edgeList = edgeList.filter((e) => e != edge);
+                    bfsq.push(edge.split(" ")[3]);
+                } else if (edge.endsWith(` to ${current}`)) {
+                    newEdgeList.push(`Edge ${current} to ${edge.split(" ")[1]}`);
+                    ymapRef.current.delete(edge);
+                    edgeList = edgeList.filter((e) => e != edge);
+                    bfsq.push(edge.split(" ")[1]);
+                }
+            });
+        }
+
+        newEdgeList.forEach((edge) => {
+            ymapRef.current.set(
+                `Edge ${edge.split(" ")[1]} to ${edge.split(" ")[3]}`,
+                JSON.stringify({
+                    from: edge.split(" ")[1],
+                    to: edge.split(" ")[3],
+                    id: `${edge.split(" ")[1]} to ${edge.split(" ")[3]}`,
+                })
+            );
+        });
     };
 
     const deleteEdge = (selectedEdge) => {
