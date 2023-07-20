@@ -163,7 +163,24 @@ const MindMap = () => {
         setIsNodeContextMenuVisible,
         setIsEdgeContextMenuVisible
     );
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const [windowHeight, setWindowHeight] = useState(window.innerHeight);
 
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowWidth(window.innerWidth);
+            setWindowHeight(window.innerHeight);
+        };
+
+        // 컴포넌트가 마운트될 때와 사이즈 변경 시에 이벤트 핸들러를 등록합니다.
+        window.addEventListener("resize", handleResize);
+
+        // 컴포넌트가 언마운트될 때 이벤트 핸들러를 해제합니다.
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        };
+    }, []);
+    
     const ydocRef = useRef(null);
     const ymapRef = useRef(null);
 
