@@ -116,14 +116,9 @@ const MindMap = () => {
                     return;
                 }
 
-                ymapRef.current.set(
-                    `Edge ${fromNode} to ${toNode}`,
-                    JSON.stringify({
-                        from: fromNode,
-                        to: toNode,
-                        id: `${fromNode} to ${toNode}`,
-                    })
-                );
+                checkIsConnectedToRoot(ymapRef.current.get(), fromNode, toNode);
+                createEdge(fromNode, toNode);
+                sortEdgesCorrectly(fromNode, toNode);
             },
             addNode: false,
             editEdge: false,
@@ -209,6 +204,23 @@ const MindMap = () => {
             // Re-render the MindMap component
             window.location.reload();
         }
+    };
+
+    const checkIsConnectedToRoot = (graph, fromNode, toNode) => {
+        // TODO: 노드가 루트 노드와 연결되어 있는지 확인하는 함수를 구현
+    };
+    const createEdge = (fromNode, toNode) => {
+        ymapRef.current.set(
+            `Edge ${fromNode} to ${toNode}`,
+            JSON.stringify({
+                from: fromNode,
+                to: toNode,
+                id: `${fromNode} to ${toNode}`,
+            })
+        );
+    };
+    const sortEdgesCorrectly = (fromNode, toNode) => {
+        // TODO: 엣지를 생성한 후, 엣지들의 from, to를 올바르게 정렬하는 함수를 구현
     };
 
     const deleteEdge = (selectedEdge) => {
