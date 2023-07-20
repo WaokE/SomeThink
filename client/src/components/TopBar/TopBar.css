@@ -1,7 +1,7 @@
 .topbar-background {
     display: flex;
     flex-direction: row;
-    background-color: #BDBDBD;
+    background-color: #bdbdbd;
     padding: 30px;
     justify-content: space-between;
 }
@@ -23,4 +23,35 @@
 .export-btn {
     display: inline;
     margin-left: 20px; /* 왼쪽 여백을 20px로 지정 */
+}
+
+.person {
+    background-image: url("../../img/icon/person.png");
+    background-color: #aaaaaa;
+}
+
+.button {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    padding: 30px;
+    width: 70%;
+    aspect-ratio: 1/1;
+    border: none;
+    background-color: #bdbdbd;
+}
+
+.member-info {
+    background-color: #bdbdbd;
+}
+
+.export-button {
+    padding: 10px;
+    width: 100%;
+    aspect-ratio: 1.5/1;
+    background-color: chocolate;
+}
+
+.count {
+    padding-right: 20px;
 }

@@ -4,13 +4,16 @@ import { useState } from "react";
 function TopBar({ onExportClick }) {
     return (
         <div className="topbar-background">
-            <div className="code">#CODE</div>
+            <h1 className="code">#CODE</h1>
             <div className="topbar-menu">
                 <div className="member-info">
-                    <button>Button 1</button>
+                    <button className="person button"></button>
                 </div>
+                <h1 className="count">3</h1>
                 <div className="export-btn">
-                    <button onClick={onExportClick}>EXPORT</button>
+                    <button onClick={onExportClick} className="export-button">
+                        EXPORT
+                    </button>
                 </div>
             </div>
         </div>
