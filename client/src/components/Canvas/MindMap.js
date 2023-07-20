@@ -290,12 +290,9 @@ const MindMap = () => {
         };
         const __handleAddTextNode = (event) => {
             setIsCreatingText(true);
-            console.log(isCreatingText);
         };
         const __handleAddImageNode = (event) => {
             setIsCreatingImage(true);
-            console.log("isCreatingImage");
-            console.log(isCreatingImage);
         };
         document.addEventListener("click", memoizedHandleClickOutside);
         window.addEventListener("addNode", handleAddNode);

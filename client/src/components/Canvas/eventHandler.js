@@ -178,7 +178,6 @@ export const handleNodeContextMenu = (
 
         if (nodes.length > 0) {
             const xPos = event.clientX;
-            console.log(xPos);
             const yPos = event.clientY;
             const selectedNodeId = nodes[0];
             setContextMenuPos({ xPos, yPos, selectedNodeId });
@@ -190,11 +189,8 @@ export const handleNodeContextMenu = (
             setContextMenuPos({ xPos, yPos, selectedEdge });
             setIsEdgeContextMenuVisible(true);
         } else if (isCreatingImage) {
-            console.log("isCreatingImage!!");
             const xPos = event.clientX;
-            console.log(xPos);
             const yPos = event.clientY;
-            console.log(yPos);
             setContextMenuPos({ xPos, yPos });
             setIsImageContextMenuVisible(true);
         }
