@@ -2,8 +2,8 @@
     display: flex;
     flex-direction: column;
     background-color: #eaeaea;
-    padding: 30px;
-    gap: 20px;
+    padding: 2vw; /* 윈도우 크기에 따라 비례하여 크기 조정 */
+    gap: 2vw; /* 윈도우 크기에 따라 비례하여 크기 조정 */
 }
 
 .create-node {
@@ -29,8 +29,8 @@
 .button_toolbar {
     background-repeat: no-repeat;
     background-position: center;
-    background-size: cover;
-    padding: 30px;
+    background-size: contain; /* 이미지 비율 유지하며 크기 조정 */
+    padding: 2vw; /* 윈도우 크기에 따라 비례하여 크기 조정 */
     width: 100%;
     aspect-ratio: 1/1;
     border: none;
