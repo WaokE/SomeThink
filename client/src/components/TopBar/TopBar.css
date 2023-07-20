@@ -4,16 +4,18 @@
     background-color: #bdbdbd;
     padding: 2%;
     justify-content: space-between;
-    height: 7vh; /* div의 높이를 viewport의 50%로 설정 */
+    height: 3vh; /* div의 높이를 viewport의 50%로 설정 */
+    align-items: center;
 
     /* Flexbox 속성 추가 */
     display: flex;
 }
 
 .code {
-    display: inline;
-    justify-content: center;
-    font-size: 3vw; /* 윈도우 크기에 따라 비례하여 크기 조정 */
+    display: flex; /* 가운데 정렬을 위해 flex 사용 */
+    align-items: center; /* 수직 가운데 정렬 */
+    justify-content: center; /* 수평 가운데 정렬 */
+    font-size: 2.5vw; /* 윈도우 크기에 따라 비례하여 크기 조정 */
     font-weight: bold; /* 굵은 글꼴로 설정 */
 }
 
@@ -41,7 +43,7 @@
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
-    padding: 2vw; /* 윈도우 크기에 따라 비례하여 크기 조정 */
+    padding: 1.5vw; /* 윈도우 크기에 따라 비례하여 크기 조정 */
     width: 0%;
     aspect-ratio: 1/1;
     border: none;
@@ -53,12 +55,12 @@
 }
 
 .export-button {
-    padding: 1vw; /* 윈도우 크기에 따라 비례하여 크기 조정 */
+    padding: 0.5vw; /* 윈도우 크기에 따라 비례하여 크기 조정 */
     width: 100%;
     background-color: chocolate;
 }
 
 .count {
-    font-size: 3.5vw;
+    font-size: 2.5vw;
     padding-right: 1vh;
 }
