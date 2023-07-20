@@ -23,12 +23,12 @@ const ToolBar = () => {
 
     return (
         <div className="toolbar">
-            <button className="create-node button" onClick={makeNode}></button>
-            <button className="create-text button" onClick={makeText}></button>
-            <button className="create-image button" onClick={makeImage}></button>
-            <button className="create-memo button" onClick={makePostit}></button>
-            <button className="create-comment button" onClick={makeComment}></button>
-            <button className="create-timer button" onClick={makeTimre}></button>
+            <button className="create-node button_toolbar" onClick={makeNode}></button>
+            <button className="create-text button_toolbar" onClick={makeText}></button>
+            <button className="create-image button_toolbar" onClick={makeImage}></button>
+            <button className="create-memo button_toolbar" onClick={makePostit}></button>
+            <button className="create-comment button_toolbar" onClick={makeComment}></button>
+            <button className="create-timer button_toolbar" onClick={makeTimre}></button>
         </div>
     );
 };
