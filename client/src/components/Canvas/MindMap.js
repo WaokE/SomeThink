@@ -75,6 +75,9 @@ const MindMap = () => {
             size: 30,
             mass: 1,
             color: "#FBD85D",
+            widthConstraint: {
+                maximum: 60,
+            },
         },
         edges: {
             arrows: {
