@@ -115,24 +115,21 @@ const MindMap = () => {
                     alert("순환 구조를 만들 수 없습니다!");
                     return;
                 }
-
                 let createdEdge;
                 if (
                     checkIsConnectedToRoot(
-                        Array.from(ymapRef.current.keys()).filter((key) => key.startsWith(`Edge`)),
+                        Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
                         toNode
                     )
                 ) {
                     createEdge(toNode, fromNode);
                     createdEdge = `Edge ${toNode} to ${fromNode}`;
-                    console.log("toNode is connected to root");
                 } else {
                     createEdge(fromNode, toNode);
                     createdEdge = `Edge ${fromNode} to ${toNode}`;
-                    console.log("toNode is not connected to root");
                 }
                 sortEdgesCorrectly(
-                    Array.from(ymapRef.current.keys()).filter((key) => key.startsWith(`Edge`)),
+                    Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
                     createdEdge
                 );
             },
@@ -191,17 +188,13 @@ const MindMap = () => {
             window.removeEventListener("resize", handleResize);
         };
     }, []);
-    
+
     const ydocRef = useRef(null);
     const ymapRef = useRef(null);
 
     useEffect(() => {
         ydocRef.current = new Y.Doc();
-        const provider = new WebsocketProvider(
-            "ws://localhost:1234",
-            "123123123123",
-            ydocRef.current
-        );
+        const provider = new WebsocketProvider("wss://somethink.online", "17", ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
         ymapRef.current.set("Node 1", JSON.stringify(rootNode));
         ymapRef.current.set("Counter", 2);
@@ -244,7 +237,6 @@ const MindMap = () => {
     };
 
     const checkIsConnectedToRoot = (edges, node) => {
-        // TODO: 노드가 루트 노드와 연결되어 있는지 확인하는 함수를 구현
         let dfsq = [`${node}`];
         while (dfsq.length > 0) {
             const current = dfsq.shift();
@@ -272,7 +264,6 @@ const MindMap = () => {
     };
 
     const sortEdgesCorrectly = (edges, createdEdge) => {
-        // TODO: 엣지를 생성한 후, 엣지들의 from, to를 올바르게 정렬하는 함수를 구현
         let edgeList = edges.filter((edge) => edge != createdEdge);
         let newEdgeList = [];
         let bfsq = [`${createdEdge.split(" ")[3]}`];
@@ -282,11 +273,13 @@ const MindMap = () => {
                 if (edge.startsWith(`Edge ${current} to `)) {
                     newEdgeList.push(edge);
                     ymapRef.current.delete(edge);
+                    // FIXME: 반복을 인덱싱을 통해 하도록 해서 삭제 성능개선을 할 수 있을듯?
                     edgeList = edgeList.filter((e) => e != edge);
                     bfsq.push(edge.split(" ")[3]);
                 } else if (edge.endsWith(` to ${current}`)) {
                     newEdgeList.push(`Edge ${current} to ${edge.split(" ")[1]}`);
                     ymapRef.current.delete(edge);
+                    // FIXME: 반복을 인덱싱을 통해 하도록 해서 삭제 성능개선을 할 수 있을듯?
                     edgeList = edgeList.filter((e) => e != edge);
                     bfsq.push(edge.split(" ")[1]);
                 }
@@ -294,12 +287,14 @@ const MindMap = () => {
         }
 
         newEdgeList.forEach((edge) => {
+            const from = edge.split(" ")[1];
+            const to = edge.split(" ")[3];
             ymapRef.current.set(
-                `Edge ${edge.split(" ")[1]} to ${edge.split(" ")[3]}`,
+                `Edge ${from} to ${to}`,
                 JSON.stringify({
-                    from: edge.split(" ")[1],
-                    to: edge.split(" ")[3],
-                    id: `${edge.split(" ")[1]} to ${edge.split(" ")[3]}`,
+                    from: from,
+                    to: to,
+                    id: `${from} to ${to}`,
                 })
             );
         });
