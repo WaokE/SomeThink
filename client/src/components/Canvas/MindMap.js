@@ -116,7 +116,18 @@ const MindMap = () => {
                     return;
                 }
 
-                checkIsConnectedToRoot(ymapRef.current.get(), fromNode, toNode);
+                if (
+                    checkIsConnectedToRoot(
+                        Array.from(ymapRef.current.keys()).filter((key) => key.startsWith(`Edge`)),
+                        toNode
+                    )
+                ) {
+                    console.log("connected to root");
+                    // createEdge(fromNode, toNode);
+                } else {
+                    console.log("not connected to root");
+                    // createEdge(toNode, fromNode);
+                }
                 createEdge(fromNode, toNode);
                 sortEdgesCorrectly(fromNode, toNode);
             },
@@ -206,9 +217,23 @@ const MindMap = () => {
         }
     };
 
-    const checkIsConnectedToRoot = (graph, fromNode, toNode) => {
+    const checkIsConnectedToRoot = (edges, node) => {
         // TODO: 노드가 루트 노드와 연결되어 있는지 확인하는 함수를 구현
+        let dfsq = [`${node}`];
+        while (dfsq.length > 0) {
+            const current = dfsq.shift();
+            if (current === "1") {
+                return true;
+            }
+            edges.forEach((edge) => {
+                if (edge.endsWith(` to ${current}`)) {
+                    dfsq.push(edge.split(" ")[1]);
+                }
+            });
+        }
+        return false;
     };
+
     const createEdge = (fromNode, toNode) => {
         ymapRef.current.set(
             `Edge ${fromNode} to ${toNode}`,
@@ -219,6 +244,7 @@ const MindMap = () => {
             })
         );
     };
+
     const sortEdgesCorrectly = (fromNode, toNode) => {
         // TODO: 엣지를 생성한 후, 엣지들의 from, to를 올바르게 정렬하는 함수를 구현
     };
