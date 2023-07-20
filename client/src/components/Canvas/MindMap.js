@@ -10,6 +10,7 @@ import {
     handleAddImageNode as handleAddImageNodeOriginal,
     handleNodeContextMenu,
     handleNodeDragging,
+    createTextInput,
 } from "./eventHandler";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
@@ -241,8 +242,6 @@ const MindMap = () => {
             ymapRef.current.clear();
             ymapRef.current.set("Node 1", JSON.stringify(rootNode));
             ymapRef.current.set("Counter", 2);
-            // Re-render the MindMap component
-            window.location.reload();
         }
     };
 
@@ -328,26 +327,50 @@ const MindMap = () => {
             return;
         }
 
-        const newNode = {
-            id: nodeCount,
-            label: `Node ${nodeCount}`,
-            x: selectedNode.x,
-            y: selectedNode.y + 100,
-            color: "#FBD85D",
+        const createNodeCallback = (label) => {
+            if (!label || label.trim() === "") {
+                alert("키워드를 입력해주세요!");
+                removeTextInput();
+            } else {
+                const newNode = {
+                    id: nodeCount,
+                    label: label,
+                    x: selectedNode.x,
+                    y: selectedNode.y + 100,
+                    color: "#FBD85D",
+                };
+
+                ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
+                ymapRef.current.set(
+                    `Edge ${selectedNodeId} to ${nodeCount}`,
+                    JSON.stringify({
+                        from: selectedNodeId,
+                        to: nodeCount,
+                        id: `${selectedNodeId} to ${nodeCount}`,
+                    })
+                );
+
+                ymapRef.current.set("Counter", nodeCount + 1);
+                removeTextInput();
+            }
         };
 
-        ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
-        ymapRef.current.set(
-            `Edge ${selectedNodeId} to ${nodeCount}`,
-            JSON.stringify({
-                from: selectedNodeId,
-                to: nodeCount,
-                id: `${selectedNodeId} to ${nodeCount}`,
-            })
-        );
+        const removeTextInput = () => {
+            const textField = document.getElementById("createNodeTextField");
+            if (textField) {
+                document.body.removeChild(textField);
+            }
+        };
 
-        ymapRef.current.set("Counter", nodeCount + 1);
-        setSelectedNode(null);
+        const textField = createTextInput(``, createNodeCallback, () => {
+            setSelectedNode(null);
+            removeTextInput();
+        });
+
+        textField.id = "createNodeTextField";
+
+        document.body.appendChild(textField);
+        textField.focus();
     };
 
     const closeNodeContextMenu = () => {

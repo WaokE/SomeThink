@@ -1,3 +1,46 @@
+export const createTextInput = (initialValue, onEnter, onCancel) => {
+    const textField = document.createElement("input");
+    const canvasRect = document.querySelector(".vis-network canvas").getBoundingClientRect();
+    textField.value = initialValue;
+    textField.style.position = "absolute";
+    textField.style.width = "150px";
+    textField.style.height = "30px";
+    textField.style.zIndex = "10";
+    textField.style.textAlign = "center";
+    textField.style.top = `${canvasRect.top + canvasRect.height / 2}px`;
+    textField.style.left = `${canvasRect.left + canvasRect.width / 2}px`;
+    textField.style.transform = "translate(-50%, -50%)";
+
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter") {
+            const newLabel = textField.value.trim();
+            onEnter(newLabel);
+            removeTextFieldEventListeners();
+        } else if (e.key === "Escape") {
+            onCancel();
+            removeTextFieldEventListeners();
+        }
+    };
+
+    const handleOutside = (e) => {
+        if (!textField.contains(e.target)) {
+            onCancel();
+            removeTextFieldEventListeners();
+        }
+    };
+
+    const removeTextFieldEventListeners = () => {
+        document.removeEventListener("mousedown", handleOutside);
+        textField.removeEventListener("keydown", handleKeyDown);
+    };
+
+    textField.addEventListener("keydown", handleKeyDown);
+    textField.addEventListener("click", (e) => e.stopPropagation());
+    document.addEventListener("mousedown", handleOutside);
+
+    return textField;
+};
+
 export const handleDoubleClick = (event, ymapRef, modifyNode) => {
     if (event.nodes.length > 0) {
         const selectedNodeId = event.nodes[0];
@@ -7,63 +50,26 @@ export const handleDoubleClick = (event, ymapRef, modifyNode) => {
             const canvas = document.querySelector(".vis-network canvas");
             if (canvas) {
                 const canvasRect = canvas.getBoundingClientRect();
-                const textField = document.createElement("input");
-                textField.value = node.label;
-                textField.style.position = "absolute";
-                textField.style.top = `${canvasRect.top + canvasRect.height / 2}px`;
-                textField.style.left = `${canvasRect.left + canvasRect.width / 2}px`;
-                textField.style.transform = "translate(-50%, -50%)";
-                textField.style.width = "150px";
-                textField.style.height = "30px";
-                textField.style.zIndex = "10";
-                textField.style.textAlign = "center";
+                const node = JSON.parse(nodeData);
+
+                const textField = createTextInput(
+                    node.label,
+                    (newLabel) => {
+                        if (newLabel === "") {
+                            alert("키워드를 입력해주세요");
+                            textField.value = node.label;
+                        } else {
+                            modifyNode(selectedNodeId, newLabel);
+                        }
+                        document.body.removeChild(textField);
+                    },
+                    () => {
+                        document.body.removeChild(textField);
+                    }
+                );
+
                 document.body.appendChild(textField);
                 textField.focus();
-
-                const handleKeyDown = (e) => {
-                    if (e.key === "Enter") {
-                        const newLabel = textField.value.trim();
-                        if (newLabel === "") {
-                            // Show an alert if the user tries to set an empty label
-                            alert("키워드를 입력해주세요");
-                            textField.value = node.label; // Revert the text field value to the original label
-                        } else {
-                            modifyNode(selectedNodeId, newLabel);
-                            document.body.removeChild(textField);
-                            document.removeEventListener("mousedown", handleOutside);
-                            textField.removeEventListener("keydown", handleKeyDown);
-                        }
-                    } else if (e.key === "Escape") {
-                        document.body.removeChild(textField);
-                        document.removeEventListener("mousedown", handleOutside);
-                        textField.removeEventListener("keydown", handleKeyDown);
-                    }
-                };
-
-                const handleOutside = (e) => {
-                    if (!textField.contains(e.target)) {
-                        const newLabel = textField.value.trim();
-                        if (newLabel === "") {
-                            // Show an alert if the user tries to set an empty label
-                            alert("키워드를 입력해주세요");
-                            textField.value = node.label; // Revert the text field value to the original label
-                        } else {
-                            modifyNode(selectedNodeId, newLabel);
-                            document.body.removeChild(textField);
-                            document.removeEventListener("mousedown", handleOutside);
-                            textField.removeEventListener("keydown", handleKeyDown);
-                        }
-                    }
-                };
-
-                // Add keydown event listener to the textarea
-                textField.addEventListener("keydown", handleKeyDown);
-
-                // Prevent the click event from propagating to the document when the user clicks inside the textarea
-                textField.addEventListener("click", (e) => e.stopPropagation());
-
-                // Add mousedown event listener to the document
-                document.addEventListener("mousedown", handleOutside);
             }
         }
     }
@@ -124,29 +130,53 @@ export const handleAddTextNode = (
     setIsCreatingText
 ) => {
     if (!isCreatingText) return;
-    const { pointer } = event;
-    const label = prompt("");
-    if (label) {
-        const nodeCount = ymapRef.current.get("Counter");
-        const newNode = {
-            id: nodeCount,
-            shape: "text",
-            label: label,
-            x: pointer.canvas.x,
-            y: pointer.canvas.y,
-            physics: false,
-            font: {
-                size: 30,
-            },
-        };
-        ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
-        ymapRef.current.set("Counter", nodeCount + 1);
 
-        setSelectedNode(null);
+    const { pointer } = event;
+    const createTextCallback = (label) => {
         setIsCreatingText(false);
-    } else {
+
+        if (label) {
+            const nodeCount = ymapRef.current.get("Counter");
+            const newNode = {
+                id: nodeCount,
+                shape: "text",
+                label: label,
+                x: pointer.canvas.x,
+                y: pointer.canvas.y,
+                physics: false,
+                font: {
+                    size: 30,
+                },
+            };
+
+            ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
+            ymapRef.current.set("Counter", nodeCount + 1);
+
+            setSelectedNode(null);
+        }
+    };
+
+    const handleTextInputBlur = () => {
         setIsCreatingText(false);
-    }
+    };
+
+    const textField = createTextInput(
+        "",
+        (newLabel) => {
+            if (newLabel === "") {
+                alert("키워드를 입력해주세요");
+            } else {
+                createTextCallback(newLabel);
+            }
+            document.body.removeChild(textField);
+        },
+        () => {
+            document.body.removeChild(textField);
+        }
+    );
+
+    document.body.appendChild(textField);
+    textField.focus();
 };
 
 export const handleAddImageNode =
