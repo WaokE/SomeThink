@@ -4,7 +4,7 @@ import { useState } from "react";
 function TopBar({ onExportClick }) {
     return (
         <div className="topbar-background">
-            <h1 className="code">#CODE</h1>
+            <div className="code">#CODE</div>
             <div className="topbar-menu">
                 <div className="member-info">
                     <button className="person button"></button>
