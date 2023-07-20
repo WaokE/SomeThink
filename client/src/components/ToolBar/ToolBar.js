@@ -10,6 +10,7 @@ const ToolBar = () => {
     };
     const makeImage = () => {
         console.log("make Image");
+        window.dispatchEvent(new CustomEvent("addImage"));
     };
     const makePostit = () => {
         console.log("make Postit");

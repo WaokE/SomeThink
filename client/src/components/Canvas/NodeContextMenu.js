@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import "./NodeContextMenu.css";
+import "./ContextMenu.css";
 
 const NodeContextMenu = ({
     selectedNodeId,
@@ -36,7 +36,6 @@ const NodeContextMenu = ({
     };
 
     const handleAddImage = () => {
-        console.log(imageUrl);
         const updateFunction = handleAddImageNode(imageUrl);
         updateFunction();
         onClose();

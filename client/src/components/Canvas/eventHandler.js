@@ -67,8 +67,7 @@ export const handleDoubleClick = (event, ymapRef, modifyNode) => {
             }
         }
     }
-  };
-  
+};
 
 export const handleNodeDragEnd = (event, ymapRef) => {
     const { nodes, pointer } = event;
@@ -95,10 +94,19 @@ export const handleNodeDragging = (event, ymapRef) => {
 };
 
 export const handleClickOutside =
-    (contextMenuRef, setIsNodeContextMenuVisible, setIsEdgeContextMenuVisible) => (event) => {
+    (
+        contextMenuRef,
+        setIsNodeContextMenuVisible,
+        setIsEdgeContextMenuVisible,
+        setIsImageContextMenuVisible,
+        setIsCreatingImage
+    ) =>
+    (event) => {
         if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
             setIsNodeContextMenuVisible(false);
             setIsEdgeContextMenuVisible(false);
+            setIsImageContextMenuVisible(false);
+            setIsCreatingImage(false);
         }
     };
 
@@ -161,25 +169,34 @@ export const handleAddImageNode =
 export const handleNodeContextMenu = (
     setContextMenuPos,
     setIsNodeContextMenuVisible,
-    setIsEdgeContextMenuVisible
+    setIsEdgeContextMenuVisible,
+    setIsImageContextMenuVisible,
+    isCreatingImage
 ) => {
     return ({ event, nodes, edges }) => {
         event.preventDefault();
 
         if (nodes.length > 0) {
             const xPos = event.clientX;
+            console.log(xPos);
             const yPos = event.clientY;
             const selectedNodeId = nodes[0];
             setContextMenuPos({ xPos, yPos, selectedNodeId });
             setIsNodeContextMenuVisible(true);
-        }
-
-        if (nodes.length === 0 && edges.length > 0) {
+        } else if (nodes.length === 0 && edges.length > 0) {
             const xPos = event.clientX;
             const yPos = event.clientY;
             const selectedEdge = edges;
             setContextMenuPos({ xPos, yPos, selectedEdge });
             setIsEdgeContextMenuVisible(true);
+        } else if (isCreatingImage) {
+            console.log("isCreatingImage!!");
+            const xPos = event.clientX;
+            console.log(xPos);
+            const yPos = event.clientY;
+            console.log(yPos);
+            setContextMenuPos({ xPos, yPos });
+            setIsImageContextMenuVisible(true);
         }
     };
 };

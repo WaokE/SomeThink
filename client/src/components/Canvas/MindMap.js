@@ -16,6 +16,7 @@ import * as Y from "yjs";
 
 import NodeContextMenu from "./NodeContextMenu";
 import EdgeContextMenu from "./EdgeContextMenu";
+import ImageContextMenu from "./ImageContextMenu";
 
 import "./MindMap.css";
 
@@ -145,15 +146,20 @@ const MindMap = () => {
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
     const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
     const [isEdgeContextMenuVisible, setIsEdgeContextMenuVisible] = useState(false);
+    const [isImageContextMenuVisible, setIsImageContextMenuVisible] = useState(false);
     const contextMenuRef = useRef(null);
     const [isCreatingText, setIsCreatingText] = useState(false);
+    const [isCreatingImage, setIsCreatingImage] = useState(false);
     const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
     const [selectedNode, setSelectedNode] = useState(null);
     const memoizedHandleClickOutside = useCallback(
         handleClickOutside(
             contextMenuRef,
             setIsNodeContextMenuVisible,
-            setIsEdgeContextMenuVisible
+            setIsEdgeContextMenuVisible,
+            setIsImageContextMenuVisible,
+            // isCreatingImage,
+            setIsCreatingImage
         ),
         [contextMenuRef, setIsNodeContextMenuVisible]
     );
@@ -161,7 +167,10 @@ const MindMap = () => {
     const openNodeContextMenu = handleNodeContextMenu(
         setContextMenuPos,
         setIsNodeContextMenuVisible,
-        setIsEdgeContextMenuVisible
+        setIsEdgeContextMenuVisible,
+        setIsImageContextMenuVisible,
+        isCreatingImage,
+        setIsCreatingImage
     );
 
     const ydocRef = useRef(null);
@@ -169,7 +178,8 @@ const MindMap = () => {
 
     useEffect(() => {
         ydocRef.current = new Y.Doc();
-        const provider = new WebsocketProvider("wss://somethink.online", "17", ydocRef.current);
+        // const provider = new WebsocketProvider("wss://somethink.online", "17", ydocRef.current);
+        const provider = new WebsocketProvider("ws://localhost:1234", "17", ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
         ymapRef.current.set("Node 1", JSON.stringify(rootNode));
         ymapRef.current.set("Counter", 2);
@@ -259,6 +269,10 @@ const MindMap = () => {
         setIsEdgeContextMenuVisible(false);
     };
 
+    const closeImageContextMenu = () => {
+        setIsImageContextMenuVisible(false);
+    };
+
     const modifyNode = (nodeId, newLabel) => {
         const node = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));
         if (node) {
@@ -276,16 +290,24 @@ const MindMap = () => {
         };
         const __handleAddTextNode = (event) => {
             setIsCreatingText(true);
+            console.log(isCreatingText);
+        };
+        const __handleAddImageNode = (event) => {
+            setIsCreatingImage(true);
+            console.log("isCreatingImage");
+            console.log(isCreatingImage);
         };
         document.addEventListener("click", memoizedHandleClickOutside);
         window.addEventListener("addNode", handleAddNode);
         window.addEventListener("addText", __handleAddTextNode);
+        window.addEventListener("addImage", __handleAddImageNode);
         return () => {
             document.removeEventListener("click", handleClickOutside);
             window.removeEventListener("addNode", handleAddNode);
             window.removeEventListener("addText", __handleAddTextNode);
+            window.removeEventListener("addImage", __handleAddImageNode);
         };
-    }, [selectedNode, memoizedHandleClickOutside]);
+    }, [selectedNode, memoizedHandleClickOutside, isCreatingImage]);
 
     const deleteSingleNode = (nodeId) => {
         ymapRef.current.delete(`Node ${nodeId}`);
@@ -428,6 +450,7 @@ const MindMap = () => {
                 },
                 doubleClick: (events) => handleDoubleClick(events, ymapRef, modifyNode),
                 oncontext: openNodeContextMenu,
+                click: openNodeContextMenu,
             },
         };
     });
@@ -447,7 +470,7 @@ const MindMap = () => {
                     dragging: (events) => handleNodeDragging(events, ymapRef),
                     dragEnd: (events) => handleNodeDragEnd(events, ymapRef),
                     drag: handleCanvasDrag,
-                    click: (events) =>
+                    click: (events) => {
                         handleAddTextNode(
                             events,
                             isCreatingText,
@@ -455,8 +478,10 @@ const MindMap = () => {
                             setState,
                             setSelectedNode,
                             setIsCreatingText
-                        ),
+                        );
+                    },
                     oncontext: openNodeContextMenu,
+                    // click: openNodeContextMenu,
                 }}
                 style={{ height: "100vh" }}
             />
@@ -495,6 +520,23 @@ const MindMap = () => {
                         selectedEdge={contextMenuPos.selectedEdge}
                         onClose={closeEdgeContextMenu}
                         deleteEdge={deleteEdge}
+                    />
+                </div>
+            )}
+            {isImageContextMenuVisible && isCreatingImage && (
+                <div
+                    ref={contextMenuRef}
+                    className="context-menu"
+                    style={{
+                        position: "absolute",
+                        left: contextMenuPos.xPos,
+                        top: contextMenuPos.yPos,
+                    }}
+                >
+                    <ImageContextMenu
+                        handleAddImageNode={handleAddImageNode}
+                        onClose={closeImageContextMenu}
+                        setIsCreatingImage={setIsCreatingImage}
                     />
                 </div>
             )}
