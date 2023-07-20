@@ -77,7 +77,7 @@ const MindMap = () => {
         edges: {
             arrows: {
                 to: {
-                    enabled: false,
+                    enabled: true,
                 },
             },
             color: "#000000",
@@ -115,14 +115,22 @@ const MindMap = () => {
                     alert("순환 구조를 만들 수 없습니다!");
                     return;
                 }
-
-                ymapRef.current.set(
-                    `Edge ${fromNode} to ${toNode}`,
-                    JSON.stringify({
-                        from: fromNode,
-                        to: toNode,
-                        id: `${fromNode} to ${toNode}`,
-                    })
+                let createdEdge;
+                if (
+                    checkIsConnectedToRoot(
+                        Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
+                        toNode
+                    )
+                ) {
+                    createEdge(toNode, fromNode);
+                    createdEdge = `Edge ${toNode} to ${fromNode}`;
+                } else {
+                    createEdge(fromNode, toNode);
+                    createdEdge = `Edge ${fromNode} to ${toNode}`;
+                }
+                sortEdgesCorrectly(
+                    Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
+                    createdEdge
                 );
             },
             addNode: false,
@@ -180,7 +188,7 @@ const MindMap = () => {
             window.removeEventListener("resize", handleResize);
         };
     }, []);
-    
+
     const ydocRef = useRef(null);
     const ymapRef = useRef(null);
 
@@ -226,6 +234,70 @@ const MindMap = () => {
             // Re-render the MindMap component
             window.location.reload();
         }
+    };
+
+    const checkIsConnectedToRoot = (edges, node) => {
+        let dfsq = [`${node}`];
+        while (dfsq.length > 0) {
+            const current = dfsq.shift();
+            if (current === "1") {
+                return true;
+            }
+            edges.forEach((edge) => {
+                if (edge.endsWith(` to ${current}`)) {
+                    dfsq.push(edge.split(" ")[1]);
+                }
+            });
+        }
+        return false;
+    };
+
+    const createEdge = (fromNode, toNode) => {
+        ymapRef.current.set(
+            `Edge ${fromNode} to ${toNode}`,
+            JSON.stringify({
+                from: fromNode,
+                to: toNode,
+                id: `${fromNode} to ${toNode}`,
+            })
+        );
+    };
+
+    const sortEdgesCorrectly = (edges, createdEdge) => {
+        let edgeList = edges.filter((edge) => edge != createdEdge);
+        let newEdgeList = [];
+        let bfsq = [`${createdEdge.split(" ")[3]}`];
+        while (bfsq.length > 0) {
+            const current = bfsq.shift();
+            edgeList.forEach((edge) => {
+                if (edge.startsWith(`Edge ${current} to `)) {
+                    newEdgeList.push(edge);
+                    ymapRef.current.delete(edge);
+                    // FIXME: 반복을 인덱싱을 통해 하도록 해서 삭제 성능개선을 할 수 있을듯?
+                    edgeList = edgeList.filter((e) => e != edge);
+                    bfsq.push(edge.split(" ")[3]);
+                } else if (edge.endsWith(` to ${current}`)) {
+                    newEdgeList.push(`Edge ${current} to ${edge.split(" ")[1]}`);
+                    ymapRef.current.delete(edge);
+                    // FIXME: 반복을 인덱싱을 통해 하도록 해서 삭제 성능개선을 할 수 있을듯?
+                    edgeList = edgeList.filter((e) => e != edge);
+                    bfsq.push(edge.split(" ")[1]);
+                }
+            });
+        }
+
+        newEdgeList.forEach((edge) => {
+            const from = edge.split(" ")[1];
+            const to = edge.split(" ")[3];
+            ymapRef.current.set(
+                `Edge ${from} to ${to}`,
+                JSON.stringify({
+                    from: from,
+                    to: to,
+                    id: `${from} to ${to}`,
+                })
+            );
+        });
     };
 
     const deleteEdge = (selectedEdge) => {
