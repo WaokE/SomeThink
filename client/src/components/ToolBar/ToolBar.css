@@ -7,32 +7,32 @@
 }
 
 .create-node {
-    background-image: url("../../../public/SomeThink.ico");
+    background-image: url("../../img/icon/node.png");
 }
 
-.create-text{
+.create-text {
     background-image: url("../../img/icon/text.png");
 }
-.create-image{
+.create-image {
     background-image: url("../../img/icon/image.png");
 }
-.create-memo{
+.create-memo {
     background-image: url("../../img/icon/memo.png");
 }
-.create-comment{
+.create-comment {
     background-image: url("../../img/icon/comment.png");
 }
-.create-timer{
+.create-timer {
     background-image: url("../../img/icon/timer.png");
 }
 
-.button{
+.button_toolbar {
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
     padding: 30px;
     width: 100%;
     aspect-ratio: 1/1;
-    border:none;
+    border: none;
     background-color: #eaeaea;
 }

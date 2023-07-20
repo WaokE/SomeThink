@@ -1,7 +1,6 @@
 {
   "name": "client",
   "version": "0.1.0",
-  "proxy": "http://localhost:5050",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
@@ -13,7 +12,9 @@
     "react-dom": "^18.2.0",
     "react-graph-vis": "^1.0.7",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "y-websocket": "^1.5.0",
+    "yjs": "^13.6.7"
   },
   "scripts": {
     "start": "react-scripts start",

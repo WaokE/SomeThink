@@ -1,264 +1,306 @@
 import Graph from "react-graph-vis";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import ReactDOM from "react-dom";
+import {
+    handleDoubleClick,
+    handleNodeDragEnd,
+    handleClickOutside,
+    handleCanvasDrag,
+    handleAddTextNode,
+    handleAddImageNode as handleAddImageNodeOriginal,
+    handleNodeContextMenu,
+    handleNodeDragging,
+} from "./eventHandler";
+import { WebsocketProvider } from "y-websocket";
+import * as Y from "yjs";
 
 import NodeContextMenu from "./NodeContextMenu";
+import EdgeContextMenu from "./EdgeContextMenu";
 
-const options = {
-    layout: {
-        hierarchical: false,
-    },
-    nodes: {
-        shape: "circle",
-        size: 30,
-        mass: 1,
-        color: "#FBD85D",
-    },
-    edges: {
-        arrows: {
-            to: {
-                enabled: false,
-            },
-        },
-        color: "#000000",
-    },
-    physics: {
-        enabled: false,
-        // solver: "barnesHut",
-        // barnesHut: {
-        //     centralGravity: -0.1,
-        //     springConstant: 1,
-        //     damping: 0.09,
-        //     avoidOverlap: 0.5,
-        // },
-        // maxVelocity: 5,
-        // minVelocity: 0.5,
-    },
-    interaction: {
-        multiselect: false,
-    },
+import "./MindMap.css";
+
+const PreventRefresh = () => {
+    useEffect(() => {
+        const handleBeforeUnload = (event) => {
+            event.preventDefault();
+            event.returnValue = ""; // 이 줄은 최신 버전의 Chrome에서 필요합니다.
+        };
+
+        const handleUnload = () => {
+            // 페이지를 떠날 때 처리할 작업을 여기에 추가합니다.
+            // 예를 들어, 변경된 데이터를 저장하거나 서버에 업데이트를 요청하는 등의 작업을 수행할 수 있습니다.
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        window.addEventListener("unload", handleUnload);
+
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+            window.removeEventListener("unload", handleUnload);
+        };
+    }, []);
+
+    return <></>;
+};
+
+const isCyclic = (graph, fromNode, toNode) => {
+    const insertEdge = `Edge ${fromNode} to ${toNode}`;
+    graph.push(insertEdge);
+    const visited = new Set();
+    let dfsq = ["1"];
+    while (dfsq.length > 0) {
+        const current = dfsq.shift();
+        if (visited.has(current)) {
+            return false;
+        }
+        visited.add(current);
+        graph.forEach((edge) => {
+            if (edge.startsWith(`Edge ${current} to `)) {
+                dfsq.push(edge.split(" ")[3]);
+            }
+        });
+    }
+    return true;
 };
 
 const MindMap = () => {
+    const options = {
+        layout: {
+            hierarchical: false,
+        },
+        nodes: {
+            shape: "circle",
+            size: 30,
+            mass: 1,
+            color: "#FBD85D",
+        },
+        edges: {
+            arrows: {
+                to: {
+                    enabled: false,
+                },
+            },
+            color: "#000000",
+        },
+        physics: {
+            enabled: false,
+        },
+        interaction: {
+            multiselect: false,
+        },
+        manipulation: {
+            enabled: true,
+            initiallyActive: true,
+            addEdge: (data, callback) => {
+                const fromNode = data.from;
+                const toNode = data.to;
+                if (fromNode === toNode) {
+                    alert("자기 자신을 가리키는 엣지는 만들 수 없습니다!");
+                    return;
+                }
+                if (
+                    ymapRef.current.has(`Edge ${fromNode} to ${toNode}`) ||
+                    ymapRef.current.has(`Edge ${toNode} to ${fromNode}`)
+                ) {
+                    alert("이미 존재하는 엣지입니다!");
+                    return;
+                }
+                if (
+                    !isCyclic(
+                        Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
+                        fromNode,
+                        toNode
+                    )
+                ) {
+                    alert("순환 구조를 만들 수 없습니다!");
+                    return;
+                }
+
+                ymapRef.current.set(
+                    `Edge ${fromNode} to ${toNode}`,
+                    JSON.stringify({
+                        from: fromNode,
+                        to: toNode,
+                        id: `${fromNode} to ${toNode}`,
+                    })
+                );
+            },
+            addNode: false,
+            editEdge: false,
+            deleteNode: false,
+            deleteEdge: false,
+        },
+    };
+
+    const rootNode = {
+        id: 1,
+        label: "Root",
+        x: 0,
+        y: 0,
+        physics: false,
+        fixed: true,
+        color: "#f5b252",
+    };
+
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
-    const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] =
-        useState(false);
+    const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
+    const [isEdgeContextMenuVisible, setIsEdgeContextMenuVisible] = useState(false);
     const contextMenuRef = useRef(null);
     const [isCreatingText, setIsCreatingText] = useState(false);
-    const [result, setResult] = useState("");
     const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
     const [selectedNode, setSelectedNode] = useState(null);
+    const memoizedHandleClickOutside = useCallback(
+        handleClickOutside(
+            contextMenuRef,
+            setIsNodeContextMenuVisible,
+            setIsEdgeContextMenuVisible
+        ),
+        [contextMenuRef, setIsNodeContextMenuVisible]
+    );
+    const handleAddImageNode = (imageUrl) => handleAddImageNodeOriginal({ imageUrl, ymapRef });
+    const openNodeContextMenu = handleNodeContextMenu(
+        setContextMenuPos,
+        setIsNodeContextMenuVisible,
+        setIsEdgeContextMenuVisible
+    );
+
+    const ydocRef = useRef(null);
+    const ymapRef = useRef(null);
+
+    useEffect(() => {
+        ydocRef.current = new Y.Doc();
+        const provider = new WebsocketProvider("wss://somethink.online", "17", ydocRef.current);
+        ymapRef.current = ydocRef.current.getMap("MindMap");
+        ymapRef.current.set("Node 1", JSON.stringify(rootNode));
+        ymapRef.current.set("Counter", 2);
+
+        ymapRef.current.observe((event) => {
+            setSelectedNode(null);
+            setSelectedNodeLabels([]);
+
+            const updatedGraph = {
+                nodes: [],
+                edges: [],
+            };
+
+            ymapRef.current.forEach((value, key) => {
+                if (key.startsWith("Node")) {
+                    const node = JSON.parse(value);
+                    updatedGraph.nodes.push(node);
+                } else if (key.startsWith("Edge")) {
+                    const edge = JSON.parse(value);
+                    updatedGraph.edges.push(edge);
+                }
+            });
+
+            setState((prevState) => ({
+                ...prevState,
+                graph: updatedGraph,
+            }));
+        });
+    }, []);
+
+    const handleReset = () => {
+        if (ymapRef.current) {
+            // ymap이 초기화되었을 경우에만 clear() 메서드를 호출합니다.
+            ymapRef.current.clear();
+            ymapRef.current.set("Node 1", JSON.stringify(rootNode));
+            ymapRef.current.set("Counter", 2);
+            // Re-render the MindMap component
+            window.location.reload();
+        }
+    };
+
+    const deleteEdge = (selectedEdge) => {
+        selectedEdge.forEach((edge) => {
+            const splitedEdge = edge.split(" ");
+            const from = splitedEdge[0];
+            const to = splitedEdge[2];
+            ymapRef.current.delete(`Edge ${from} to ${to}`);
+        });
+        setIsEdgeContextMenuVisible(false);
+    };
 
     const createNode = (selectedNodeId) => {
-        const id = state.counter + 1;
-        const selectedNode = state.graph.nodes.find(
-            (node) => node.id === selectedNodeId
-        );
+        const selectedNode = JSON.parse(ymapRef.current.get(`Node ${selectedNodeId}`));
+        const nodeCount = ymapRef.current.get("Counter");
 
         if (!selectedNode) {
             return;
         }
 
         const newNode = {
-            id,
-            label: `Node ${id}`,
+            id: nodeCount,
+            label: `Node ${nodeCount}`,
             x: selectedNode.x,
             y: selectedNode.y + 100,
             color: "#FBD85D",
         };
 
-        const newEdge = { from: selectedNodeId, to: id };
-        console.log(newNode);
+        ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
+        ymapRef.current.set(
+            `Edge ${selectedNodeId} to ${nodeCount}`,
+            JSON.stringify({
+                from: selectedNodeId,
+                to: nodeCount,
+                id: `${selectedNodeId} to ${nodeCount}`,
+            })
+        );
 
-        setState((prevState) => ({
-            ...prevState,
-            graph: {
-                nodes: [...prevState.graph.nodes, newNode],
-                edges: [...prevState.graph.edges, newEdge],
-            },
-            counter: id,
-            rootNode: prevState.rootNode,
-            events: prevState.events,
-        }));
+        ymapRef.current.set("Counter", nodeCount + 1);
+        setSelectedNode(null);
     };
 
-    const handleNodeDragEnd = (event) => {
-        const { nodes, pointer } = event;
-        if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
-            return;
-        }
-        console.log(event);
-        const nodeId = nodes[0];
-        const { x, y } = pointer.canvas;
-
-        setState((prevState) => {
-            const updatedNodes = prevState.graph.nodes.map((node) => {
-                if (node.id === nodeId) {
-                    return {
-                        ...node,
-                        x,
-                        y,
-                    };
-                }
-                return node;
-            });
-
-            return {
-                ...prevState,
-                graph: {
-                    ...prevState.graph,
-                    nodes: updatedNodes,
-                },
-            };
-        });
-    };
-
-    const handleCanvasDrag = (event) => {
-        // 캔버스 드래그가 진행 중일 때 호출되는 함수
-        // 캔버스가 이동되지만 좌표는 저장하지 않습니다.
-    };
-
-    const handleAddTextNode = (event) => {
-        if (!isCreatingText) return;
-        const { pointer } = event;
-        const label = prompt("");
-        if (label) {
-            const newNode = {
-                shape: "text",
-                label: label,
-                x: pointer.canvas.x,
-                y: pointer.canvas.y,
-                physics: false,
-                font: {
-                    size: 30,
-                },
-            };
-            setState((prevState) => ({
-                ...prevState,
-                graph: {
-                    ...prevState.graph,
-                    nodes: [...prevState.graph.nodes, newNode],
-                },
-            }));
-            setIsCreatingText(false);
-        }
-    };
-
-    const handleAddImageNode = ({ imageUrl }) => {
-        const newNode = {
-            shape: "image",
-            image: imageUrl,
-            x: 0,
-            y: -100,
-            physics: false,
-        };
-        setState((prevState) => ({
-            ...prevState,
-            graph: {
-                ...prevState.graph,
-                nodes: [...prevState.graph.nodes, newNode],
-            },
-        }));
-    };
-
-    const handleNodeContextMenu = ({ event, nodes }) => {
-        event.preventDefault();
-
-        if (nodes.length > 0) {
-            const xPos = event.clientX;
-            const yPos = event.clientY;
-            const selectedNodeId = nodes[0];
-            setContextMenuPos({ xPos, yPos, selectedNodeId });
-            setIsNodeContextMenuVisible(true);
-        }
-    };
-
-    const handleDoubleClick = (event) => {
-        if (event.nodes.length > 0) {
-            const selectedNodeId = event.nodes[0];
-            const newLabel = prompt("새로운 노드 이름을 입력하세요");
-            if (newLabel === null) return;
-            modifyNode(
-                selectedNodeId,
-                newLabel,
-                event.pointer.canvas.x,
-                event.pointer.canvas.y
-            );
-        }
-    };
-
-    const closeContextMenu = () => {
+    const closeNodeContextMenu = () => {
         setIsNodeContextMenuVisible(false);
     };
 
-    const modifyNode = (nodeId, newLabel, x, y) => {
-        setState((prevState) => {
-            const updatedNodes = prevState.graph.nodes.map((node) => {
-                if (node.id === nodeId) {
-                    return { ...node, label: newLabel, x, y };
-                }
-                return node;
-            });
-
-            return {
-                ...prevState,
-                graph: {
-                    ...prevState.graph,
-                    nodes: updatedNodes,
-                },
-            };
-        });
+    const closeEdgeContextMenu = () => {
+        setIsEdgeContextMenuVisible(false);
     };
 
-    const handleClickOutside = (event) => {
-        if (
-            contextMenuRef.current &&
-            !contextMenuRef.current.contains(event.target)
-        ) {
-            setIsNodeContextMenuVisible(false);
+    const modifyNode = (nodeId, newLabel) => {
+        const node = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));
+        if (node) {
+            node.label = newLabel;
+            ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(node));
         }
     };
 
     useEffect(() => {
         const handleAddNode = (event) => {
+            if (!selectedNode) {
+                return;
+            }
             createNode(selectedNode);
         };
-        document.addEventListener("click", handleClickOutside);
+        const __handleAddTextNode = (event) => {
+            setIsCreatingText(true);
+        };
+        document.addEventListener("click", memoizedHandleClickOutside);
         window.addEventListener("addNode", handleAddNode);
+        window.addEventListener("addText", __handleAddTextNode);
         return () => {
             document.removeEventListener("click", handleClickOutside);
             window.removeEventListener("addNode", handleAddNode);
+            window.removeEventListener("addText", __handleAddTextNode);
         };
-    }, [selectedNode]);
+    }, [selectedNode, memoizedHandleClickOutside]);
 
     const deleteSingleNode = (nodeId) => {
-        setState((prevState) => {
-            const updatedNodes = prevState.graph.nodes.filter(
-                (node) => node.id !== nodeId
-            );
-            const updatedEdges = prevState.graph.edges.filter(
-                (edge) => edge.from !== nodeId && edge.to !== nodeId
-            );
-
-            return {
-                ...prevState,
-                graph: {
-                    ...prevState.graph,
-                    nodes: updatedNodes,
-                    edges: updatedEdges,
-                },
-            };
-        });
+        ymapRef.current.delete(`Node ${nodeId}`);
     };
 
     const deleteNodes = (nodeId) => {
-        const childNodes = state.graph.edges
-            .filter((edge) => edge.from === nodeId)
-            .map((edge) => edge.to);
+        const childNodes = Array.from(ymapRef.current.keys())
+            .filter((key) => key.startsWith(`Edge ${nodeId} to `))
+            .map((key) => key.split(" ")[3]);
+
         childNodes.forEach((childNodeId) => {
             deleteSingleNode(childNodeId);
             deleteNodes(childNodeId);
         });
+
         deleteSingleNode(nodeId);
     };
 
@@ -268,9 +310,7 @@ const MindMap = () => {
         }
 
         const clickedNodeId = nodes[0];
-        const clickedNode = state.graph.nodes.find(
-            (node) => node.id === clickedNodeId
-        );
+        const clickedNode = JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`));
 
         if (!clickedNode) {
             return;
@@ -280,9 +320,9 @@ const MindMap = () => {
         let currentNodeId = clickedNodeId;
 
         while (currentNodeId !== 1) {
-            const parentNodeId = state.graph.edges.find(
-                (edge) => edge.to === currentNodeId
-            )?.from;
+            const parentNodeId = Array.from(ymapRef.current.keys())
+                .find((key) => key.startsWith("Edge ") && key.endsWith(` to ${currentNodeId}`))
+                ?.split(" ")[1];
 
             if (!parentNodeId) {
                 break;
@@ -292,13 +332,14 @@ const MindMap = () => {
             currentNodeId = parentNodeId;
         }
 
-        const rootLabel = state.graph.nodes.find(
-            (node) => node.id === 1
-        )?.label;
-        const connectedNodeLabels = connectedNodeIds.map(
-            (nodeId) =>
-                state.graph.nodes.find((node) => node.id === nodeId)?.label
-        );
+        const rootLabel = ymapRef.current.get("Node 1")
+            ? JSON.parse(ymapRef.current.get("Node 1"))?.label
+            : null;
+
+        const connectedNodeLabels = connectedNodeIds.map((nodeId) => {
+            const node = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));
+            return node ? node.label : null;
+        });
 
         setSelectedNodeLabels((prevLabels) => [
             clickedNode.label,
@@ -307,7 +348,13 @@ const MindMap = () => {
             ...prevLabels,
         ]);
 
-        const allNodeLabels = state.graph.nodes.map((node) => node.label);
+        const allNodeLabels = Array.from(ymapRef.current.keys())
+            .filter((key) => key.startsWith("Node "))
+            .map((key) => {
+                const node = JSON.parse(ymapRef.current.get(key));
+                return node ? node.label : null;
+            });
+
         try {
             const response = await fetch("/api/generate", {
                 method: "POST",
@@ -322,35 +369,40 @@ const MindMap = () => {
 
             const data = await response.json();
             if (response.status !== 200) {
-                throw (
-                    data.error ||
-                    new Error(`Request failed with status ${response.status}`)
-                );
+                throw data.error || new Error(`Request failed with status ${response.status}`);
             }
 
             const newNodeLabels = data.result.split(",");
-            const newNodes = newNodeLabels.map((label, index) => ({
-                id: state.counter + 1 + index,
-                label: label.trim(),
-                x: clickedNode.x + 100 * (index + 1),
-                y: clickedNode.y + 100,
-                physics: false,
-                color: "#FBD85D",
-            }));
+            const nodeCount = Number(ymapRef.current.get("Counter"));
 
-            const newEdges = newNodes.map((node) => ({
-                from: clickedNodeId,
-                to: node.id,
-            }));
+            const newNodes = newNodeLabels.map((label, index) => {
+                const nodeId = nodeCount + index++;
+                const newNode = {
+                    id: nodeId,
+                    label: label.trim(),
+                    x: clickedNode.x + 100 * (index + 1),
+                    y: clickedNode.y + 100,
+                    physics: false,
+                    color: "#FBD85D",
+                };
 
-            setState((prevState) => ({
-                ...prevState,
-                counter: prevState.counter + newNodeLabels.length,
-                graph: {
-                    nodes: [...prevState.graph.nodes, ...newNodes],
-                    edges: [...prevState.graph.edges, ...newEdges],
-                },
-            }));
+                ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
+                return newNode;
+            });
+
+            const newEdges = newNodes.map((node) => {
+                const edge = {
+                    from: clickedNodeId,
+                    to: node.id,
+                    id: `${clickedNodeId} to ${node.id}`,
+                };
+                const edgeKey = `Edge ${clickedNodeId} to ${node.id}`;
+                ymapRef.current.set(edgeKey, JSON.stringify(edge));
+
+                return edge;
+            });
+
+            ymapRef.current.set("Counter", nodeCount + newNodeLabels.length);
         } catch (error) {
             console.error(error);
             alert(error.message);
@@ -358,17 +410,7 @@ const MindMap = () => {
     };
 
     const [state, setState] = useState(() => {
-        const rootNode = {
-            id: 1,
-            label: "Root",
-            x: 0,
-            y: 0,
-            physics: false,
-            fixed: true,
-            color: "#f5b252",
-        };
         return {
-            counter: 1,
             graph: {
                 nodes: [rootNode],
                 edges: [],
@@ -384,8 +426,8 @@ const MindMap = () => {
                         }));
                     }
                 },
-                doubleClick: handleDoubleClick,
-                oncontext: handleNodeContextMenu,
+                doubleClick: (events) => handleDoubleClick(events, ymapRef, modifyNode),
+                oncontext: openNodeContextMenu,
             },
         };
     });
@@ -393,16 +435,28 @@ const MindMap = () => {
     const { graph, events } = state;
     return (
         <div>
-            <div>{result}</div>
+            <button onClick={handleReset}>리셋 MindMap</button>
+            <PreventRefresh />
+            <h2 id="eventSpanHeading"></h2>
+            <pre id="eventSpanContent"></pre>
             <Graph
                 graph={state.graph}
                 options={options}
                 events={{
                     ...state.events,
-                    dragEnd: handleNodeDragEnd,
+                    dragging: (events) => handleNodeDragging(events, ymapRef),
+                    dragEnd: (events) => handleNodeDragEnd(events, ymapRef),
                     drag: handleCanvasDrag,
-                    click: handleAddTextNode,
-                    oncontext: handleNodeContextMenu,
+                    click: (events) =>
+                        handleAddTextNode(
+                            events,
+                            isCreatingText,
+                            ymapRef,
+                            setState,
+                            setSelectedNode,
+                            setIsCreatingText
+                        ),
+                    oncontext: openNodeContextMenu,
                 }}
                 style={{ height: "100vh" }}
             />
@@ -418,12 +472,29 @@ const MindMap = () => {
                 >
                     <NodeContextMenu
                         selectedNodeId={contextMenuPos.selectedNodeId}
-                        onClose={closeContextMenu}
+                        onClose={closeNodeContextMenu}
                         deleteNode={deleteNodes}
                         createNode={createNode}
                         setIsCreatingText={setIsCreatingText}
                         handleAddImageNode={handleAddImageNode}
                         handleNodeSelect={handleNodeSelect}
+                    />
+                </div>
+            )}
+            {isEdgeContextMenuVisible && (
+                <div
+                    ref={contextMenuRef}
+                    className="context-menu"
+                    style={{
+                        position: "absolute",
+                        left: contextMenuPos.xPos,
+                        top: contextMenuPos.yPos,
+                    }}
+                >
+                    <EdgeContextMenu
+                        selectedEdge={contextMenuPos.selectedEdge}
+                        onClose={closeEdgeContextMenu}
+                        deleteEdge={deleteEdge}
                     />
                 </div>
             )}
