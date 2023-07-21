@@ -13,11 +13,7 @@ const NodeContextMenu = ({
     handleNodeSelect,
 }) => {
     const handleDeleteNode = () => {
-        if (selectedNodeId !== 1) {
-            deleteNode(selectedNodeId);
-        } else {
-            alert("루트 노드는 삭제할 수 없습니다!");
-        }
+        deleteNode(selectedNodeId);
         onClose();
     };
     const handleAddChildNode = () => {

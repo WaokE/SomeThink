@@ -174,6 +174,7 @@ const MindMap = () => {
     const [isMemoVisible, setIsMemoVisible] = useState(false);
     const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
     const [selectedNode, setSelectedNode] = useState(null);
+    const [selectedEdge, setSelectedEdge] = useState(null);
     const memoizedHandleClickOutside = useCallback(
         handleClickOutside(
             contextMenuRef,
@@ -223,9 +224,6 @@ const MindMap = () => {
         ymapRef.current.set("Counter", 2);
 
         ymapRef.current.observe((event) => {
-            setSelectedNode(null);
-            setSelectedNodeLabels([]);
-
             const updatedGraph = {
                 nodes: [],
                 edges: [],
@@ -257,7 +255,11 @@ const MindMap = () => {
 
     const handleKeyPress = (e) => {
         if (e.key === "Delete") {
-            deleteNodes(selectedNode);
+            if (selectedNode) {
+                deleteNodes(selectedNode);
+            } else if (selectedEdge) {
+                deleteEdge([`${selectedEdge}`]);
+            }
         }
     };
 
@@ -457,6 +459,10 @@ const MindMap = () => {
     };
 
     const deleteNodes = (nodeId) => {
+        if (nodeId === 1) {
+            alert("루트 노드는 삭제할 수 없습니다!");
+            return;
+        }
         const childNodes = Array.from(ymapRef.current.keys())
             .filter((key) => key.startsWith(`Edge ${nodeId} to `))
             .map((key) => key.split(" ")[3]);
@@ -591,6 +597,8 @@ const MindMap = () => {
                             ...prevState,
                             selectedNodeId: nodes[0],
                         }));
+                    } else if (edges.length === 1) {
+                        setSelectedEdge(edges[0]);
                     }
                 },
                 doubleClick: (events) => handleDoubleClick(events, ymapRef, modifyNode),
@@ -622,6 +630,7 @@ const MindMap = () => {
                             isCreatingText,
                             ymapRef,
                             setSelectedNode,
+                            setSelectedEdge,
                             setIsCreatingText
                         );
                     },

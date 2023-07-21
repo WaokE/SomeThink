@@ -128,9 +128,11 @@ export const handleAddTextNode = (
     isCreatingText,
     ymapRef,
     setSelectedNode,
+    setSelectedEdge,
     setIsCreatingText
 ) => {
     if (event.nodes.length === 0) setSelectedNode(null);
+    if (event.edges.length === 0) setSelectedEdge(null);
     if (!isCreatingText) return;
 
     const { pointer } = event;
