@@ -1,3 +1,4 @@
+//  node ./node_modules/y-websocket/bin/server.js
 import Graph from "react-graph-vis";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import ReactDOM from "react-dom";
@@ -19,6 +20,7 @@ import * as Y from "yjs";
 import NodeContextMenu from "./NodeContextMenu";
 import EdgeContextMenu from "./EdgeContextMenu";
 import ImageContextMenu from "./ImageContextMenu";
+import TextContextMenu from "./TextContextMenu";
 import Memo from "./MemoNode";
 
 import "./MindMap.css";
@@ -68,6 +70,9 @@ const isCyclic = (graph, fromNode, toNode) => {
 };
 
 const MindMap = () => {
+    const ydocRef = useRef(null);
+    const ymapRef = useRef(null);
+
     const options = {
         layout: {
             hierarchical: false,
@@ -161,6 +166,7 @@ const MindMap = () => {
     const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
     const [isEdgeContextMenuVisible, setIsEdgeContextMenuVisible] = useState(false);
     const [isImageContextMenuVisible, setIsImageContextMenuVisible] = useState(false);
+    const [isTextContextMenuVisible, setIsTextContextMenuVisible] = useState(false);
     const contextMenuRef = useRef(null);
     const [isCreatingText, setIsCreatingText] = useState(false);
     const [isCreatingImage, setIsCreatingImage] = useState(false);
@@ -174,20 +180,22 @@ const MindMap = () => {
             setIsNodeContextMenuVisible,
             setIsEdgeContextMenuVisible,
             setIsImageContextMenuVisible,
-            // isCreatingImage,
+            setIsTextContextMenuVisible,
             setIsCreatingImage
         ),
         [contextMenuRef, setIsNodeContextMenuVisible]
     );
     const handleAddImageNode = (imageUrl) => handleAddImageNodeOriginal({ imageUrl, ymapRef });
-    const openNodeContextMenu = handleNodeContextMenu(
+    const openNodeContextMenu = handleNodeContextMenu({
         setContextMenuPos,
         setIsNodeContextMenuVisible,
         setIsEdgeContextMenuVisible,
         setIsImageContextMenuVisible,
+        setIsTextContextMenuVisible,
         isCreatingImage,
-        setIsCreatingImage
-    );
+        setIsCreatingImage,
+        ymapRef,
+    });
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [windowHeight, setWindowHeight] = useState(window.innerHeight);
 
@@ -205,9 +213,6 @@ const MindMap = () => {
             window.removeEventListener("resize", handleResize);
         };
     }, []);
-
-    const ydocRef = useRef(null);
-    const ymapRef = useRef(null);
 
     useEffect(() => {
         ydocRef.current = new Y.Doc();
@@ -403,6 +408,10 @@ const MindMap = () => {
 
     const closeImageContextMenu = () => {
         setIsImageContextMenuVisible(false);
+    };
+
+    const closeTextContextMenu = () => {
+        setIsTextContextMenuVisible(false);
     };
 
     const modifyNode = (nodeId, newLabel) => {
@@ -672,6 +681,23 @@ const MindMap = () => {
                         handleAddImageNode={handleAddImageNode}
                         onClose={closeImageContextMenu}
                         setIsCreatingImage={setIsCreatingImage}
+                    />
+                </div>
+            )}
+            {isTextContextMenuVisible && (
+                <div
+                    ref={contextMenuRef}
+                    className="context-menu"
+                    style={{
+                        position: "absolute",
+                        left: contextMenuPos.xPos,
+                        top: contextMenuPos.yPos,
+                    }}
+                >
+                    <TextContextMenu
+                        selectedText={contextMenuPos.selectedNodeId}
+                        onClose={closeTextContextMenu}
+                        deleteNode={deleteNodes}
                     />
                 </div>
             )}

@@ -105,6 +105,7 @@ export const handleClickOutside =
         setIsNodeContextMenuVisible,
         setIsEdgeContextMenuVisible,
         setIsImageContextMenuVisible,
+        setIsTextContextMenuVisible,
         setIsCreatingImage
     ) =>
     (event) => {
@@ -112,6 +113,7 @@ export const handleClickOutside =
             setIsNodeContextMenuVisible(false);
             setIsEdgeContextMenuVisible(false);
             setIsImageContextMenuVisible(false);
+            setIsTextContextMenuVisible(false);
             setIsCreatingImage(false);
         }
     };
@@ -197,22 +199,31 @@ export const handleAddImageNode =
         ymapRef.current.set("Counter", nodeCount + 1);
     };
 
-export const handleNodeContextMenu = (
+export const handleNodeContextMenu = ({
     setContextMenuPos,
     setIsNodeContextMenuVisible,
     setIsEdgeContextMenuVisible,
     setIsImageContextMenuVisible,
-    isCreatingImage
-) => {
+    setIsTextContextMenuVisible,
+    isCreatingImage,
+    ymapRef,
+}) => {
     return ({ event, nodes, edges }) => {
         event.preventDefault();
-
         if (nodes.length > 0) {
             const xPos = event.clientX;
             const yPos = event.clientY;
             const selectedNodeId = nodes[0];
-            setContextMenuPos({ xPos, yPos, selectedNodeId });
-            setIsNodeContextMenuVisible(true);
+            const selectedNodeShape = JSON.parse(
+                ymapRef.current.get(`Node ${selectedNodeId}`)
+            ).shape;
+            if (selectedNodeShape === "text") {
+                setContextMenuPos({ xPos, yPos, selectedNodeId });
+                setIsTextContextMenuVisible(true);
+            } else {
+                setContextMenuPos({ xPos, yPos, selectedNodeId });
+                setIsNodeContextMenuVisible(true);
+            }
         } else if (nodes.length === 0 && edges.length > 0) {
             const xPos = event.clientX;
             const yPos = event.clientY;
