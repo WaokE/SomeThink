@@ -128,6 +128,7 @@ export const handleAddTextNode = (
     setSelectedNode,
     setIsCreatingText
 ) => {
+    if (event.nodes.length === 0) setSelectedNode(null);
     if (!isCreatingText) return;
 
     const { pointer } = event;
