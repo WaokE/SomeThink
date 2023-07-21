@@ -247,7 +247,7 @@ const MindMap = () => {
                 }
             });
 
-            setState((prevState) => ({
+            setMindMap((prevState) => ({
                 ...prevState,
                 graph: updatedGraph,
             }));
@@ -576,7 +576,7 @@ const MindMap = () => {
 
     const handleMemoChange = makeHandleMemoChange(ymapRef, setMemo);
 
-    const [state, setState] = useState(() => {
+    const [MindMap, setMindMap] = useState(() => {
         return {
             graph: {
                 nodes: [rootNode],
@@ -600,7 +600,7 @@ const MindMap = () => {
         };
     });
 
-    const { graph, events } = state;
+    const { graph, events } = MindMap;
     return (
         <div onKeyDown={handleKeyPress}>
             <button onClick={handleReset}>리셋 MindMap</button>
@@ -609,10 +609,10 @@ const MindMap = () => {
             <pre id="eventSpanContent"></pre>
             {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
             <Graph
-                graph={state.graph}
+                graph={MindMap.graph}
                 options={options}
                 events={{
-                    ...state.events,
+                    ...MindMap.events,
                     dragging: (events) => handleNodeDragging(events, ymapRef),
                     dragEnd: (events) => handleNodeDragEnd(events, ymapRef),
                     drag: handleCanvasDrag,
