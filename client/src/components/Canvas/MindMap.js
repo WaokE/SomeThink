@@ -250,6 +250,12 @@ const MindMap = () => {
         });
     }, []);
 
+    const handleKeyPress = (e) => {
+        if (e.key === "Delete") {
+            deleteNodes(selectedNode);
+        }
+    };
+
     const handleReset = () => {
         if (ymapRef.current) {
             // ymap이 초기화되었을 경우에만 clear() 메서드를 호출합니다.
@@ -587,7 +593,7 @@ const MindMap = () => {
 
     const { graph, events } = state;
     return (
-        <div>
+        <div onKeyDown={handleKeyPress}>
             <button onClick={handleReset}>리셋 MindMap</button>
             <PreventRefresh />
             <h2 id="eventSpanHeading"></h2>
@@ -611,7 +617,6 @@ const MindMap = () => {
                         );
                     },
                     oncontext: openNodeContextMenu,
-                    // click: openNodeContextMenu,
                 }}
                 style={{ height: "100vh" }}
             />
