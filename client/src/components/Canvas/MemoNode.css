@@ -1,7 +1,7 @@
 .memo {
     position: fixed;
-    top: 100px;
-    right: 20px;
+    top: 12vh;
+    right: 2vh;
     width: 200px;
     height: 100px;
     background-color: #fbeeac;
