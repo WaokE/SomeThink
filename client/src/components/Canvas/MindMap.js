@@ -174,6 +174,7 @@ const MindMap = () => {
     const [isMemoVisible, setIsMemoVisible] = useState(false);
     const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
     const [selectedNode, setSelectedNode] = useState(null);
+    const [selectedEdge, setSelectedEdge] = useState(null);
     const memoizedHandleClickOutside = useCallback(
         handleClickOutside(
             contextMenuRef,
@@ -257,7 +258,11 @@ const MindMap = () => {
 
     const handleKeyPress = (e) => {
         if (e.key === "Delete") {
-            deleteNodes(selectedNode);
+            if (selectedNode) {
+                deleteNodes(selectedNode);
+            } else if (selectedEdge) {
+                deleteEdge([`${selectedEdge}`]);
+            }
         }
     };
 
@@ -595,6 +600,8 @@ const MindMap = () => {
                             ...prevState,
                             selectedNodeId: nodes[0],
                         }));
+                    } else if (edges.length === 1) {
+                        setSelectedEdge(edges[0]);
                     }
                 },
                 doubleClick: (events) => handleDoubleClick(events, ymapRef, modifyNode),
@@ -626,6 +633,7 @@ const MindMap = () => {
                             isCreatingText,
                             ymapRef,
                             setSelectedNode,
+                            setSelectedEdge,
                             setIsCreatingText
                         );
                     },
