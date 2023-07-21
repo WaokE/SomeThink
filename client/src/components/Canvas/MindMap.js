@@ -224,9 +224,6 @@ const MindMap = () => {
         ymapRef.current.set("Counter", 2);
 
         ymapRef.current.observe((event) => {
-            setSelectedNode(null);
-            setSelectedNodeLabels([]);
-
             const updatedGraph = {
                 nodes: [],
                 edges: [],
