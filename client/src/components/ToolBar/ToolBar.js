@@ -11,8 +11,8 @@ const ToolBar = () => {
     const makeImage = () => {
         window.dispatchEvent(new CustomEvent("addImage"));
     };
-    const makePostit = () => {
-        console.log("make Postit");
+    const switchMemo = () => {
+        window.dispatchEvent(new CustomEvent("switchMemo"));
     };
     const makeComment = () => {
         console.log("make Comment");
@@ -26,7 +26,7 @@ const ToolBar = () => {
             <button className="create-node button_toolbar" onClick={makeNode}></button>
             <button className="create-text button_toolbar" onClick={makeText}></button>
             <button className="create-image button_toolbar" onClick={makeImage}></button>
-            <button className="create-memo button_toolbar" onClick={makePostit}></button>
+            <button className="create-memo button_toolbar" onClick={switchMemo}></button>
             <button className="create-comment button_toolbar" onClick={makeComment}></button>
             <button className="create-timer button_toolbar" onClick={makeTimre}></button>
         </div>

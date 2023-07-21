@@ -125,7 +125,6 @@ export const handleAddTextNode = (
     event,
     isCreatingText,
     ymapRef,
-    setState,
     setSelectedNode,
     setIsCreatingText
 ) => {
@@ -226,4 +225,10 @@ export const handleNodeContextMenu = (
             setIsImageContextMenuVisible(true);
         }
     };
+};
+
+export const makeHandleMemoChange = (ymapRef, setMemo) => (event) => {
+    const newMemo = event.target.value;
+    ymapRef.current.set("Memo", newMemo);
+    setMemo(newMemo);
 };
