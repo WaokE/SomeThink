@@ -147,6 +147,7 @@ export const handleAddTextNode = (
                 font: {
                     size: 30,
                 },
+                widthConstraint: false,
             };
 
             ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
