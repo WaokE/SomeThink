@@ -11,13 +11,15 @@ import {
     handleNodeContextMenu,
     handleNodeDragging,
     createTextInput,
-} from "./eventHandler";
+    makeHandleMemoChange,
+} from "./EventHandler";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
 
 import NodeContextMenu from "./NodeContextMenu";
 import EdgeContextMenu from "./EdgeContextMenu";
 import ImageContextMenu from "./ImageContextMenu";
+import Memo from "./MemoNode";
 
 import "./MindMap.css";
 
@@ -159,6 +161,8 @@ const MindMap = () => {
     const contextMenuRef = useRef(null);
     const [isCreatingText, setIsCreatingText] = useState(false);
     const [isCreatingImage, setIsCreatingImage] = useState(false);
+    const [memo, setMemo] = useState("");
+    const [isMemoVisible, setIsMemoVisible] = useState(false);
     const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
     const [selectedNode, setSelectedNode] = useState(null);
     const memoizedHandleClickOutside = useCallback(
@@ -219,6 +223,10 @@ const MindMap = () => {
                 edges: [],
             };
 
+            const updatedMemo = {
+                memo: "",
+            };
+
             ymapRef.current.forEach((value, key) => {
                 if (key.startsWith("Node")) {
                     const node = JSON.parse(value);
@@ -226,6 +234,8 @@ const MindMap = () => {
                 } else if (key.startsWith("Edge")) {
                     const edge = JSON.parse(value);
                     updatedGraph.edges.push(edge);
+                } else if (key === "Memo") {
+                    updatedMemo.memo = value;
                 }
             });
 
@@ -233,6 +243,7 @@ const MindMap = () => {
                 ...prevState,
                 graph: updatedGraph,
             }));
+            setMemo(updatedMemo.memo);
         });
     }, []);
 
@@ -406,15 +417,20 @@ const MindMap = () => {
         const __handleAddImageNode = (event) => {
             setIsCreatingImage(true);
         };
+        const handleSwitchMemo = (event) => {
+            setIsMemoVisible((prev) => !prev);
+        };
         document.addEventListener("click", memoizedHandleClickOutside);
         window.addEventListener("addNode", handleAddNode);
         window.addEventListener("addText", __handleAddTextNode);
         window.addEventListener("addImage", __handleAddImageNode);
+        window.addEventListener("switchMemo", handleSwitchMemo);
         return () => {
             document.removeEventListener("click", handleClickOutside);
             window.removeEventListener("addNode", handleAddNode);
             window.removeEventListener("addText", __handleAddTextNode);
             window.removeEventListener("addImage", __handleAddImageNode);
+            window.removeEventListener("switchMemo", handleSwitchMemo);
         };
     }, [selectedNode, memoizedHandleClickOutside, isCreatingImage]);
 
@@ -540,6 +556,8 @@ const MindMap = () => {
         }
     };
 
+    const handleMemoChange = makeHandleMemoChange(ymapRef, setMemo);
+
     const [state, setState] = useState(() => {
         return {
             graph: {
@@ -571,6 +589,7 @@ const MindMap = () => {
             <PreventRefresh />
             <h2 id="eventSpanHeading"></h2>
             <pre id="eventSpanContent"></pre>
+            {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
             <Graph
                 graph={state.graph}
                 options={options}
@@ -584,7 +603,6 @@ const MindMap = () => {
                             events,
                             isCreatingText,
                             ymapRef,
-                            setState,
                             setSelectedNode,
                             setIsCreatingText
                         );
