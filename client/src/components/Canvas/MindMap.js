@@ -457,6 +457,10 @@ const MindMap = () => {
     };
 
     const deleteNodes = (nodeId) => {
+        if (nodeId === 1) {
+            alert("루트 노드는 삭제할 수 없습니다!");
+            return;
+        }
         const childNodes = Array.from(ymapRef.current.keys())
             .filter((key) => key.startsWith(`Edge ${nodeId} to `))
             .map((key) => key.split(" ")[3]);
