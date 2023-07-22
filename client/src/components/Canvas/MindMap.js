@@ -315,7 +315,11 @@ const MindMap = () => {
             let userData = JSON.parse(tempData);
             if (userData) {
                 if (userData.label) {
-                    userData.color = "#FBD85D";
+                    if (userData.id === 1) {
+                        userData.color = "#f5b252";
+                    } else {
+                        userData.color = "#FBD85D";
+                    }
                     ymapRef.current.set(`Node ${userData.id}`, JSON.stringify(userData));
                 } else {
                     userData.color = "#000000";
