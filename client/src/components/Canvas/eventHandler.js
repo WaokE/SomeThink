@@ -75,7 +75,7 @@ export const handleDoubleClick = (event, ymapRef, modifyNode) => {
     }
 };
 
-export const handleNodeDragEnd = (event, ymapRef) => {
+export const handleNodeDragEnd = (event, ymapRef, setSelectedNode) => {
     const { nodes, pointer } = event;
     if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
         return;
@@ -85,6 +85,7 @@ export const handleNodeDragEnd = (event, ymapRef) => {
 
     const movedNode = ymapRef.current.get(`Node ${nodeId}`);
     ymapRef.current.set(`Node ${nodeId}`, JSON.stringify({ ...JSON.parse(movedNode), x: x, y: y }));
+    setSelectedNode(nodeId);
 };
 
 export const handleNodeDragging = (event, ymapRef) => {

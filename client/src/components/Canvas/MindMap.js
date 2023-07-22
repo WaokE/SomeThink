@@ -652,7 +652,7 @@ const MindMap = () => {
                 events={{
                     ...MindMap.events,
                     dragging: (events) => handleNodeDragging(events, ymapRef),
-                    dragEnd: (events) => handleNodeDragEnd(events, ymapRef),
+                    dragEnd: (events) => handleNodeDragEnd(events, ymapRef, setSelectedNode),
                     drag: handleCanvasDrag,
                     click: (events) => {
                         handleAddTextNode(
