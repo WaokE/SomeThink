@@ -318,6 +318,7 @@ const MindMap = () => {
             let userData = JSON.parse(ymapRef.current.get(tempValue));
             if (userData) {
                 if (userData.label) {
+                    userData.borderWidth = 1;
                     if (userData.id === 1) {
                         userData.color = "#f5b252";
                     } else {
