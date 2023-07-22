@@ -195,6 +195,7 @@ export const handleAddImageNode =
             x: 0,
             y: 0,
             physics: false,
+            size: 30,
         };
 
         ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
@@ -245,4 +246,26 @@ export const makeHandleMemoChange = (ymapRef, setMemo) => (event) => {
     const newMemo = event.target.value;
     ymapRef.current.set("Memo", newMemo);
     setMemo(newMemo);
+};
+
+export const handleMouseWheel = (event, selectedNode, ymapRef) => {
+    const node = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
+    if (node.shape === "image") {
+        if (event.deltaY < 0) {
+            if (node.size < 100) {
+                console.log("size up");
+                ymapRef.current.set(
+                    `Node ${selectedNode}`,
+                    JSON.stringify({ ...node, size: node.size + 10 })
+                );
+            }
+        } else if (event.deltaY > 0) {
+            if (node.size > 30) {
+                ymapRef.current.set(
+                    `Node ${selectedNode}`,
+                    JSON.stringify({ ...node, size: node.size - 10 })
+                );
+            }
+        }
+    }
 };
