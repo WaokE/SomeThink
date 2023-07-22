@@ -13,6 +13,7 @@ import {
     handleNodeDragging,
     createTextInput,
     makeHandleMemoChange,
+    handleMouseWheel,
 } from "./EventHandler";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
@@ -72,8 +73,8 @@ const isCyclic = (graph, fromNode, toNode) => {
 const MindMap = () => {
     const ydocRef = useRef(null);
     const ymapRef = useRef(null);
-
-    const options = {
+    const [selectedImage, setSelectedImage] = useState(false);
+    let options = {
         layout: {
             hierarchical: false,
         },
@@ -99,6 +100,7 @@ const MindMap = () => {
         },
         interaction: {
             multiselect: false,
+            zoomView: false,
         },
         manipulation: {
             enabled: true,
@@ -161,6 +163,16 @@ const MindMap = () => {
         fixed: true,
         color: "#f5b252",
     };
+
+    if (!selectedImage) {
+        options = {
+            ...options,
+            interaction: {
+                ...options.interaction,
+                zoomView: true,
+            },
+        };
+    }
 
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
     const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
@@ -425,6 +437,16 @@ const MindMap = () => {
     };
 
     useEffect(() => {
+        if (selectedNode !== null) {
+            const node = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
+            if (node.shape === "image") {
+                console.log("image");
+                setSelectedImage(true);
+            }
+        } else {
+            setSelectedImage(false);
+        }
+
         const handleAddNode = (event) => {
             if (!selectedNode) {
                 return;
@@ -440,19 +462,26 @@ const MindMap = () => {
         const handleSwitchMemo = (event) => {
             setIsMemoVisible((prev) => !prev);
         };
+        const __handleMouseWheel = (event) => {
+            if (selectedNode) {
+                handleMouseWheel(event, selectedNode, ymapRef);
+            }
+        };
         document.addEventListener("click", memoizedHandleClickOutside);
         window.addEventListener("addNode", handleAddNode);
         window.addEventListener("addText", __handleAddTextNode);
         window.addEventListener("addImage", __handleAddImageNode);
         window.addEventListener("switchMemo", handleSwitchMemo);
+        window.addEventListener("wheel", __handleMouseWheel);
         return () => {
             document.removeEventListener("click", handleClickOutside);
             window.removeEventListener("addNode", handleAddNode);
             window.removeEventListener("addText", __handleAddTextNode);
             window.removeEventListener("addImage", __handleAddImageNode);
             window.removeEventListener("switchMemo", handleSwitchMemo);
+            window.removeEventListener("wheel", __handleMouseWheel);
         };
-    }, [selectedNode, memoizedHandleClickOutside, isCreatingImage]);
+    }, [selectedNode, memoizedHandleClickOutside, isCreatingImage, selectedImage]);
 
     const deleteSingleNode = (nodeId) => {
         ymapRef.current.delete(`Node ${nodeId}`);
@@ -555,6 +584,7 @@ const MindMap = () => {
                     y: clickedNode.y + 100,
                     physics: false,
                     color: "#FBD85D",
+                    size: 30,
                 };
 
                 ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
@@ -636,7 +666,7 @@ const MindMap = () => {
                     },
                     oncontext: openNodeContextMenu,
                 }}
-                style={{ height: "100vh" }}
+                style={{ height: "86vh" }}
             />
             {isNodeContextMenuVisible && (
                 <div
