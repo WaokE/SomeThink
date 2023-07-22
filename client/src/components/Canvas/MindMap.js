@@ -274,10 +274,16 @@ const MindMap = () => {
             let selectedNode = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
             ymapRef.current.set(`User ${tempUserId} selected`, JSON.stringify(selectedNode));
             selectedNode.borderWidth = 5;
-            selectedNode.color = {
-                border: "#CBFFA9",
-                background: "#FBD85D",
-            };
+            if (selectedNode.id === 1) {
+                selectedNode.color = {
+                    border: "#CBFFA9",
+                };
+            } else {
+                selectedNode.color = {
+                    border: "#CBFFA9",
+                    background: "#FBD85D",
+                };
+            }
             selectedNode.owner = tempUserId;
             ymapRef.current.set(`Node ${event.nodes[0]}`, JSON.stringify(selectedNode));
         }
