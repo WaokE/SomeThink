@@ -272,7 +272,7 @@ const MindMap = () => {
         if (event.nodes.length > 0) {
             checkPrevSelected(tempUserId);
             let selectedNode = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
-            ymapRef.current.set(`User ${tempUserId} selected`, JSON.stringify(selectedNode));
+            ymapRef.current.set(`User ${tempUserId} selected`, `Node ${event.nodes[0]}`);
             selectedNode.borderWidth = 5;
             if (selectedNode.id === 1) {
                 selectedNode.color = {
@@ -294,7 +294,10 @@ const MindMap = () => {
             let selectedEdge = JSON.parse(
                 ymapRef.current.get(`Edge ${tempEdge[0]} to ${tempEdge[2]}`)
             );
-            ymapRef.current.set(`User ${tempUserId} selected`, JSON.stringify(selectedEdge));
+            ymapRef.current.set(
+                `User ${tempUserId} selected`,
+                `Edge ${tempEdge[0]} to ${tempEdge[2]}`
+            );
             selectedEdge.borderWidth = 5;
             selectedEdge.color = "#CBFFA9";
             selectedEdge.owner = tempUserId;
@@ -310,9 +313,9 @@ const MindMap = () => {
     };
 
     const checkPrevSelected = (userId) => {
-        const tempData = ymapRef.current.get(`User ${userId} selected`);
-        if (tempData) {
-            let userData = JSON.parse(tempData);
+        const tempValue = ymapRef.current.get(`User ${userId} selected`);
+        if (tempValue) {
+            let userData = JSON.parse(ymapRef.current.get(tempValue));
             if (userData) {
                 if (userData.label) {
                     if (userData.id === 1) {
