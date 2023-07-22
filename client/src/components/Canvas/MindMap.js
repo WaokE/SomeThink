@@ -265,6 +265,76 @@ const MindMap = () => {
         });
     }, []);
 
+    const handleUserSelect = (event) => {
+        // NOTE: 임시 유저 ID
+        const tempUserId = 1;
+        // 노드 선택시
+        if (event.nodes.length > 0) {
+            checkPrevSelected(tempUserId);
+            let selectedNode = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
+            ymapRef.current.set(`User ${tempUserId} selected`, `Node ${event.nodes[0]}`);
+            selectedNode.borderWidth = 5;
+            if (selectedNode.id === 1) {
+                selectedNode.color = {
+                    border: "#CBFFA9",
+                };
+            } else {
+                selectedNode.color = {
+                    border: "#CBFFA9",
+                    background: "#FBD85D",
+                };
+            }
+            selectedNode.owner = tempUserId;
+            ymapRef.current.set(`Node ${event.nodes[0]}`, JSON.stringify(selectedNode));
+        }
+        // 엣지 선택시
+        else if (event.edges.length > 0) {
+            checkPrevSelected(tempUserId);
+            const tempEdge = event.edges[0].split(" ");
+            let selectedEdge = JSON.parse(
+                ymapRef.current.get(`Edge ${tempEdge[0]} to ${tempEdge[2]}`)
+            );
+            ymapRef.current.set(
+                `User ${tempUserId} selected`,
+                `Edge ${tempEdge[0]} to ${tempEdge[2]}`
+            );
+            selectedEdge.borderWidth = 5;
+            selectedEdge.color = "#CBFFA9";
+            selectedEdge.owner = tempUserId;
+            ymapRef.current.set(
+                `Edge ${tempEdge[0]} to ${tempEdge[2]}`,
+                JSON.stringify(selectedEdge)
+            );
+        }
+        // 노드, 엣지 선택 해제시
+        else {
+            checkPrevSelected(tempUserId);
+        }
+    };
+
+    const checkPrevSelected = (userId) => {
+        const tempValue = ymapRef.current.get(`User ${userId} selected`);
+        if (tempValue) {
+            let userData = JSON.parse(ymapRef.current.get(tempValue));
+            if (userData) {
+                if (userData.label) {
+                    if (userData.id === 1) {
+                        userData.color = "#f5b252";
+                    } else {
+                        userData.color = "#FBD85D";
+                    }
+                    ymapRef.current.set(`Node ${userData.id}`, JSON.stringify(userData));
+                } else {
+                    userData.color = "#000000";
+                    ymapRef.current.set(
+                        `Edge ${userData.from} to ${userData.to}`,
+                        JSON.stringify(userData)
+                    );
+                }
+            }
+        }
+    };
+
     const handleKeyPress = (e) => {
         if (e.key === "Delete") {
             if (selectedNode) {
@@ -664,6 +734,7 @@ const MindMap = () => {
                             setIsCreatingText
                         );
                     },
+                    select: handleUserSelect,
                     oncontext: openNodeContextMenu,
                 }}
                 style={{ height: "86vh" }}
