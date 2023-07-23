@@ -22,6 +22,7 @@ import NodeContextMenu from "./NodeContextMenu";
 import EdgeContextMenu from "./EdgeContextMenu";
 import ImageContextMenu from "./ImageContextMenu";
 import TextContextMenu from "./TextContextMenu";
+import LowToolBar from "../LowToolBar/LowToolBar";
 import Memo from "./MemoNode";
 
 import "./MindMap.css";
@@ -793,6 +794,7 @@ const MindMap = () => {
                     />
                 </div>
             )}
+            <LowToolBar />
         </div>
     );
 };
