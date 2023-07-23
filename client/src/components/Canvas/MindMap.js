@@ -77,6 +77,8 @@ const isCyclic = (graph, fromNode, toNode) => {
 const MindMap = () => {
     const ydocRef = useRef(null);
     const ymapRef = useRef(null);
+    const networkRef = useRef(null);
+
     const [selectedImage, setSelectedImage] = useState(false);
     let options = {
         layout: {
@@ -336,6 +338,13 @@ const MindMap = () => {
             } else if (selectedEdge) {
                 deleteEdge([`${selectedEdge}`]);
             }
+        }
+        if (e.key === " ") {
+            networkRef.current.moveTo({
+                position: { x: 0, y: 0 },
+                scale: 1.0,
+                offset: { x: 0, y: 0 },
+            });
         }
     };
 
@@ -753,6 +762,11 @@ const MindMap = () => {
                         oncontext: openNodeContextMenu,
                     }}
                     style={{ height: "100%", width: "100%" }}
+                    getNetwork={(network) => {
+                        network.on("initRedraw", () => {
+                            networkRef.current = network;
+                        });
+                    }}
                 />
                 {isNodeContextMenuVisible && (
                     <div
