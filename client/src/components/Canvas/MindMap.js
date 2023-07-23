@@ -287,33 +287,16 @@ const MindMap = () => {
             selectedNode.owner = tempUserId;
             ymapRef.current.set(`Node ${event.nodes[0]}`, JSON.stringify(selectedNode));
         }
-        // 엣지 선택시
-        else if (event.edges.length > 0) {
-            checkPrevSelected(tempUserId);
-            const tempEdge = event.edges[0].split(" ");
-            let selectedEdge = JSON.parse(
-                ymapRef.current.get(`Edge ${tempEdge[0]} to ${tempEdge[2]}`)
-            );
-            ymapRef.current.set(
-                `User ${tempUserId} selected`,
-                `Edge ${tempEdge[0]} to ${tempEdge[2]}`
-            );
-            selectedEdge.borderWidth = 2;
-            selectedEdge.color = "#CBFFA9";
-            selectedEdge.owner = tempUserId;
-            ymapRef.current.set(
-                `Edge ${tempEdge[0]} to ${tempEdge[2]}`,
-                JSON.stringify(selectedEdge)
-            );
-        }
-        // 노드, 엣지 선택 해제시
+        // 선택 해제시
         else {
             checkPrevSelected(tempUserId);
         }
     };
 
+    // 유저가 선택한 값이 있는지 검사
     const checkPrevSelected = (userId) => {
         const tempValue = ymapRef.current.get(`User ${userId} selected`);
+        // 있다면 해당 값 원래대로 돌려놓음
         if (tempValue) {
             let userData = JSON.parse(ymapRef.current.get(tempValue));
             if (userData) {
@@ -324,13 +307,7 @@ const MindMap = () => {
                     } else {
                         userData.color = "#FBD85D";
                     }
-                    ymapRef.current.set(`Node ${userData.id}`, JSON.stringify(userData));
-                } else {
-                    userData.color = "#000000";
-                    ymapRef.current.set(
-                        `Edge ${userData.from} to ${userData.to}`,
-                        JSON.stringify(userData)
-                    );
+                    ymapRef.current.set(`Node ${userId}`, JSON.stringify(userData));
                 }
             }
         }
