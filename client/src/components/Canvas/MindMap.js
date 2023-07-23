@@ -2,6 +2,10 @@
 import Graph from "react-graph-vis";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import ReactDOM from "react-dom";
+import TopBar from "../TopBar/TopBar";
+import html2canvas from "html2canvas";
+import fileDownload from "js-file-download";
+
 import {
     handleDoubleClick,
     handleNodeDragEnd,
@@ -26,7 +30,6 @@ import LowToolBar from "../LowToolBar/LowToolBar";
 import Memo from "./MemoNode";
 
 import "./MindMap.css";
-
 const PreventRefresh = () => {
     useEffect(() => {
         const handleBeforeUnload = (event) => {
@@ -235,17 +238,17 @@ const MindMap = () => {
         ymapRef.current = ydocRef.current.getMap("MindMap");
         ymapRef.current.set("Node 1", JSON.stringify(rootNode));
         ymapRef.current.set("Counter", 2);
-    
+
         ymapRef.current.observe((event) => {
             const updatedGraph = {
                 nodes: [],
                 edges: [],
             };
-    
+
             const updatedMemo = {
                 memo: "",
             };
-    
+
             ymapRef.current.forEach((value, key) => {
                 if (key.startsWith("Node")) {
                     const node = JSON.parse(value);
@@ -257,25 +260,24 @@ const MindMap = () => {
                     updatedMemo.memo = value;
                 }
             });
-    
+
             setMindMap((prevState) => ({
                 ...prevState,
                 graph: updatedGraph,
             }));
             setMemo(updatedMemo.memo);
         });
-    
+
         const handleResetNode = () => {
             handleReset();
         };
-    
+
         window.addEventListener("resetNode", handleResetNode);
-    
+
         return () => {
             window.removeEventListener("resetNode", handleResetNode);
         };
     }, []);
-    
 
     const handleUserSelect = (event) => {
         // NOTE: 임시 유저 ID
@@ -702,109 +704,127 @@ const MindMap = () => {
         };
     });
 
+    const captureRef = useRef(null);
+
+    const handleExportClick = () => {
+        if (captureRef.current) {
+            html2canvas(captureRef.current).then((canvas) => {
+                canvas.toBlob((blob) => {
+                    fileDownload(blob, "screenshot.png");
+                });
+            });
+        }
+    };
+
+    // Apply CSS to prevent scrolling
+    document.body.style.overflow = "hidden";
+
     const { graph, events } = MindMap;
     return (
         <div onKeyDown={handleKeyPress} style={{ width: "100vw", height: "100vh" }}>
-            {/* <button onClick={handleReset}>리셋 MindMap</button> */}
-            <PreventRefresh />
-            <h2 id="eventSpanHeading"></h2>
-            <pre id="eventSpanContent"></pre>
-            {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
-            <Graph
-                graph={MindMap.graph}
-                options={options}
-                events={{
-                    ...MindMap.events,
-                    dragging: (events) => handleNodeDragging(events, ymapRef),
-                    dragEnd: (events) => handleNodeDragEnd(events, ymapRef, setSelectedNode),
-                    drag: handleCanvasDrag,
-                    click: (events) => {
-                        handleAddTextNode(
-                            events,
-                            isCreatingText,
-                            ymapRef,
-                            setSelectedNode,
-                            setSelectedEdge,
-                            setIsCreatingText
-                        );
-                    },
-                    select: handleUserSelect,
-                    oncontext: openNodeContextMenu,
-                }}
-                style={{ height: "100%", width: "100%" }}
-            />
-            {isNodeContextMenuVisible && (
-                <div
-                    ref={contextMenuRef}
-                    className="context-menu"
-                    style={{
-                        position: "absolute",
-                        left: contextMenuPos.xPos,
-                        top: contextMenuPos.yPos,
+            <TopBar onExportClick={handleExportClick} />
+            <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
+                <PreventRefresh />
+                <PreventRefresh />
+                <h2 id="eventSpanHeading"></h2>
+                <pre id="eventSpanContent"></pre>
+                {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
+                <Graph
+                    graph={MindMap.graph}
+                    options={options}
+                    events={{
+                        ...MindMap.events,
+                        dragging: (events) => handleNodeDragging(events, ymapRef),
+                        dragEnd: (events) => handleNodeDragEnd(events, ymapRef, setSelectedNode),
+                        drag: handleCanvasDrag,
+                        click: (events) => {
+                            handleAddTextNode(
+                                events,
+                                isCreatingText,
+                                ymapRef,
+                                setSelectedNode,
+                                setSelectedEdge,
+                                setIsCreatingText
+                            );
+                        },
+                        select: handleUserSelect,
+                        oncontext: openNodeContextMenu,
                     }}
-                >
-                    <NodeContextMenu
-                        selectedNodeId={contextMenuPos.selectedNodeId}
-                        onClose={closeNodeContextMenu}
-                        deleteNode={deleteNodes}
-                        createNode={createNode}
-                        setIsCreatingText={setIsCreatingText}
-                        handleAddImageNode={handleAddImageNode}
-                        handleNodeSelect={handleNodeSelect}
-                    />
-                </div>
-            )}
-            {isEdgeContextMenuVisible && (
-                <div
-                    ref={contextMenuRef}
-                    className="context-menu"
-                    style={{
-                        position: "absolute",
-                        left: contextMenuPos.xPos,
-                        top: contextMenuPos.yPos,
-                    }}
-                >
-                    <EdgeContextMenu
-                        selectedEdge={contextMenuPos.selectedEdge}
-                        onClose={closeEdgeContextMenu}
-                        deleteEdge={deleteEdge}
-                    />
-                </div>
-            )}
-            {isImageContextMenuVisible && isCreatingImage && (
-                <div
-                    ref={contextMenuRef}
-                    className="context-menu"
-                    style={{
-                        position: "absolute",
-                        left: contextMenuPos.xPos,
-                        top: contextMenuPos.yPos,
-                    }}
-                >
-                    <ImageContextMenu
-                        handleAddImageNode={handleAddImageNode}
-                        onClose={closeImageContextMenu}
-                        setIsCreatingImage={setIsCreatingImage}
-                    />
-                </div>
-            )}
-            {isTextContextMenuVisible && (
-                <div
-                    ref={contextMenuRef}
-                    className="context-menu"
-                    style={{
-                        position: "absolute",
-                        left: contextMenuPos.xPos,
-                        top: contextMenuPos.yPos,
-                    }}
-                >
-                    <TextContextMenu
-                        selectedText={contextMenuPos.selectedNodeId}
-                        onClose={closeTextContextMenu}
-                        deleteNode={deleteNodes}
-                    />
-                </div>
-            )}
+                    style={{ height: "100%", width: "100%" }}
+                />
+                {isNodeContextMenuVisible && (
+                    <div
+                        ref={contextMenuRef}
+                        className="context-menu"
+                        style={{
+                            position: "absolute",
+                            left: contextMenuPos.xPos,
+                            top: contextMenuPos.yPos,
+                        }}
+                    >
+                        <NodeContextMenu
+                            selectedNodeId={contextMenuPos.selectedNodeId}
+                            onClose={closeNodeContextMenu}
+                            deleteNode={deleteNodes}
+                            createNode={createNode}
+                            setIsCreatingText={setIsCreatingText}
+                            handleAddImageNode={handleAddImageNode}
+                            handleNodeSelect={handleNodeSelect}
+                        />
+                    </div>
+                )}
+                {isEdgeContextMenuVisible && (
+                    <div
+                        ref={contextMenuRef}
+                        className="context-menu"
+                        style={{
+                            position: "absolute",
+                            left: contextMenuPos.xPos,
+                            top: contextMenuPos.yPos,
+                        }}
+                    >
+                        <EdgeContextMenu
+                            selectedEdge={contextMenuPos.selectedEdge}
+                            onClose={closeEdgeContextMenu}
+                            deleteEdge={deleteEdge}
+                        />
+                    </div>
+                )}
+                {isImageContextMenuVisible && isCreatingImage && (
+                    <div
+                        ref={contextMenuRef}
+                        className="context-menu"
+                        style={{
+                            position: "absolute",
+                            left: contextMenuPos.xPos,
+                            top: contextMenuPos.yPos,
+                        }}
+                    >
+                        <ImageContextMenu
+                            handleAddImageNode={handleAddImageNode}
+                            onClose={closeImageContextMenu}
+                            setIsCreatingImage={setIsCreatingImage}
+                        />
+                    </div>
+                )}
+                {isTextContextMenuVisible && (
+                    <div
+                        ref={contextMenuRef}
+                        className="context-menu"
+                        style={{
+                            position: "absolute",
+                            left: contextMenuPos.xPos,
+                            top: contextMenuPos.yPos,
+                        }}
+                    >
+                        <TextContextMenu
+                            selectedText={contextMenuPos.selectedNodeId}
+                            onClose={closeTextContextMenu}
+                            deleteNode={deleteNodes}
+                        />
+                    </div>
+                )}
+            </div>
             <LowToolBar />
         </div>
     );
