@@ -273,7 +273,7 @@ const MindMap = () => {
             checkPrevSelected(tempUserId);
             let selectedNode = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
             ymapRef.current.set(`User ${tempUserId} selected`, `Node ${event.nodes[0]}`);
-            selectedNode.borderWidth = 5;
+            selectedNode.borderWidth = 2;
             if (selectedNode.id === 1) {
                 selectedNode.color = {
                     border: "#CBFFA9",
@@ -298,7 +298,7 @@ const MindMap = () => {
                 `User ${tempUserId} selected`,
                 `Edge ${tempEdge[0]} to ${tempEdge[2]}`
             );
-            selectedEdge.borderWidth = 5;
+            selectedEdge.borderWidth = 2;
             selectedEdge.color = "#CBFFA9";
             selectedEdge.owner = tempUserId;
             ymapRef.current.set(

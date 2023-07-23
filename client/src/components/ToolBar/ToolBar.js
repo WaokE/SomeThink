@@ -27,8 +27,8 @@ const ToolBar = () => {
             <button className="create-text button_toolbar" onClick={makeText}></button>
             <button className="create-image button_toolbar" onClick={makeImage}></button>
             <button className="create-memo button_toolbar" onClick={switchMemo}></button>
-            <button className="create-comment button_toolbar" onClick={makeComment}></button>
-            <button className="create-timer button_toolbar" onClick={makeTimre}></button>
+            {/* <button className="create-comment button_toolbar" onClick={makeComment}></button> */}
+            {/* <button className="create-timer button_toolbar" onClick={makeTimre}></button> */}
         </div>
     );
 };
