@@ -109,56 +109,56 @@ const MindMap = () => {
             multiselect: false,
             zoomView: false,
         },
-        // manipulation: {
-        //     enabled: true,
-        //     initiallyActive: true,
-        //     addEdge: (data, callback) => {
-        //         const fromNode = data.from;
-        //         const toNode = data.to;
-        //         if (fromNode === toNode) {
-        //             alert("자기 자신을 가리키는 엣지는 만들 수 없습니다!");
-        //             return;
-        //         }
-        //         if (
-        //             ymapRef.current.has(`Edge ${fromNode} to ${toNode}`) ||
-        //             ymapRef.current.has(`Edge ${toNode} to ${fromNode}`)
-        //         ) {
-        //             alert("이미 존재하는 엣지입니다!");
-        //             return;
-        //         }
-        //         if (
-        //             !isCyclic(
-        //                 Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
-        //                 fromNode,
-        //                 toNode
-        //             )
-        //         ) {
-        //             alert("순환 구조를 만들 수 없습니다!");
-        //             return;
-        //         }
-        //         let createdEdge;
-        //         if (
-        //             checkIsConnectedToRoot(
-        //                 Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
-        //                 toNode
-        //             )
-        //         ) {
-        //             createEdge(toNode, fromNode);
-        //             createdEdge = `Edge ${toNode} to ${fromNode}`;
-        //         } else {
-        //             createEdge(fromNode, toNode);
-        //             createdEdge = `Edge ${fromNode} to ${toNode}`;
-        //         }
-        //         sortEdgesCorrectly(
-        //             Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
-        //             createdEdge
-        //         );
-        //     },
-        //     addNode: false,
-        //     editEdge: false,
-        //     deleteNode: false,
-        //     deleteEdge: false,
-        // },
+        manipulation: {
+            enabled: false,
+            initiallyActive: true,
+            addEdge: (data, callback) => {
+                const fromNode = data.from;
+                const toNode = data.to;
+                if (fromNode === toNode) {
+                    alert("자기 자신을 가리키는 엣지는 만들 수 없습니다!");
+                    return;
+                }
+                if (
+                    ymapRef.current.has(`Edge ${fromNode} to ${toNode}`) ||
+                    ymapRef.current.has(`Edge ${toNode} to ${fromNode}`)
+                ) {
+                    alert("이미 존재하는 엣지입니다!");
+                    return;
+                }
+                if (
+                    !isCyclic(
+                        Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
+                        fromNode,
+                        toNode
+                    )
+                ) {
+                    alert("순환 구조를 만들 수 없습니다!");
+                    return;
+                }
+                let createdEdge;
+                if (
+                    checkIsConnectedToRoot(
+                        Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
+                        toNode
+                    )
+                ) {
+                    createEdge(toNode, fromNode);
+                    createdEdge = `Edge ${toNode} to ${fromNode}`;
+                } else {
+                    createEdge(fromNode, toNode);
+                    createdEdge = `Edge ${fromNode} to ${toNode}`;
+                }
+                sortEdgesCorrectly(
+                    Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
+                    createdEdge
+                );
+            },
+            addNode: false,
+            editEdge: false,
+            deleteNode: false,
+            deleteEdge: false,
+        },
     };
 
     const rootNode = {
@@ -754,24 +754,20 @@ const MindMap = () => {
         }
     };
 
-    // Apply CSS to prevent scrolling
-    document.body.style.overflow = "hidden";
-
     const { graph, events } = MindMap;
     return (
         <div
             onKeyDown={handleKeyPress}
             onMouseMove={(e) => handleMouseMove(e)}
-            style={{ width: "100vw", height: "100vh" }}
+            style={{ position: "absolute", width: "100vw", height: "100vh", zIndex: 0 }}
         >
             <UserMouseMove userMouseData={mouseCoordinates} networkRef={networkRef} />
-            <TopBar onExportClick={handleExportClick} />
+            <TopBar
+                onExportClick={handleExportClick}
+            />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
-                <input type="text" value={inputId} onChange={handleInputChange} />
+                <input type="text" value={inputId} onChange={handleInputChange} style={{position: "absolute", zIndex:1}} />
                 <PreventRefresh />
-                <PreventRefresh />
-                <h2 id="eventSpanHeading"></h2>
-                <pre id="eventSpanContent"></pre>
                 {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
                 <Graph
                     graph={MindMap.graph}
