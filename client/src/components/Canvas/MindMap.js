@@ -532,7 +532,11 @@ const MindMap = () => {
     }, [selectedNode, memoizedHandleClickOutside, isCreatingImage, selectedImage]);
 
     const deleteSingleNode = (nodeId) => {
+        // NOTE: 임시 유저 ID
+        const tempUserId = 1;
         ymapRef.current.delete(`Node ${nodeId}`);
+        ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` &&
+            ymapRef.current.delete(`User ${tempUserId} selected`);
     };
 
     const deleteNodes = (nodeId) => {
