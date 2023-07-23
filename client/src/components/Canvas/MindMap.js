@@ -112,48 +112,6 @@ const MindMap = () => {
         manipulation: {
             enabled: false,
             initiallyActive: true,
-            addEdge: (data, callback) => {
-                const fromNode = data.from;
-                const toNode = data.to;
-                if (fromNode === toNode) {
-                    alert("자기 자신을 가리키는 엣지는 만들 수 없습니다!");
-                    return;
-                }
-                if (
-                    ymapRef.current.has(`Edge ${fromNode} to ${toNode}`) ||
-                    ymapRef.current.has(`Edge ${toNode} to ${fromNode}`)
-                ) {
-                    alert("이미 존재하는 엣지입니다!");
-                    return;
-                }
-                if (
-                    !isCyclic(
-                        Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
-                        fromNode,
-                        toNode
-                    )
-                ) {
-                    alert("순환 구조를 만들 수 없습니다!");
-                    return;
-                }
-                let createdEdge;
-                if (
-                    checkIsConnectedToRoot(
-                        Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
-                        toNode
-                    )
-                ) {
-                    createEdge(toNode, fromNode);
-                    createdEdge = `Edge ${toNode} to ${fromNode}`;
-                } else {
-                    createEdge(fromNode, toNode);
-                    createdEdge = `Edge ${fromNode} to ${toNode}`;
-                }
-                sortEdgesCorrectly(
-                    Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
-                    createdEdge
-                );
-            },
             addNode: false,
             editEdge: false,
             deleteNode: false,
@@ -181,6 +139,8 @@ const MindMap = () => {
         };
     }
 
+    const [fromNode, setFromNode] = useState(null);
+    const [isCreatingEdge, setIsCreatingEdge] = useState(false);
     const [inputId, setInputId] = useState("");
     const [mouseCoordinates, setMouseCoordinates] = useState([]);
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
@@ -311,8 +271,62 @@ const MindMap = () => {
     const handleUserSelect = (event) => {
         // NOTE: 임시 유저 ID
         const tempUserId = 1;
-        // 노드 선택시
+
+        if (isCreatingEdge) {
+            if (event.nodes.length > 0) {
+                const toNode = event.nodes[0];
+                if (toNode === fromNode) {
+                    alert("자기 자신을 가리키는 엣지는 만들 수 없습니다!");
+                    setIsCreatingEdge(false);
+                    setFromNode(null);
+                    return;
+                }
+                if (
+                    ymapRef.current.has(`Edge ${fromNode} to ${toNode}`) ||
+                    ymapRef.current.has(`Edge ${toNode} to ${fromNode}`)
+                ) {
+                    alert("이미 존재하는 엣지입니다!");
+                    setIsCreatingEdge(false);
+                    setFromNode(null);
+                    return;
+                }
+                if (
+                    !isCyclic(
+                        Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
+                        fromNode,
+                        toNode
+                    )
+                ) {
+                    alert("순환 구조를 만들 수 없습니다!");
+                    setIsCreatingEdge(false);
+                    setFromNode(null);
+                    return;
+                }
+                let createdEdge;
+                if (
+                    checkIsConnectedToRoot(
+                        Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
+                        toNode
+                    )
+                ) {
+                    createEdge(toNode, fromNode);
+                    createdEdge = `Edge ${toNode} to ${fromNode}`;
+                } else {
+                    createEdge(fromNode, toNode);
+                    createdEdge = `Edge ${fromNode} to ${toNode}`;
+                }
+                sortEdgesCorrectly(
+                    Array.from(ymapRef.current.keys()).filter((key) => key.startsWith("Edge ")),
+                    createdEdge
+                );
+                setIsCreatingEdge(false);
+                setFromNode(null);
+            }
+            return;
+        }
+
         if (event.nodes.length > 0) {
+            // 노드 선택시
             setSelectedNode(event.nodes[0]);
             checkPrevSelected(tempUserId);
             let selectedNode = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
@@ -762,11 +776,14 @@ const MindMap = () => {
             style={{ position: "absolute", width: "100vw", height: "100vh", zIndex: 0 }}
         >
             <UserMouseMove userMouseData={mouseCoordinates} networkRef={networkRef} />
-            <TopBar
-                onExportClick={handleExportClick}
-            />
+            <TopBar onExportClick={handleExportClick} />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
-                <input type="text" value={inputId} onChange={handleInputChange} style={{position: "absolute", zIndex:1}} />
+                <input
+                    type="text"
+                    value={inputId}
+                    onChange={handleInputChange}
+                    style={{ position: "absolute", zIndex: 1 }}
+                />
                 <PreventRefresh />
                 {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
                 <Graph
@@ -809,10 +826,13 @@ const MindMap = () => {
                     >
                         <NodeContextMenu
                             selectedNodeId={contextMenuPos.selectedNodeId}
+                            selectedNode={selectedNode}
                             onClose={closeNodeContextMenu}
                             deleteNode={deleteNodes}
                             createNode={createNode}
                             setIsCreatingText={setIsCreatingText}
+                            setIsCreatingEdge={setIsCreatingEdge}
+                            setFromNode={setFromNode}
                             handleAddImageNode={handleAddImageNode}
                             handleNodeSelect={handleNodeSelect}
                         />
