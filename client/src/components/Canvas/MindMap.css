@@ -1,3 +1,7 @@
+div.vis-network:focus {
+    outline: none;
+}
+
 div.vis-network div.vis-edit-mode {
     height: 30px;
     left: 0;
@@ -32,5 +36,3 @@ div.vis-network div.vis-manipulation {
     top: 0;
     width: 100%;
 }
-
-
