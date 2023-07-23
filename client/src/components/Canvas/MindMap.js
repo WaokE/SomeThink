@@ -27,6 +27,7 @@ import EdgeContextMenu from "./EdgeContextMenu";
 import ImageContextMenu from "./ImageContextMenu";
 import TextContextMenu from "./TextContextMenu";
 import LowToolBar from "../LowToolBar/LowToolBar";
+import UserMouseMove from "./UserMouseMove";
 import Memo from "./MemoNode";
 
 import "./MindMap.css";
@@ -180,6 +181,8 @@ const MindMap = () => {
         };
     }
 
+    const [inputId, setInputId] = useState("");
+    const [mouseCoordinates, setMouseCoordinates] = useState([]);
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
     const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
     const [isEdgeContextMenuVisible, setIsEdgeContextMenuVisible] = useState(false);
@@ -236,7 +239,7 @@ const MindMap = () => {
     useEffect(() => {
         ydocRef.current = new Y.Doc();
         // const provider = new WebsocketProvider("wss://somethink.online", "17", ydocRef.current);
-        const provider = new WebsocketProvider("ws://localhost:1234", "17", ydocRef.current);
+        const provider = new WebsocketProvider("ws://localhost:1234", "12327", ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
         ymapRef.current.set("Node 1", JSON.stringify(rootNode));
         ymapRef.current.set("Counter", 2);
@@ -251,6 +254,8 @@ const MindMap = () => {
                 memo: "",
             };
 
+            const Mouses = [];
+
             ymapRef.current.forEach((value, key) => {
                 if (key.startsWith("Node")) {
                     const node = JSON.parse(value);
@@ -260,6 +265,9 @@ const MindMap = () => {
                     updatedGraph.edges.push(edge);
                 } else if (key === "Memo") {
                     updatedMemo.memo = value;
+                } else if (key.startsWith("Mouse")) {
+                    const coordinate = JSON.parse(value);
+                    Mouses.push([coordinate.id, coordinate.x, coordinate.y]);
                 }
             });
 
@@ -268,6 +276,7 @@ const MindMap = () => {
                 graph: updatedGraph,
             }));
             setMemo(updatedMemo.memo);
+            setMouseCoordinates(Mouses);
         });
 
         const handleResetNode = () => {
@@ -280,6 +289,24 @@ const MindMap = () => {
             window.removeEventListener("resetNode", handleResetNode);
         };
     }, []);
+
+    const handleInputChange = (event) => {
+        setInputId(event.target.value.replace(/[^0-9]/g, ""));
+    };
+
+    const handleMouseMove = (e) => {
+        if (networkRef.current !== null) {
+            const coord = networkRef.current.DOMtoCanvas({ x: e.clientX, y: e.clientY });
+            const nx = coord.x;
+            const ny = coord.y;
+            if (inputId == 1 || inputId == 2) {
+                ymapRef.current.set(
+                    `Mouse ${inputId}`,
+                    JSON.stringify({ x: nx, y: ny, id: inputId })
+                );
+            }
+        }
+    };
 
     const handleUserSelect = (event) => {
         // NOTE: 임시 유저 ID
@@ -732,9 +759,15 @@ const MindMap = () => {
 
     const { graph, events } = MindMap;
     return (
-        <div onKeyDown={handleKeyPress} style={{ width: "100vw", height: "100vh" }}>
+        <div
+            onKeyDown={handleKeyPress}
+            onMouseMove={(e) => handleMouseMove(e)}
+            style={{ width: "100vw", height: "100vh" }}
+        >
+            <UserMouseMove userMouseData={mouseCoordinates} networkRef={networkRef} />
             <TopBar onExportClick={handleExportClick} />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
+                <input type="text" value={inputId} onChange={handleInputChange} />
                 <PreventRefresh />
                 <PreventRefresh />
                 <h2 id="eventSpanHeading"></h2>
