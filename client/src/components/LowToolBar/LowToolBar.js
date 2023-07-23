@@ -9,20 +9,19 @@ import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
 
 const styles = {
     bottomNav: {
-        width: "400px", // 너비 조정
+        width: "300px", // 너비 조정
         height: "50px", // 높이 조정
         borderRadius: "100px", // 라운드를 위한 값
         border: "2px solid #d9d9d9", // 테두리 설정
         position: "fixed",
-        bottom: "20px", // 하단 간격 조정
+        bottom: "15px", // 하단 간격 조정
         left: "50%",
         transform: "translateX(-50%)", // 가운데 정렬
-        padding: "0px", // 간격 조정을 위해 padding 제거
-        display: "flex", // 내부 요소를 가로로 정렬
     },
     action: {
         borderRadius: "100px", // 테두리를 둥글게 만듦
         flex: "1", // 각 요소의 비율을 동일하게 설정하여 가로 간격을 줄임
+        margin: "0px -10px", // 버튼간의 간격을 추가하여 침범하지 않도록 함
     },
 };
 
@@ -33,32 +32,53 @@ export default function LowToolBar() {
         setValue(newValue);
     };
 
+    const makeNode = () => {
+        window.dispatchEvent(new CustomEvent("addNode"));
+    };
+    const makeText = () => {
+        window.dispatchEvent(new CustomEvent("addText"));
+    };
+    const makeImage = () => {
+        window.dispatchEvent(new CustomEvent("addImage"));
+    };
+    const switchMemo = () => {
+        window.dispatchEvent(new CustomEvent("switchMemo"));
+    };
+    const resetNode = () => {
+        window.dispatchEvent(new CustomEvent("resetNode"));
+    };
+
     return (
         <BottomNavigation sx={styles.bottomNav} value={value} onChange={handleChange}>
             <BottomNavigationAction
                 value="recents"
-                icon={<AddCircleIcon />}
-                sx={styles.action} // BottomNavigationAction의 스타일 적용
+                icon={<AddCircleIcon sx={{ fontSize: "20px" }} />} // Adjust the fontSize here
+                sx={styles.action}
+                onClick={makeNode}
             />
             <BottomNavigationAction
                 value="nearby"
-                icon={<EditNoteRoundedIcon />}
-                sx={styles.action} // BottomNavigationAction의 스타일 적용
+                icon={<EditNoteRoundedIcon sx={{ fontSize: "20px" }} />} // Adjust the fontSize here
+                sx={styles.action}
+                onClick={makeText}
             />
             <BottomNavigationAction
                 value="favorites"
-                icon={<AddPhotoAlternateIcon />}
-                sx={styles.action} // BottomNavigationAction의 스타일 적용
+                icon={<AddPhotoAlternateIcon sx={{ fontSize: "20px" }} />} // Adjust the fontSize here
+                sx={styles.action}
+                onClick={makeImage}
             />
             <BottomNavigationAction
                 value="memo"
-                icon={<ContentPasteRoundedIcon />}
-                sx={styles.action} // BottomNavigationAction의 스타일 적용
+                icon={<ContentPasteRoundedIcon sx={{ fontSize: "20px" }} />} // Adjust the fontSize here
+                sx={styles.action}
+                onClick={switchMemo}
             />
             <BottomNavigationAction
                 value="reset"
-                icon={<DeleteForeverRoundedIcon />}
-                sx={styles.action} // BottomNavigationAction의 스타일 적용
+                icon={<DeleteForeverRoundedIcon sx={{ fontSize: "20px" }} />} // Adjust the fontSize here
+                sx={styles.action}
+                onClick={resetNode}
             />
         </BottomNavigation>
     );
