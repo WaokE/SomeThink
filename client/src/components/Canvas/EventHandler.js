@@ -171,18 +171,30 @@ export const handleAddTextNode = (
         (newLabel) => {
             if (newLabel === "") {
                 alert("키워드를 입력해주세요");
+                handleTextInputBlur(); // Call the handleTextInputBlur function when the label is empty
             } else {
                 createTextCallback(newLabel);
             }
             document.body.removeChild(textField);
+            document.removeEventListener("mousedown", handleOutside); // Remove the event listener when text creation is complete
         },
         () => {
+            handleTextInputBlur(); // Call the handleTextInputBlur function when the text box is canceled
             document.body.removeChild(textField);
+            document.removeEventListener("mousedown", handleOutside); // Remove the event listener when text creation is canceled
         }
     );
 
+    const handleOutside = (e) => {
+        if (!textField.contains(e.target)) {
+            handleTextInputBlur(); // Call the handleTextInputBlur function when clicking outside the textField
+        }
+    };
+
     document.body.appendChild(textField);
     textField.focus();
+
+    document.addEventListener("mousedown", handleOutside); // Add the event listener to detect clicks outside the textField
 };
 
 export const handleAddImageNode =
