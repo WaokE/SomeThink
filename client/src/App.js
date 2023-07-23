@@ -22,7 +22,6 @@ function App() {
         <div>
             <TopBar onExportClick={handleExportClick} />
             <div style={{ display: "grid", gridTemplateColumns: "auto 1fr" }}>
-                <ToolBar />
                 <Canvas ref={captureRef} />
             </div>
         </div>

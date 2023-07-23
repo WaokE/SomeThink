@@ -235,17 +235,17 @@ const MindMap = () => {
         ymapRef.current = ydocRef.current.getMap("MindMap");
         ymapRef.current.set("Node 1", JSON.stringify(rootNode));
         ymapRef.current.set("Counter", 2);
-
+    
         ymapRef.current.observe((event) => {
             const updatedGraph = {
                 nodes: [],
                 edges: [],
             };
-
+    
             const updatedMemo = {
                 memo: "",
             };
-
+    
             ymapRef.current.forEach((value, key) => {
                 if (key.startsWith("Node")) {
                     const node = JSON.parse(value);
@@ -257,14 +257,25 @@ const MindMap = () => {
                     updatedMemo.memo = value;
                 }
             });
-
+    
             setMindMap((prevState) => ({
                 ...prevState,
                 graph: updatedGraph,
             }));
             setMemo(updatedMemo.memo);
         });
+    
+        const handleResetNode = () => {
+            handleReset();
+        };
+    
+        window.addEventListener("resetNode", handleResetNode);
+    
+        return () => {
+            window.removeEventListener("resetNode", handleResetNode);
+        };
     }, []);
+    
 
     const handleUserSelect = (event) => {
         // NOTE: 임시 유저 ID
@@ -693,8 +704,8 @@ const MindMap = () => {
 
     const { graph, events } = MindMap;
     return (
-        <div onKeyDown={handleKeyPress}>
-            <button onClick={handleReset}>리셋 MindMap</button>
+        <div onKeyDown={handleKeyPress} style={{ width: "100vw", height: "100vh" }}>
+            {/* <button onClick={handleReset}>리셋 MindMap</button> */}
             <PreventRefresh />
             <h2 id="eventSpanHeading"></h2>
             <pre id="eventSpanContent"></pre>
@@ -720,7 +731,7 @@ const MindMap = () => {
                     select: handleUserSelect,
                     oncontext: openNodeContextMenu,
                 }}
-                style={{ height: "86vh" }}
+                style={{ height: "100%", width: "100%" }}
             />
             {isNodeContextMenuVisible && (
                 <div
