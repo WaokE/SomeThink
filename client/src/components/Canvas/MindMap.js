@@ -75,7 +75,8 @@ const isCyclic = (graph, fromNode, toNode) => {
     return true;
 };
 
-const MindMap = () => {
+// const MindMap = (sessionId, leaveSession, toggleAudio, audioEnabled) => {
+const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled }) => {
     const ydocRef = useRef(null);
     const ymapRef = useRef(null);
     const networkRef = useRef(null);
@@ -198,8 +199,12 @@ const MindMap = () => {
 
     useEffect(() => {
         ydocRef.current = new Y.Doc();
-        // const provider = new WebsocketProvider("wss://somethink.online", "17", ydocRef.current);
-        const provider = new WebsocketProvider("ws://localhost:1234", "12327", ydocRef.current);
+        const provider = new WebsocketProvider(
+            "wss://somethink.online/room",
+            "17",
+            ydocRef.current
+        );
+        // const provider = new WebsocketProvider("ws://localhost:1234", "12327", ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
         ymapRef.current.set("Node 1", JSON.stringify(rootNode));
         ymapRef.current.set("Counter", 2);
@@ -776,7 +781,13 @@ const MindMap = () => {
             style={{ position: "absolute", width: "100vw", height: "100vh", zIndex: 0 }}
         >
             <UserMouseMove userMouseData={mouseCoordinates} networkRef={networkRef} />
-            <TopBar onExportClick={handleExportClick} />
+            <TopBar
+                onExportClick={handleExportClick}
+                sessionId={sessionId}
+                leaveSession={leaveSession}
+                toggleAudio={toggleAudio}
+                audioEnabled={audioEnabled}
+            />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
                 <input
                     type="text"
