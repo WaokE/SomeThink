@@ -98,6 +98,44 @@ export const handleNodeDragging = (event, ymapRef) => {
 
     const movedNode = ymapRef.current.get(`Node ${nodeId}`);
     ymapRef.current.set(`Node ${nodeId}`, JSON.stringify({ ...JSON.parse(movedNode), x: x, y: y }));
+
+    let tempUserId = 1;
+    checkPrevSelected(tempUserId, ymapRef);
+    let selectedNode = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
+    ymapRef.current.set(`User ${tempUserId} selected`, `Node ${event.nodes[0]}`);
+    selectedNode.borderWidth = 2;
+    if (selectedNode.id === 1) {
+        selectedNode.color = {
+            border: "#CBFFA9",
+        };
+    } else {
+        selectedNode.color = {
+            border: "#CBFFA9",
+            background: "#FBD85D",
+        };
+    }
+    selectedNode.owner = tempUserId;
+    ymapRef.current.set(`Node ${event.nodes[0]}`, JSON.stringify(selectedNode));
+};
+
+// 유저가 선택한 값이 있는지 검사
+const checkPrevSelected = (userId, ymapRef) => {
+    const tempValue = ymapRef.current.get(`User ${userId} selected`);
+    // 있다면 해당 값 원래대로 돌려놓음
+    if (tempValue) {
+        let userData = JSON.parse(ymapRef.current.get(tempValue));
+        if (userData) {
+            if (userData.label) {
+                userData.borderWidth = 1;
+                if (userData.id === 1) {
+                    userData.color = "#f5b252";
+                } else {
+                    userData.color = "#FBD85D";
+                }
+                ymapRef.current.set(`Node ${userData.id}`, JSON.stringify(userData));
+            }
+        }
+    }
 };
 
 export const handleClickOutside =
