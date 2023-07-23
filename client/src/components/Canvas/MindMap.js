@@ -307,7 +307,7 @@ const MindMap = () => {
                     } else {
                         userData.color = "#FBD85D";
                     }
-                    ymapRef.current.set(`Node ${userId}`, JSON.stringify(userData));
+                    ymapRef.current.set(`Node ${userData.id}`, JSON.stringify(userData));
                 }
             }
         }
