@@ -264,10 +264,12 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             const coord = networkRef.current.DOMtoCanvas({ x: e.clientX, y: e.clientY });
             const nx = coord.x;
             const ny = coord.y;
-            ymapRef.current.set(
-                `Mouse ${userName}`,
-                JSON.stringify({ x: nx, y: ny, id: userName })
-            );
+            if (inputId !== "") {
+                ymapRef.current.set(
+                    `Mouse ${inputId}`,
+                    JSON.stringify({ x: nx, y: ny, id: inputId })
+                );
+            }
         }
     };
 
