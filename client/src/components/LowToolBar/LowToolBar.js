@@ -17,6 +17,7 @@ const styles = {
         bottom: "15px", // 하단 간격 조정
         left: "50%",
         transform: "translateX(-50%)", // 가운데 정렬
+        padding: "0px 10px", // 좌우 간격 조정
     },
     action: {
         borderRadius: "100px", // 테두리를 둥글게 만듦
@@ -26,12 +27,6 @@ const styles = {
 };
 
 export default function LowToolBar() {
-    const [value, setValue] = React.useState("recents");
-
-    const handleChange = (event, newValue) => {
-        setValue(newValue);
-    };
-
     const makeNode = () => {
         window.dispatchEvent(new CustomEvent("addNode"));
     };
@@ -49,34 +44,34 @@ export default function LowToolBar() {
     };
 
     return (
-        <BottomNavigation sx={styles.bottomNav} value={value} onChange={handleChange}>
+        <BottomNavigation sx={styles.bottomNav}>
             <BottomNavigationAction
                 value="recents"
-                icon={<AddCircleIcon sx={{ fontSize: "20px" }} />} // Adjust the fontSize here
+                icon={<AddCircleIcon sx={{ fontSize: "20px" }} />}
                 sx={styles.action}
                 onClick={makeNode}
             />
             <BottomNavigationAction
                 value="nearby"
-                icon={<EditNoteRoundedIcon sx={{ fontSize: "20px" }} />} // Adjust the fontSize here
+                icon={<EditNoteRoundedIcon sx={{ fontSize: "20px" }} />}
                 sx={styles.action}
                 onClick={makeText}
             />
             <BottomNavigationAction
                 value="favorites"
-                icon={<AddPhotoAlternateIcon sx={{ fontSize: "20px" }} />} // Adjust the fontSize here
+                icon={<AddPhotoAlternateIcon sx={{ fontSize: "20px" }} />}
                 sx={styles.action}
                 onClick={makeImage}
             />
             <BottomNavigationAction
                 value="memo"
-                icon={<ContentPasteRoundedIcon sx={{ fontSize: "20px" }} />} // Adjust the fontSize here
+                icon={<ContentPasteRoundedIcon sx={{ fontSize: "20px" }} />}
                 sx={styles.action}
                 onClick={switchMemo}
             />
             <BottomNavigationAction
                 value="reset"
-                icon={<DeleteForeverRoundedIcon sx={{ fontSize: "20px" }} />} // Adjust the fontSize here
+                icon={<DeleteForeverRoundedIcon sx={{ fontSize: "20px" }} />}
                 sx={styles.action}
                 onClick={resetNode}
             />

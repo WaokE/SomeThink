@@ -264,12 +264,10 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             const coord = networkRef.current.DOMtoCanvas({ x: e.clientX, y: e.clientY });
             const nx = coord.x;
             const ny = coord.y;
-            if (inputId !== "") {
-                ymapRef.current.set(
-                    `Mouse ${inputId}`,
-                    JSON.stringify({ x: nx, y: ny, id: inputId })
-                );
-            }
+            ymapRef.current.set(
+                `Mouse ${userName}`,
+                JSON.stringify({ x: nx, y: ny, id: userName })
+            );
         }
     };
 
@@ -395,7 +393,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     };
 
     const handleReset = () => {
-        if (ymapRef.current) {
+        const IsReset = window.confirm("모든 노드를 삭제하시겠습니까?");
+        if (ymapRef.current && IsReset) {
             // ymap이 초기화되었을 경우에만 clear() 메서드를 호출합니다.
             ymapRef.current.clear();
             ymapRef.current.set("Node 1", JSON.stringify(rootNode));
