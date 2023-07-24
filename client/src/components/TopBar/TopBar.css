@@ -16,5 +16,21 @@
 
 .avatar-group-container {
     display: flex;
+    align-items: left;
+    width: 100%;
+    left: -100px;
+}
+
+.streamcomponent {
+    display: none;
+}
+
+.code {
+    font-size: 20px;
+    color: black;
+}
+
+.button-container {
+    display: flex;
     align-items: center;
 }

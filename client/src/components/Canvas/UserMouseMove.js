@@ -1,10 +1,8 @@
 const UserMouseMove = (props) => {
-    const { userMouseData, networkRef, inputId } = props;
-
+    const { userMouseData, networkRef, userName } = props;
     const filteredUserMouseData = userMouseData.filter((data) => {
         const [id] = data;
-        console.log("id", inputId);
-        return id !== inputId; // Exclude data with matching id
+        return id !== userName; // Exclude data with matching id
     });
 
     return filteredUserMouseData.map((data) => {
@@ -49,7 +47,7 @@ const UserMouseMove = (props) => {
                             marginRight: "5px",
                         }}
                     />
-                    {"USER:" + id}
+                    {id}
                 </div>
             </div>
         );

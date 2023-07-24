@@ -75,7 +75,8 @@ const isCyclic = (graph, fromNode, toNode) => {
     return true;
 };
 
-const MindMap = () => {
+// const MindMap = (sessionId, leaveSession, toggleAudio, audioEnabled) => {
+const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName }) => {
     const ydocRef = useRef(null);
     const ymapRef = useRef(null);
     const networkRef = useRef(null);
@@ -110,8 +111,8 @@ const MindMap = () => {
             zoomView: false,
         },
         manipulation: {
-            enabled: false,
-            initiallyActive: true,
+            addEdge: (data, callback) => {
+            },
             addNode: false,
             editEdge: false,
             deleteNode: false,
@@ -198,8 +199,12 @@ const MindMap = () => {
 
     useEffect(() => {
         ydocRef.current = new Y.Doc();
-        // const provider = new WebsocketProvider("wss://somethink.online", "17", ydocRef.current);
-        const provider = new WebsocketProvider("ws://localhost:1234", "12327", ydocRef.current);
+        const provider = new WebsocketProvider(
+            "wss://somethink.online/room",
+            sessionId,
+            ydocRef.current
+        );
+        // const provider = new WebsocketProvider("ws://localhost:1234", "12327", ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
         ymapRef.current.set("Node 1", JSON.stringify(rootNode));
         ymapRef.current.set("Counter", 2);
@@ -270,7 +275,7 @@ const MindMap = () => {
 
     const handleUserSelect = (event) => {
         // NOTE: 임시 유저 ID
-        const tempUserId = 1;
+        const tempUserId = userName;
 
         if (isCreatingEdge) {
             if (event.nodes.length > 0) {
@@ -474,7 +479,8 @@ const MindMap = () => {
 
     const createNode = (selectedNodeId) => {
         const selectedNode = JSON.parse(ymapRef.current.get(`Node ${selectedNodeId}`));
-        const nodeCount = ymapRef.current.get("Counter");
+        const nodeCount = Math.floor(Math.random() * 1000);
+        // const nodeCount = ymapRef.current.get("Counter");
 
         if (!selectedNode) {
             return;
@@ -599,7 +605,7 @@ const MindMap = () => {
 
     const deleteSingleNode = (nodeId) => {
         // NOTE: 임시 유저 ID
-        const tempUserId = 1;
+        const tempUserId = userName;
         ymapRef.current.delete(`Node ${nodeId}`);
         ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` &&
             ymapRef.current.delete(`User ${tempUserId} selected`);
@@ -775,25 +781,20 @@ const MindMap = () => {
             onMouseMove={(e) => handleMouseMove(e)}
             style={{ position: "absolute", width: "100vw", height: "100vh", zIndex: 0 }}
         >
-            <TopBar onExportClick={handleExportClick} />
+            <UserMouseMove
+                userMouseData={mouseCoordinates}
+                networkRef={networkRef}
+                userName={userName}
+            />
+            <TopBar
+                onExportClick={handleExportClick}
+                sessionId={sessionId}
+                leaveSession={leaveSession}
+                toggleAudio={toggleAudio}
+                audioEnabled={audioEnabled}
+            />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
-                <input
-                    type="text"
-                    value={inputId}
-                    onChange={handleInputChange}
-                    style={{
-                        position: "absolute",
-                        top: 31,
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        zIndex: 1,
-                    }}
-                />
-                <UserMouseMove
-                    userMouseData={mouseCoordinates}
-                    networkRef={networkRef}
-                    inputId={inputId} // Pass the inputId as a prop to UserMouseMove
-                />
+                <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
                 <PreventRefresh />
                 {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
                 <Graph
