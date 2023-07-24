@@ -259,7 +259,7 @@ const MindMap = () => {
             const coord = networkRef.current.DOMtoCanvas({ x: e.clientX, y: e.clientY });
             const nx = coord.x;
             const ny = coord.y;
-            if (inputId == 1 || inputId == 2) {
+            if (inputId !== "") {
                 ymapRef.current.set(
                     `Mouse ${inputId}`,
                     JSON.stringify({ x: nx, y: ny, id: inputId })
@@ -775,14 +775,24 @@ const MindMap = () => {
             onMouseMove={(e) => handleMouseMove(e)}
             style={{ position: "absolute", width: "100vw", height: "100vh", zIndex: 0 }}
         >
-            <UserMouseMove userMouseData={mouseCoordinates} networkRef={networkRef} />
             <TopBar onExportClick={handleExportClick} />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
                 <input
                     type="text"
                     value={inputId}
                     onChange={handleInputChange}
-                    style={{ position: "absolute", zIndex: 1 }}
+                    style={{
+                        position: "absolute",
+                        top: 31,
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        zIndex: 1,
+                    }}
+                />
+                <UserMouseMove
+                    userMouseData={mouseCoordinates}
+                    networkRef={networkRef}
+                    inputId={inputId} // Pass the inputId as a prop to UserMouseMove
                 />
                 <PreventRefresh />
                 {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
