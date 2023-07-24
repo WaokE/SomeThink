@@ -382,13 +382,14 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 deleteEdge([`${selectedEdge}`]);
             }
         }
-        if (e.key === " ") {
-            networkRef.current.moveTo({
-                position: { x: 0, y: 0 },
-                scale: 1.0,
-                offset: { x: 0, y: 0 },
-            });
-        }
+    };
+
+    const handleFocusButtonClick = () => {
+        networkRef.current.moveTo({
+            position: { x: 0, y: 0 },
+            scale: 1.0,
+            offset: { x: 0, y: 0 },
+        });
     };
 
     const handleReset = () => {
@@ -899,7 +900,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                     </div>
                 )}
             </div>
-            <LowToolBar />
+            <LowToolBar handleFocusButtonClick={handleFocusButtonClick} />
         </div>
     );
 };

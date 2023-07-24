@@ -6,10 +6,11 @@ import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import ContentPasteRoundedIcon from "@mui/icons-material/ContentPasteRounded";
 import EditNoteRoundedIcon from "@mui/icons-material/EditNoteRounded";
 import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
+import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
 
 const styles = {
     bottomNav: {
-        width: "300px", // 너비 조정
+        width: "400px", // 너비 조정
         height: "50px", // 높이 조정
         borderRadius: "100px", // 라운드를 위한 값
         border: "2px solid #d9d9d9", // 테두리 설정
@@ -26,7 +27,7 @@ const styles = {
     },
 };
 
-export default function LowToolBar() {
+export default function LowToolBar(props) {
     const makeNode = () => {
         window.dispatchEvent(new CustomEvent("addNode"));
     };
@@ -41,6 +42,9 @@ export default function LowToolBar() {
     };
     const resetNode = () => {
         window.dispatchEvent(new CustomEvent("resetNode"));
+    };
+    const focusMindMap = () => {
+        props.handleFocusButtonClick();
     };
 
     return (
@@ -74,6 +78,12 @@ export default function LowToolBar() {
                 icon={<DeleteForeverRoundedIcon sx={{ fontSize: "20px" }} />}
                 sx={styles.action}
                 onClick={resetNode}
+            />
+            <BottomNavigationAction
+                value="focus"
+                icon={<CenterFocusStrongIcon sx={{ fontSize: "20px" }} />}
+                sx={styles.action}
+                onClick={focusMindMap}
             />
         </BottomNavigation>
     );
