@@ -88,7 +88,7 @@ export const handleNodeDragEnd = (event, ymapRef, setSelectedNode) => {
     setSelectedNode(nodeId);
 };
 
-export const handleNodeDragging = (event, ymapRef) => {
+export const handleNodeDragging = (event, ymapRef, userName) => {
     const { nodes, pointer } = event;
     if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
         return;
@@ -99,10 +99,9 @@ export const handleNodeDragging = (event, ymapRef) => {
     const movedNode = ymapRef.current.get(`Node ${nodeId}`);
     ymapRef.current.set(`Node ${nodeId}`, JSON.stringify({ ...JSON.parse(movedNode), x: x, y: y }));
 
-    let tempUserId = 1;
-    checkPrevSelected(tempUserId, ymapRef);
+    checkPrevSelected(userName, ymapRef);
     let selectedNode = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
-    ymapRef.current.set(`User ${tempUserId} selected`, `Node ${event.nodes[0]}`);
+    ymapRef.current.set(`User ${userName} selected`, `Node ${event.nodes[0]}`);
     selectedNode.borderWidth = 2;
     if (selectedNode.id === 1) {
         selectedNode.color = {
@@ -114,7 +113,7 @@ export const handleNodeDragging = (event, ymapRef) => {
             background: "#FBD85D",
         };
     }
-    selectedNode.owner = tempUserId;
+    selectedNode.owner = userName;
     ymapRef.current.set(`Node ${event.nodes[0]}`, JSON.stringify(selectedNode));
 };
 
