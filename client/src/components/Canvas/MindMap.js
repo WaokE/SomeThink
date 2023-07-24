@@ -76,7 +76,7 @@ const isCyclic = (graph, fromNode, toNode) => {
 };
 
 // const MindMap = (sessionId, leaveSession, toggleAudio, audioEnabled) => {
-const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled }) => {
+const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName }) => {
     const ydocRef = useRef(null);
     const ymapRef = useRef(null);
     const networkRef = useRef(null);
@@ -201,7 +201,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled }) => {
         ydocRef.current = new Y.Doc();
         const provider = new WebsocketProvider(
             "wss://somethink.online/room",
-            "17",
+            sessionId,
             ydocRef.current
         );
         // const provider = new WebsocketProvider("ws://localhost:1234", "12327", ydocRef.current);
@@ -264,18 +264,18 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled }) => {
             const coord = networkRef.current.DOMtoCanvas({ x: e.clientX, y: e.clientY });
             const nx = coord.x;
             const ny = coord.y;
-            if (inputId == 1 || inputId == 2) {
-                ymapRef.current.set(
-                    `Mouse ${inputId}`,
-                    JSON.stringify({ x: nx, y: ny, id: inputId })
-                );
-            }
+            // if (inputId == 1 || inputId == 2) {
+            ymapRef.current.set(
+                `Mouse ${userName}`,
+                JSON.stringify({ x: nx, y: ny, id: userName })
+            );
+            // }
         }
     };
 
     const handleUserSelect = (event) => {
         // NOTE: 임시 유저 ID
-        const tempUserId = 1;
+        const tempUserId = userName;
 
         if (isCreatingEdge) {
             if (event.nodes.length > 0) {
@@ -479,7 +479,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled }) => {
 
     const createNode = (selectedNodeId) => {
         const selectedNode = JSON.parse(ymapRef.current.get(`Node ${selectedNodeId}`));
-        const nodeCount = ymapRef.current.get("Counter");
+        const nodeCount = Math.floor(Math.random() * 1000);
+        // const nodeCount = ymapRef.current.get("Counter");
 
         if (!selectedNode) {
             return;
@@ -604,7 +605,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled }) => {
 
     const deleteSingleNode = (nodeId) => {
         // NOTE: 임시 유저 ID
-        const tempUserId = 1;
+        const tempUserId = userName;
         ymapRef.current.delete(`Node ${nodeId}`);
         ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` &&
             ymapRef.current.delete(`User ${tempUserId} selected`);
@@ -789,12 +790,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled }) => {
                 audioEnabled={audioEnabled}
             />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
-                <input
-                    type="text"
-                    value={inputId}
-                    onChange={handleInputChange}
-                    style={{ position: "absolute", zIndex: 1 }}
-                />
+                <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
                 <PreventRefresh />
                 {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
                 <Graph

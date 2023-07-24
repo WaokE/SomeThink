@@ -20,7 +20,7 @@ class App extends Component {
             mainStreamManager: undefined, // Main video of the page. Will be the 'publisher' or one of the 'subscribers'
             publisher: undefined,
             subscribers: [],
-            audioEnabled: true,
+            audioEnabled: false,
         };
 
         this.joinSession = this.joinSession.bind(this);
@@ -297,6 +297,7 @@ class App extends Component {
                                 leaveSession={this.leaveSession}
                                 toggleAudio={this.toggleAudio}
                                 audioEnabled={audioEnabled}
+                                userName={myUserName}
                             />
                             {/* <input
                                 className="btn btn-large btn-danger"

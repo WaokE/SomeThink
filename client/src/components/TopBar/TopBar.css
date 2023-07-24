@@ -18,3 +18,12 @@
     display: flex;
     align-items: center;
 }
+
+.streamcomponent {
+    display: none;
+}
+
+.code {
+    font-size: 20px;
+    color: black;
+}
