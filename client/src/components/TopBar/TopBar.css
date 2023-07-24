@@ -16,7 +16,9 @@
 
 .avatar-group-container {
     display: flex;
-    align-items: center;
+    align-items: left;
+    width: 100%;
+    left: -100px;
 }
 
 .streamcomponent {
@@ -26,4 +28,9 @@
 .code {
     font-size: 20px;
     color: black;
+}
+
+.button-container {
+    display: flex;
+    align-items: center;
 }

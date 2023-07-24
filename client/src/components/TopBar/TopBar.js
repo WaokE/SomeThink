@@ -9,7 +9,8 @@ import IconButton from "@mui/material/IconButton";
 import MicSharpIcon from "@mui/icons-material/MicSharp";
 import MicOffSharpIcon from "@mui/icons-material/MicOffSharp";
 import Switch from "@mui/material/Switch";
-import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import { ExitToApp } from "@mui/icons-material";
 
 function TopBar({ onExportClick, sessionId, leaveSession, toggleAudio, audioEnabled }) {
     return (
@@ -17,29 +18,11 @@ function TopBar({ onExportClick, sessionId, leaveSession, toggleAudio, audioEnab
             <AppBar position="static" style={{ backgroundColor: "#FBEEAC", marginBottom: "10px" }}>
                 <Toolbar className="top-bar-container">
                     <div className="topbar-menu">
-                        <p className="code">#{sessionId}</p>
+                        <p className="code" >#{sessionId}</p>
                     </div>
                     {/* Your logo image */}
-                    <image className="logo" alt="Logo" />
-                    {/* Your AvatarGroup and IconButton components go here */}
+                    <div style={{ margin: "0 10px" }}></div>
                     <div className="avatar-group-container">
-                        <input
-                            className="btn btn-large btn-danger"
-                            type="button"
-                            id="buttonLeaveSession"
-                            onClick={leaveSession}
-                            value="Leave"
-                        />
-                        {audioEnabled ? (
-                            <MicOffSharpIcon sx={{ color: "black" }} />
-                        ) : (
-                            <MicSharpIcon sx={{ color: "black" }} />
-                        )}
-                        <Switch
-                            checked={!audioEnabled}
-                            onChange={toggleAudio}
-                            inputProps={{ "aria-label": "controlled" }}
-                        />
                         <AvatarGroup max={1}>
                             <Avatar
                                 sx={{ bgcolor: deepOrange[100] }}
@@ -53,12 +36,23 @@ function TopBar({ onExportClick, sessionId, leaveSession, toggleAudio, audioEnab
                             />
                             <Avatar src="/broken-image.jpg" />
                         </AvatarGroup>
-                        <IconButton
-                            aria-label="CameraAltOutlinedIcon"
-                            size="large"
-                            onClick={onExportClick}
-                        >
-                            <CameraAltOutlinedIcon fontSize="inherit" />
+                    </div>
+                    <div className="button-container">
+                        {audioEnabled ? (
+                            <MicOffSharpIcon sx={{ color: "gray" }} />
+                        ) : (
+                            <MicSharpIcon sx={{ color: "gray" }} />
+                        )}
+                        <Switch
+                            checked={!audioEnabled}
+                            onChange={toggleAudio}
+                            inputProps={{ "aria-label": "controlled" }}
+                        />
+                        <IconButton aria-label="CameraAltIcon" size="large" onClick={onExportClick}>
+                            <CameraAltIcon fontSize="inherit" />
+                        </IconButton>
+                        <IconButton aria-label="ExitToApp" size="large" onClick={leaveSession}>
+                            <ExitToApp fontSize="inherit" />
                         </IconButton>
                     </div>
                 </Toolbar>

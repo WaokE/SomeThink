@@ -111,8 +111,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             zoomView: false,
         },
         manipulation: {
-            enabled: false,
-            initiallyActive: true,
+            addEdge: (data, callback) => {
+            },
             addNode: false,
             editEdge: false,
             deleteNode: false,
@@ -264,12 +264,10 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             const coord = networkRef.current.DOMtoCanvas({ x: e.clientX, y: e.clientY });
             const nx = coord.x;
             const ny = coord.y;
-            // if (inputId == 1 || inputId == 2) {
             ymapRef.current.set(
                 `Mouse ${userName}`,
                 JSON.stringify({ x: nx, y: ny, id: userName })
             );
-            // }
         }
     };
 
@@ -781,7 +779,11 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             onMouseMove={(e) => handleMouseMove(e)}
             style={{ position: "absolute", width: "100vw", height: "100vh", zIndex: 0 }}
         >
-            <UserMouseMove userMouseData={mouseCoordinates} networkRef={networkRef} />
+            <UserMouseMove
+                userMouseData={mouseCoordinates}
+                networkRef={networkRef}
+                userName={userName}
+            />
             <TopBar
                 onExportClick={handleExportClick}
                 sessionId={sessionId}
