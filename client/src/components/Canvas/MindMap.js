@@ -111,8 +111,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             zoomView: false,
         },
         manipulation: {
-            addEdge: (data, callback) => {
-            },
+            addEdge: (data, callback) => {},
             addNode: false,
             editEdge: false,
             deleteNode: false,
@@ -801,7 +800,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                     options={options}
                     events={{
                         ...MindMap.events,
-                        dragging: (events) => handleNodeDragging(events, ymapRef),
+                        dragging: (events) => handleNodeDragging(events, ymapRef, userName),
                         dragEnd: (events) => handleNodeDragEnd(events, ymapRef, setSelectedNode),
                         drag: handleCanvasDrag,
                         click: (events) => {
