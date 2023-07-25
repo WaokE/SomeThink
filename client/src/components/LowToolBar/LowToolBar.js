@@ -7,6 +7,7 @@ import ContentPasteRoundedIcon from "@mui/icons-material/ContentPasteRounded";
 import EditNoteRoundedIcon from "@mui/icons-material/EditNoteRounded";
 import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
 import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
+import AccessAlarmRoundedIcon from "@mui/icons-material/AccessAlarmRounded";
 
 const styles = {
     bottomNav: {
@@ -15,10 +16,10 @@ const styles = {
         borderRadius: "100px", // 라운드를 위한 값
         border: "2px solid #d9d9d9", // 테두리 설정
         position: "fixed",
-        bottom: "15px", // 하단 간격 조정
+        bottom: "40px", // 하단 간격 조정
         left: "50%",
         transform: "translateX(-50%)", // 가운데 정렬
-        padding: "0px 10px", // 좌우 간격 조정
+        padding: "0px 20px", // 좌우 간격 조정
     },
     action: {
         borderRadius: "100px", // 테두리를 둥글게 만듦
@@ -40,11 +41,14 @@ export default function LowToolBar(props) {
     const switchMemo = () => {
         window.dispatchEvent(new CustomEvent("switchMemo"));
     };
-    const resetNode = () => {
-        window.dispatchEvent(new CustomEvent("resetNode"));
+    const setTimer = () => {
+        window.dispatchEvent(new CustomEvent("setTimer"));
     };
     const focusMindMap = () => {
         props.handleFocusButtonClick();
+    };
+    const resetNode = () => {
+        window.dispatchEvent(new CustomEvent("resetNode"));
     };
 
     return (
@@ -74,16 +78,22 @@ export default function LowToolBar(props) {
                 onClick={switchMemo}
             />
             <BottomNavigationAction
-                value="reset"
-                icon={<DeleteForeverRoundedIcon sx={{ fontSize: "20px" }} />}
-                sx={styles.action}
-                onClick={resetNode}
-            />
-            <BottomNavigationAction
                 value="focus"
                 icon={<CenterFocusStrongIcon sx={{ fontSize: "20px" }} />}
                 sx={styles.action}
                 onClick={focusMindMap}
+            />
+            <BottomNavigationAction
+                value="timer"
+                icon={<AccessAlarmRoundedIcon sx={{ fontSize: "20px" }} />}
+                sx={styles.action}
+                onClick={setTimer}
+            />
+            <BottomNavigationAction
+                value="reset"
+                icon={<DeleteForeverRoundedIcon sx={{ fontSize: "20px" }} />}
+                sx={styles.action}
+                onClick={resetNode}
             />
         </BottomNavigation>
     );

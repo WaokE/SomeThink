@@ -29,6 +29,7 @@ import TextContextMenu from "./TextContextMenu";
 import LowToolBar from "../LowToolBar/LowToolBar";
 import UserMouseMove from "./UserMouseMove";
 import Memo from "./MemoNode";
+import Timer from "./Timer";
 
 import "./MindMap.css";
 const PreventRefresh = () => {
@@ -152,7 +153,9 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const [isCreatingText, setIsCreatingText] = useState(false);
     const [isCreatingImage, setIsCreatingImage] = useState(false);
     const [memo, setMemo] = useState("");
+    const [setedTime, setTime] = useState(0);
     const [isMemoVisible, setIsMemoVisible] = useState(false);
+    const [isTimerVisible, setIsTimerVisible] = useState(false);
     const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
     const [selectedNode, setSelectedNode] = useState(null);
     const [selectedEdge, setSelectedEdge] = useState(null);
@@ -586,12 +589,18 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 handleMouseWheel(event, selectedNode, ymapRef);
             }
         };
+        const __handleSetTimer = (event) => {
+            console.log("setTimer");
+            setIsTimerVisible((prev) => !prev);
+            setTime(15);
+        };
         document.addEventListener("click", memoizedHandleClickOutside);
         window.addEventListener("addNode", handleAddNode);
         window.addEventListener("addText", __handleAddTextNode);
         window.addEventListener("addImage", __handleAddImageNode);
         window.addEventListener("switchMemo", handleSwitchMemo);
         window.addEventListener("wheel", __handleMouseWheel);
+        window.addEventListener("setTimer", __handleSetTimer);
         return () => {
             document.removeEventListener("click", handleClickOutside);
             window.removeEventListener("addNode", handleAddNode);
@@ -599,6 +608,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             window.removeEventListener("addImage", __handleAddImageNode);
             window.removeEventListener("switchMemo", handleSwitchMemo);
             window.removeEventListener("wheel", __handleMouseWheel);
+            window.removeEventListener("setTimer", __handleSetTimer);
         };
     }, [selectedNode, memoizedHandleClickOutside, isCreatingImage, selectedImage]);
 
@@ -795,6 +805,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
                 <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
                 <PreventRefresh />
+                {isTimerVisible && <Timer setedTime={setedTime} />}
                 {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
                 <Graph
                     graph={MindMap.graph}
