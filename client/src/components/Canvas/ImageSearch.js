@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import TextField from "@mui/material/TextField";
@@ -40,8 +40,10 @@ function srcset(image, size, rows = 1, cols = 1) {
 const ImageSearch = (props) => {
     const [img, setImg] = useState("");
     const [res, setRes] = useState([]);
+    const searchWordRef = useRef(null);
     const Access_Key = "0zCCA9yC1gkSoH9-qGLfgz9oV0qKCcFwao5cbUR0Cug";
     const url = `https://api.unsplash.com/search/photos?page=1&query=${img}&client_id=${Access_Key}&orientation=portrait&per_page=40&lang=ko`;
+    let searchWord = "";
 
     useEffect(() => {
         fetchRequest();
@@ -51,17 +53,17 @@ const ImageSearch = (props) => {
         const response = await fetch(url);
         const responseJson = await response.json();
         const result = responseJson.results;
-        console.log(result);
         setRes(result);
     };
 
     const submit = () => {
+        searchWordRef.current = img;
         fetchRequest();
         setImg("");
     };
 
-    const handleCreateImage = (url) => {
-        props.createImage(url);
+    const handleCreateImage = (url, searchWord) => {
+        props.createImage(url, searchWord);
     };
 
     return (
@@ -81,14 +83,15 @@ const ImageSearch = (props) => {
                 </Box>
                 <ImageList sx={styles.ImageList} variant="masonry" cols={2} rowHeight={121}>
                     {res.map((val) => {
-                        console.log(val);
                         return (
                             <ImageListItem key={val.id}>
                                 <img
                                     src={val.urls.thumb}
                                     alt={val.alt_description}
                                     loading="lazy"
-                                    onClick={() => handleCreateImage(val.urls.thumb)}
+                                    onClick={() =>
+                                        handleCreateImage(val.urls.thumb, searchWordRef.current)
+                                    }
                                 />
                             </ImageListItem>
                         );
