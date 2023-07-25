@@ -78,7 +78,7 @@ const ImageSearch = (props) => {
                     <ImageSearchIcon />
                 </Button>
             </Box>
-            <ImageList sx={styles.ImageList} variant="quilted" cols={4} rowHeight={121}>
+            <ImageList sx={styles.ImageList} variant="masonry" cols={2} rowHeight={121}>
                 {res.map((val) => {
                     console.log(val);
                     return (
