@@ -887,7 +887,11 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 ImageButton={setIsImageSearchVisible}
                 ImageMenuState={isImageSearchVisible}
             />
-            {isImageSearchVisible && <ImageSearch createImage={handleCreateImage} />}
+
+            <ImageSearch
+                createImage={handleCreateImage}
+                isImageSearchVisible={isImageSearchVisible}
+            />
         </div>
     );
 };

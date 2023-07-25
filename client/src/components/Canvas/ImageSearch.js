@@ -4,7 +4,7 @@ import ImageListItem from "@mui/material/ImageListItem";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
-
+import Slide from "@mui/material/Slide";
 import ImageSearchIcon from "@mui/icons-material/ImageSearch";
 
 const styles = {
@@ -65,35 +65,37 @@ const ImageSearch = (props) => {
     };
 
     return (
-        <Box sx={styles.ImageSearch}>
-            <Box sx={styles.inputBox}>
-                <TextField
-                    sx={{ width: "80%" }}
-                    id="outlined-basic"
-                    label="원하는 이미지를 검색하세요."
-                    variant="outlined"
-                    onChange={(e) => setImg(e.target.value)}
-                />
-                <Button variant="contained" type="submit" onClick={submit}>
-                    <ImageSearchIcon />
-                </Button>
+        <Slide direction="right" in={props.isImageSearchVisible} mountOnEnter unmountOnExit>
+            <Box sx={styles.ImageSearch}>
+                <Box sx={styles.inputBox}>
+                    <TextField
+                        sx={{ width: "80%" }}
+                        id="outlined-basic"
+                        label="원하는 이미지를 검색하세요."
+                        variant="outlined"
+                        onChange={(e) => setImg(e.target.value)}
+                    />
+                    <Button variant="contained" type="submit" onClick={submit}>
+                        <ImageSearchIcon />
+                    </Button>
+                </Box>
+                <ImageList sx={styles.ImageList} variant="masonry" cols={2} rowHeight={121}>
+                    {res.map((val) => {
+                        console.log(val);
+                        return (
+                            <ImageListItem key={val.id}>
+                                <img
+                                    src={val.urls.thumb}
+                                    alt={val.alt_description}
+                                    loading="lazy"
+                                    onClick={() => handleCreateImage(val.urls.thumb)}
+                                />
+                            </ImageListItem>
+                        );
+                    })}
+                </ImageList>
             </Box>
-            <ImageList sx={styles.ImageList} variant="masonry" cols={2} rowHeight={121}>
-                {res.map((val) => {
-                    console.log(val);
-                    return (
-                        <ImageListItem key={val.id}>
-                            <img
-                                src={val.urls.thumb}
-                                alt={val.alt_description}
-                                loading="lazy"
-                                onClick={() => handleCreateImage(val.urls.thumb)}
-                            />
-                        </ImageListItem>
-                    );
-                })}
-            </ImageList>
-        </Box>
+        </Slide>
     );
 };
 
