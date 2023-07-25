@@ -5,8 +5,7 @@ import { OpenVidu } from "openvidu-browser";
 import axios from "axios";
 import UserVideoComponent from "./components/Audio/UserVideoComponent";
 
-const APPLICATION_SERVER_URL =
-    process.env.NODE_ENV === "production" ? "" : "https://somethink.online/";
+const APPLICATION_SERVER_URL = process.env.NODE_ENV === "production" ? "" : "https://somethink.online/";
 
 class App extends Component {
     constructor(props) {
@@ -74,6 +73,12 @@ class App extends Component {
                 subscribers: subscribers,
             });
         }
+    }
+
+    handleSessionJoin() {
+        this.setState({
+            sessionJoined: true,
+        });
     }
 
     joinSession() {
@@ -160,13 +165,10 @@ class App extends Component {
                                 mainStreamManager: publisher,
                                 publisher: publisher,
                             });
+                            this.handleSessionJoin();
                         })
                         .catch((error) => {
-                            console.log(
-                                "There was an error connecting to the session:",
-                                error.code,
-                                error.message
-                            );
+                            console.log("There was an error connecting to the session:", error.code, error.message);
                         });
                 });
             }
@@ -200,9 +202,7 @@ class App extends Component {
             var videoDevices = devices.filter((device) => device.kind === "videoinput");
 
             if (videoDevices && videoDevices.length > 1) {
-                var newVideoDevice = videoDevices.filter(
-                    (device) => device.deviceId !== this.state.currentVideoDevice.deviceId
-                );
+                var newVideoDevice = videoDevices.filter((device) => device.deviceId !== this.state.currentVideoDevice.deviceId);
 
                 if (newVideoDevice.length > 0) {
                     // Creating a new publisher with specific videoSource
@@ -276,12 +276,7 @@ class App extends Component {
                                     />
                                 </p>
                                 <p className="text-center">
-                                    <input
-                                        className="btn btn-lg btn-success"
-                                        name="commit"
-                                        type="submit"
-                                        value="JOIN"
-                                    />
+                                    <input className="btn btn-lg btn-success" name="commit" type="submit" value="JOIN" />
                                 </p>
                             </form>
                         </div>
@@ -298,6 +293,7 @@ class App extends Component {
                                 toggleAudio={this.toggleAudio}
                                 audioEnabled={audioEnabled}
                                 userName={myUserName}
+                                onSessionJoin={this.handleSessionJoin}
                             />
                             {/* <input
                                 className="btn btn-large btn-danger"
