@@ -1,10 +1,10 @@
 //  node ./node_modules/y-websocket/bin/server.js
 import Graph from "react-graph-vis";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import ReactDOM from "react-dom";
 import TopBar from "../TopBar/TopBar";
 import html2canvas from "html2canvas";
 import fileDownload from "js-file-download";
+import ImageSearch from "./ImageSearch";
 
 import {
     handleDoubleClick,
@@ -12,7 +12,6 @@ import {
     handleClickOutside,
     handleCanvasDrag,
     handleAddTextNode,
-    handleAddImageNode as handleAddImageNodeOriginal,
     handleNodeContextMenu,
     handleNodeDragging,
     createTextInput,
@@ -24,7 +23,6 @@ import * as Y from "yjs";
 
 import NodeContextMenu from "./NodeContextMenu";
 import EdgeContextMenu from "./EdgeContextMenu";
-import ImageContextMenu from "./ImageContextMenu";
 import TextContextMenu from "./TextContextMenu";
 import LowToolBar from "../LowToolBar/LowToolBar";
 import UserMouseMove from "./UserMouseMove";
@@ -139,6 +137,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         };
     }
 
+    const [isImageSearchVisible, setIsImageSearchVisible] = useState(false);
     const [fromNode, setFromNode] = useState(null);
     const [isCreatingEdge, setIsCreatingEdge] = useState(false);
     const [inputId, setInputId] = useState("");
@@ -146,11 +145,9 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
     const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
     const [isEdgeContextMenuVisible, setIsEdgeContextMenuVisible] = useState(false);
-    const [isImageContextMenuVisible, setIsImageContextMenuVisible] = useState(false);
     const [isTextContextMenuVisible, setIsTextContextMenuVisible] = useState(false);
     const contextMenuRef = useRef(null);
     const [isCreatingText, setIsCreatingText] = useState(false);
-    const [isCreatingImage, setIsCreatingImage] = useState(false);
     const [memo, setMemo] = useState("");
     const [isMemoVisible, setIsMemoVisible] = useState(false);
     const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
@@ -161,21 +158,16 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             contextMenuRef,
             setIsNodeContextMenuVisible,
             setIsEdgeContextMenuVisible,
-            setIsImageContextMenuVisible,
-            setIsTextContextMenuVisible,
-            setIsCreatingImage
+            setIsTextContextMenuVisible
         ),
         [contextMenuRef, setIsNodeContextMenuVisible]
     );
-    const handleAddImageNode = (imageUrl) => handleAddImageNodeOriginal({ imageUrl, ymapRef });
+
     const openNodeContextMenu = handleNodeContextMenu({
         setContextMenuPos,
         setIsNodeContextMenuVisible,
         setIsEdgeContextMenuVisible,
-        setIsImageContextMenuVisible,
         setIsTextContextMenuVisible,
-        isCreatingImage,
-        setIsCreatingImage,
         ymapRef,
     });
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -531,16 +523,28 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         textField.focus();
     };
 
+    const handleCreateImage = (url) => {
+        const nodeCount = ymapRef.current.get("Counter");
+        const newNode = {
+            id: nodeCount,
+            shape: "image",
+            image: url,
+            x: 0,
+            y: 0,
+            physics: false,
+            size: 30,
+        };
+
+        ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
+        ymapRef.current.set("Counter", nodeCount + 1);
+    };
+
     const closeNodeContextMenu = () => {
         setIsNodeContextMenuVisible(false);
     };
 
     const closeEdgeContextMenu = () => {
         setIsEdgeContextMenuVisible(false);
-    };
-
-    const closeImageContextMenu = () => {
-        setIsImageContextMenuVisible(false);
     };
 
     const closeTextContextMenu = () => {
@@ -575,9 +579,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         const __handleAddTextNode = (event) => {
             setIsCreatingText(true);
         };
-        const __handleAddImageNode = (event) => {
-            setIsCreatingImage(true);
-        };
         const handleSwitchMemo = (event) => {
             setIsMemoVisible((prev) => !prev);
         };
@@ -589,18 +590,16 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         document.addEventListener("click", memoizedHandleClickOutside);
         window.addEventListener("addNode", handleAddNode);
         window.addEventListener("addText", __handleAddTextNode);
-        window.addEventListener("addImage", __handleAddImageNode);
         window.addEventListener("switchMemo", handleSwitchMemo);
         window.addEventListener("wheel", __handleMouseWheel);
         return () => {
             document.removeEventListener("click", handleClickOutside);
             window.removeEventListener("addNode", handleAddNode);
             window.removeEventListener("addText", __handleAddTextNode);
-            window.removeEventListener("addImage", __handleAddImageNode);
             window.removeEventListener("switchMemo", handleSwitchMemo);
             window.removeEventListener("wheel", __handleMouseWheel);
         };
-    }, [selectedNode, memoizedHandleClickOutside, isCreatingImage, selectedImage]);
+    }, [selectedNode, memoizedHandleClickOutside, selectedImage]);
 
     const deleteSingleNode = (nodeId) => {
         // NOTE: 임시 유저 ID
@@ -625,6 +624,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         });
 
         deleteSingleNode(nodeId);
+        setSelectedNode(null);
     };
 
     const handleNodeSelect = async ({ nodes }) => {
@@ -843,7 +843,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                             setIsCreatingText={setIsCreatingText}
                             setIsCreatingEdge={setIsCreatingEdge}
                             setFromNode={setFromNode}
-                            handleAddImageNode={handleAddImageNode}
                             handleNodeSelect={handleNodeSelect}
                         />
                     </div>
@@ -865,23 +864,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                         />
                     </div>
                 )}
-                {isImageContextMenuVisible && isCreatingImage && (
-                    <div
-                        ref={contextMenuRef}
-                        className="context-menu"
-                        style={{
-                            position: "absolute",
-                            left: contextMenuPos.xPos,
-                            top: contextMenuPos.yPos,
-                        }}
-                    >
-                        <ImageContextMenu
-                            handleAddImageNode={handleAddImageNode}
-                            onClose={closeImageContextMenu}
-                            setIsCreatingImage={setIsCreatingImage}
-                        />
-                    </div>
-                )}
                 {isTextContextMenuVisible && (
                     <div
                         ref={contextMenuRef}
@@ -900,7 +882,12 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                     </div>
                 )}
             </div>
-            <LowToolBar handleFocusButtonClick={handleFocusButtonClick} />
+            <LowToolBar
+                FocusButton={handleFocusButtonClick}
+                ImageButton={setIsImageSearchVisible}
+                ImageMenuState={isImageSearchVisible}
+            />
+            {isImageSearchVisible && <ImageSearch createImage={handleCreateImage} />}
         </div>
     );
 };
