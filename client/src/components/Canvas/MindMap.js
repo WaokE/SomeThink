@@ -195,21 +195,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         };
     }, []);
 
-    const getUserListFromYMap = useCallback(() => {
-        if (!ymapRef.current) {
-            return [];
-        }
-
-        const userList = [];
-        ymapRef.current.forEach((value, key) => {
-            if (typeof value === "boolean" && value === true) {
-                // If value is boolean true, consider it as a username
-                userList.push(key);
-            }
-        });
-
-        return userList;
-    }, []);
+    
 
     useEffect(() => {
         ydocRef.current = new Y.Doc();
@@ -286,8 +272,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         };
     }, []);
 
-    const yArrayRef = useRef(null);
-
     const handleSessionJoin = useCallback(() => {
         if (userName && ymapRef.current && !ymapRef.current.has(userName)) {
             ymapRef.current.set(userName, true);
@@ -312,6 +296,23 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             handleSessionLeave();
         };
     }, [handleSessionLeave]);
+
+    const getUserListFromYMap = useCallback(() => {
+        if (!ymapRef.current) {
+          return [];
+        }
+      
+        const userList = [];
+        ymapRef.current.forEach((value, key) => {
+          if (typeof value === "boolean" && value === true) {
+            // 만약 값이 true인 경우, 해당 키를 유저명으로 간주하고 userList에 추가합니다.
+            userList.push(key);
+          }
+        });
+      
+        return userList;
+      }, []);
+
 
     const handleMouseMove = (e) => {
         if (networkRef.current !== null) {
@@ -843,6 +844,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 toggleAudio={toggleAudio}
                 audioEnabled={audioEnabled}
                 userList={getUserListFromYMap()}
+                userName={userName}
             />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
                 <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
