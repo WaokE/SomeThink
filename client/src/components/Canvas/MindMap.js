@@ -615,6 +615,21 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         setIsEdgeContextMenuVisible(false);
     };
 
+    const checkquadrant = (x, y) => {
+        if (x > 0 && y > 0) {
+            return 1;
+        } else if (x < 0 && y > 0) {
+            return 2;
+        } else if (x < 0 && y < 0) {
+            return 3;
+        } else {
+            return 4;
+        }
+    };
+
+    const nx = [100, -100, -100, 100];
+    const ny = [100, 100, -100, -100];
+
     const createNode = (selectedNodeId) => {
         const selectedNode = JSON.parse(ymapRef.current.get(`Node ${selectedNodeId}`));
         const nodeId = Math.floor(Math.random() * 1000);
@@ -629,11 +644,13 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 setIsAlertMessageVisible(true);
                 removeTextInput();
             } else {
+                const quadrant = checkquadrant(selectedNode.x, selectedNode.y);
+                console.log(quadrant);
                 const newNode = {
                     id: nodeId,
                     label: label,
-                    x: selectedNode.x,
-                    y: selectedNode.y + 100,
+                    x: selectedNode.x + nx[quadrant - 1],
+                    y: selectedNode.y + ny[quadrant - 1],
                     color: "#FBD85D",
                 };
 
