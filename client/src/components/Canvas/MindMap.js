@@ -624,6 +624,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         });
 
         deleteSingleNode(nodeId);
+        setSelectedNode(null);
     };
 
     const handleNodeSelect = async ({ nodes }) => {
