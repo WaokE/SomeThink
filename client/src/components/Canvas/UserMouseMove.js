@@ -1,8 +1,8 @@
 const UserMouseMove = (props) => {
-    const { userMouseData, networkRef, userName } = props;
+    const { userMouseData, networkRef, userName, userList } = props;
     const filteredUserMouseData = userMouseData.filter((data) => {
         const [id] = data;
-        return id !== userName; // Exclude data with matching id
+        return userList.includes(id) && id !== userName;
     });
 
     return filteredUserMouseData.map((data) => {

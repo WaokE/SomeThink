@@ -36,7 +36,8 @@ export default function LowToolBar(props) {
         window.dispatchEvent(new CustomEvent("addText"));
     };
     const makeImage = () => {
-        window.dispatchEvent(new CustomEvent("addImage"));
+        if (!props.ImageMenuState) props.ImageButton(true);
+        else props.ImageButton(false);
     };
     const switchMemo = () => {
         window.dispatchEvent(new CustomEvent("switchMemo"));
@@ -45,7 +46,7 @@ export default function LowToolBar(props) {
         window.dispatchEvent(new CustomEvent("setTimer"));
     };
     const focusMindMap = () => {
-        props.handleFocusButtonClick();
+        props.FocusButton();
     };
     const resetNode = () => {
         window.dispatchEvent(new CustomEvent("resetNode"));
@@ -66,7 +67,7 @@ export default function LowToolBar(props) {
                 onClick={makeText}
             />
             <BottomNavigationAction
-                value="favorites"
+                value="image"
                 icon={<AddPhotoAlternateIcon sx={{ fontSize: "20px" }} />}
                 sx={styles.action}
                 onClick={makeImage}

@@ -1,5 +1,3 @@
-import React, { useState } from "react";
-
 import "./ContextMenu.css";
 
 const NodeContextMenu = ({
@@ -11,7 +9,6 @@ const NodeContextMenu = ({
     setIsCreatingText,
     setIsCreatingEdge,
     setFromNode,
-    handleAddImageNode,
     handleNodeSelect,
 }) => {
     const handleDeleteNode = () => {
@@ -24,18 +21,6 @@ const NodeContextMenu = ({
     };
     const handleAddTextNode = () => {
         setIsCreatingText(true);
-        onClose();
-    };
-
-    const [imageUrl, setImageUrl] = useState("");
-
-    const handleImageInputChange = (event) => {
-        setImageUrl(event.target.value);
-    };
-
-    const handleAddImage = () => {
-        const updateFunction = handleAddImageNode(imageUrl);
-        updateFunction();
         onClose();
     };
 
@@ -57,11 +42,6 @@ const NodeContextMenu = ({
             <li onClick={handleAddEdge}>엣지 추가</li>
             <li onClick={handleAddTextNode}>텍스트 추가</li>
             <li onClick={handleairecommend}>ai 추천 노드</li>
-            <li>
-                <label htmlFor="imageUrl">이미지 URL:</label>
-                <input type="text" value={imageUrl} onChange={handleImageInputChange} />
-                <button onClick={handleAddImage}>이미지 추가</button>
-            </li>
         </ul>
     );
 };
