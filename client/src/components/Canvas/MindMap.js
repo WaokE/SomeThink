@@ -27,6 +27,7 @@ import TextContextMenu from "./TextContextMenu";
 import LowToolBar from "../LowToolBar/LowToolBar";
 import UserMouseMove from "./UserMouseMove";
 import Memo from "./MemoNode";
+import Alert from "../ToastMessage/Alert";
 
 import "./MindMap.css";
 const PreventRefresh = () => {
@@ -137,6 +138,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         };
     }
 
+    const [isAlertMessageVisible, setIsAlertMessageVisible] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
     const [isImageSearchVisible, setIsImageSearchVisible] = useState(false);
     const [fromNode, setFromNode] = useState(null);
     const [isCreatingEdge, setIsCreatingEdge] = useState(false);
@@ -270,7 +273,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             if (event.nodes.length > 0) {
                 const toNode = event.nodes[0];
                 if (toNode === fromNode) {
-                    alert("자기 자신을 가리키는 엣지는 만들 수 없습니다!");
+                    setAlertMessage("자기 자신을 가리키는 엣지는 만들 수 없습니다!");
+                    setIsAlertMessageVisible(true);
                     setIsCreatingEdge(false);
                     setFromNode(null);
                     return;
@@ -279,7 +283,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                     ymapRef.current.has(`Edge ${fromNode} to ${toNode}`) ||
                     ymapRef.current.has(`Edge ${toNode} to ${fromNode}`)
                 ) {
-                    alert("이미 존재하는 엣지입니다!");
+                    setAlertMessage("이미 존재하는 엣지입니다!");
+                    setIsAlertMessageVisible(true);
                     setIsCreatingEdge(false);
                     setFromNode(null);
                     return;
@@ -291,7 +296,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                         toNode
                     )
                 ) {
-                    alert("순환 구조를 만들 수 없습니다!");
+                    setAlertMessage("순환 구조를 가지는 엣지는 만들 수 없습니다!");
+                    setIsAlertMessageVisible(true);
                     setIsCreatingEdge(false);
                     setFromNode(null);
                     return;
@@ -479,7 +485,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
 
         const createNodeCallback = (label) => {
             if (!label || label.trim() === "") {
-                alert("키워드를 입력해주세요!");
+                setAlertMessage("키워드를 입력하세요!");
+                setIsAlertMessageVisible(true);
                 removeTextInput();
             } else {
                 const newNode = {
@@ -611,7 +618,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
 
     const deleteNodes = (nodeId) => {
         if (nodeId === 1) {
-            alert("루트 노드는 삭제할 수 없습니다!");
+            setAlertMessage("루트 노드는 삭제할 수 없습니다!");
+            setIsAlertMessageVisible(true);
             return;
         }
         const childNodes = Array.from(ymapRef.current.keys())
@@ -891,6 +899,11 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             <ImageSearch
                 createImage={handleCreateImage}
                 isImageSearchVisible={isImageSearchVisible}
+            />
+            <Alert
+                message={alertMessage}
+                open={isAlertMessageVisible}
+                visible={setIsAlertMessageVisible}
             />
         </div>
     );
