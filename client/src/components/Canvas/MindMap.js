@@ -561,10 +561,11 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         textField.focus();
     };
 
-    const handleCreateImage = (url) => {
+    const handleCreateImage = (url, searchWord) => {
         const nodeCount = ymapRef.current.get("Counter");
         const newNode = {
             id: nodeCount,
+            label: searchWord,
             shape: "image",
             image: url,
             x: 0,
