@@ -142,17 +142,13 @@ export const handleClickOutside =
         contextMenuRef,
         setIsNodeContextMenuVisible,
         setIsEdgeContextMenuVisible,
-        setIsImageContextMenuVisible,
-        setIsTextContextMenuVisible,
-        setIsCreatingImage
+        setIsTextContextMenuVisible
     ) =>
     (event) => {
         if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
             setIsNodeContextMenuVisible(false);
             setIsEdgeContextMenuVisible(false);
-            setIsImageContextMenuVisible(false);
             setIsTextContextMenuVisible(false);
-            setIsCreatingImage(false);
         }
     };
 
@@ -256,9 +252,7 @@ export const handleNodeContextMenu = ({
     setContextMenuPos,
     setIsNodeContextMenuVisible,
     setIsEdgeContextMenuVisible,
-    setIsImageContextMenuVisible,
     setIsTextContextMenuVisible,
-    isCreatingImage,
     ymapRef,
 }) => {
     return ({ event, nodes, edges }) => {
@@ -283,11 +277,6 @@ export const handleNodeContextMenu = ({
             const selectedEdge = edges;
             setContextMenuPos({ xPos, yPos, selectedEdge });
             setIsEdgeContextMenuVisible(true);
-        } else if (isCreatingImage) {
-            const xPos = event.clientX;
-            const yPos = event.clientY;
-            setContextMenuPos({ xPos, yPos });
-            setIsImageContextMenuVisible(true);
         }
     };
 };
