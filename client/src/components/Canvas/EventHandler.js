@@ -174,9 +174,9 @@ export const handleAddTextNode = (
         setIsCreatingText(false);
 
         if (label) {
-            const nodeCount = ymapRef.current.get("Counter");
+            const nodeId = Math.floor(Math.random() * 1000);
             const newNode = {
-                id: nodeCount,
+                id: nodeId,
                 shape: "text",
                 label: label,
                 x: pointer.canvas.x,
@@ -188,8 +188,7 @@ export const handleAddTextNode = (
                 widthConstraint: false,
             };
 
-            ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
-            ymapRef.current.set("Counter", nodeCount + 1);
+            ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
 
             setSelectedNode(null);
         }

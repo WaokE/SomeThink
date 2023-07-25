@@ -154,7 +154,12 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const [selectedNode, setSelectedNode] = useState(null);
     const [selectedEdge, setSelectedEdge] = useState(null);
     const memoizedHandleClickOutside = useCallback(
-        handleClickOutside(contextMenuRef, setIsNodeContextMenuVisible, setIsEdgeContextMenuVisible, setIsTextContextMenuVisible),
+        handleClickOutside(
+            contextMenuRef,
+            setIsNodeContextMenuVisible,
+            setIsEdgeContextMenuVisible,
+            setIsTextContextMenuVisible
+        ),
         [contextMenuRef, setIsNodeContextMenuVisible]
     );
 
@@ -201,11 +206,14 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
 
     useEffect(() => {
         ydocRef.current = new Y.Doc();
-        const provider = new WebsocketProvider("wss://somethink.online/room", sessionId, ydocRef.current);
+        const provider = new WebsocketProvider(
+            "wss://somethink.online/room",
+            sessionId,
+            ydocRef.current
+        );
         // const provider = new WebsocketProvider("ws://localhost:1234", "12327", ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
         ymapRef.current.set("Node 1", JSON.stringify(rootNode));
-        ymapRef.current.set("Counter", 2);
 
         ymapRef.current.observe((event) => {
             const updatedGraph = {
@@ -292,7 +300,10 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             });
             const nx = coord.x;
             const ny = coord.y;
-            ymapRef.current.set(`Mouse ${userName}`, JSON.stringify({ x: nx, y: ny, id: userName }));
+            ymapRef.current.set(
+                `Mouse ${userName}`,
+                JSON.stringify({ x: nx, y: ny, id: userName })
+            );
         }
     };
 
@@ -427,7 +438,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             // ymap이 초기화되었을 경우에만 clear() 메서드를 호출합니다.
             ymapRef.current.clear();
             ymapRef.current.set("Node 1", JSON.stringify(rootNode));
-            ymapRef.current.set("Counter", 2);
         }
     };
 
@@ -507,8 +517,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
 
     const createNode = (selectedNodeId) => {
         const selectedNode = JSON.parse(ymapRef.current.get(`Node ${selectedNodeId}`));
-        const nodeCount = Math.floor(Math.random() * 1000);
-        // const nodeCount = ymapRef.current.get("Counter");
+        const nodeId = Math.floor(Math.random() * 1000);
 
         if (!selectedNode) {
             return;
@@ -521,24 +530,23 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 removeTextInput();
             } else {
                 const newNode = {
-                    id: nodeCount,
+                    id: nodeId,
                     label: label,
                     x: selectedNode.x,
                     y: selectedNode.y + 100,
                     color: "#FBD85D",
                 };
 
-                ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
+                ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
                 ymapRef.current.set(
-                    `Edge ${selectedNodeId} to ${nodeCount}`,
+                    `Edge ${selectedNodeId} to ${nodeId}`,
                     JSON.stringify({
                         from: selectedNodeId,
-                        to: nodeCount,
-                        id: `${selectedNodeId} to ${nodeCount}`,
+                        to: nodeId,
+                        id: `${selectedNodeId} to ${nodeId}`,
                     })
                 );
 
-                ymapRef.current.set("Counter", nodeCount + 1);
                 removeTextInput();
             }
         };
@@ -562,9 +570,9 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     };
 
     const handleCreateImage = (url, searchWord) => {
-        const nodeCount = ymapRef.current.get("Counter");
+        const nodeId = Math.floor(Math.random() * 1000);
         const newNode = {
-            id: nodeCount,
+            id: nodeId,
             label: searchWord,
             shape: "image",
             image: url,
@@ -574,8 +582,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             size: 30,
         };
 
-        ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
-        ymapRef.current.set("Counter", nodeCount + 1);
+        ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
     };
 
     const closeNodeContextMenu = () => {
@@ -644,7 +651,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         // NOTE: 임시 유저 ID
         const tempUserId = userName;
         ymapRef.current.delete(`Node ${nodeId}`);
-        ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` && ymapRef.current.delete(`User ${tempUserId} selected`);
+        ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` &&
+            ymapRef.current.delete(`User ${tempUserId} selected`);
     };
 
     const deleteNodes = (nodeId) => {
@@ -694,14 +702,21 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             currentNodeId = parentNodeId;
         }
 
-        const rootLabel = ymapRef.current.get("Node 1") ? JSON.parse(ymapRef.current.get("Node 1"))?.label : null;
+        const rootLabel = ymapRef.current.get("Node 1")
+            ? JSON.parse(ymapRef.current.get("Node 1"))?.label
+            : null;
 
         const connectedNodeLabels = connectedNodeIds.map((nodeId) => {
             const node = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));
             return node ? node.label : null;
         });
 
-        setSelectedNodeLabels((prevLabels) => [clickedNode.label, ...connectedNodeLabels, rootLabel, ...prevLabels]);
+        setSelectedNodeLabels((prevLabels) => [
+            clickedNode.label,
+            ...connectedNodeLabels,
+            rootLabel,
+            ...prevLabels,
+        ]);
 
         const allNodeLabels = Array.from(ymapRef.current.keys())
             .filter((key) => key.startsWith("Node "))
@@ -728,10 +743,9 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             }
 
             const newNodeLabels = data.result.split(",");
-            const nodeCount = Number(ymapRef.current.get("Counter"));
 
             const newNodes = newNodeLabels.map((label, index) => {
-                const nodeId = nodeCount + index++;
+                const nodeId = Math.floor(Math.random() * 1000);
                 const newNode = {
                     id: nodeId,
                     label: label.trim(),
@@ -757,8 +771,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
 
                 return edge;
             });
-
-            ymapRef.current.set("Counter", nodeCount + newNodeLabels.length);
         } catch (error) {
             console.error(error);
             alert(error.message);
@@ -817,7 +829,12 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 zIndex: 0,
             }}
         >
-            <UserMouseMove userMouseData={mouseCoordinates} networkRef={networkRef} userName={userName} userList={getUserListFromYMap()} />
+            <UserMouseMove
+                userMouseData={mouseCoordinates}
+                networkRef={networkRef}
+                userName={userName}
+                userList={getUserListFromYMap()}
+            />
             <TopBar
                 onExportClick={handleExportClick}
                 sessionId={sessionId}
@@ -839,7 +856,14 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                         dragEnd: (events) => handleNodeDragEnd(events, ymapRef, setSelectedNode),
                         drag: handleCanvasDrag,
                         click: (events) => {
-                            handleAddTextNode(events, isCreatingText, ymapRef, setSelectedNode, setSelectedEdge, setIsCreatingText);
+                            handleAddTextNode(
+                                events,
+                                isCreatingText,
+                                ymapRef,
+                                setSelectedNode,
+                                setSelectedEdge,
+                                setIsCreatingText
+                            );
                         },
                         select: handleUserSelect,
                         oncontext: openNodeContextMenu,
@@ -884,7 +908,11 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                             top: contextMenuPos.yPos,
                         }}
                     >
-                        <EdgeContextMenu selectedEdge={contextMenuPos.selectedEdge} onClose={closeEdgeContextMenu} deleteEdge={deleteEdge} />
+                        <EdgeContextMenu
+                            selectedEdge={contextMenuPos.selectedEdge}
+                            onClose={closeEdgeContextMenu}
+                            deleteEdge={deleteEdge}
+                        />
                     </div>
                 )}
                 {isTextContextMenuVisible && (
@@ -897,7 +925,11 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                             top: contextMenuPos.yPos,
                         }}
                     >
-                        <TextContextMenu selectedText={contextMenuPos.selectedNodeId} onClose={closeTextContextMenu} deleteNode={deleteNodes} />
+                        <TextContextMenu
+                            selectedText={contextMenuPos.selectedNodeId}
+                            onClose={closeTextContextMenu}
+                            deleteNode={deleteNodes}
+                        />
                     </div>
                 )}
             </div>
