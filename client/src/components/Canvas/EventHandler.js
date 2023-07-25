@@ -1,3 +1,5 @@
+import Alert from "../ToastMessage/Alert";
+
 export const createTextInput = (initialValue, onEnter, onCancel) => {
     const textField = document.createElement("input");
     const canvasRect = document.querySelector(".vis-network canvas").getBoundingClientRect();
@@ -41,7 +43,13 @@ export const createTextInput = (initialValue, onEnter, onCancel) => {
     return textField;
 };
 
-export const handleDoubleClick = (event, ymapRef, modifyNode) => {
+export const handleDoubleClick = (
+    event,
+    ymapRef,
+    modifyNode,
+    setAlertMessage,
+    setIsAlertMessageVisible
+) => {
     if (event.nodes.length > 0) {
         const selectedNodeId = event.nodes[0];
         const nodeData = ymapRef.current.get(`Node ${selectedNodeId}`);
@@ -56,7 +64,8 @@ export const handleDoubleClick = (event, ymapRef, modifyNode) => {
                     node.label,
                     (newLabel) => {
                         if (newLabel === "") {
-                            alert("키워드를 입력해주세요");
+                            setAlertMessage("유효한 값을 입력해주세요!");
+                            setIsAlertMessageVisible(true);
                             textField.value = node.label;
                         } else {
                             modifyNode(selectedNodeId, newLabel);

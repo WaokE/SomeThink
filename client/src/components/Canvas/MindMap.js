@@ -158,7 +158,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const [duration, setDuration] = useState(0);
     const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [isMemoVisible, setIsMemoVisible] = useState(false);
-    const [selectedNodeLabels, setSelectedNodeLabels] = useState([]);
     const [selectedNode, setSelectedNode] = useState(null);
     const [selectedEdge, setSelectedEdge] = useState(null);
     const memoizedHandleClickOutside = useCallback(
@@ -313,10 +312,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             handleSessionLeave();
         };
     }, [handleSessionLeave]);
-
-    const handleInputChange = (event) => {
-        setInputId(event.target.value.replace(/[^0-9]/g, ""));
-    };
 
     const handleMouseMove = (e) => {
         if (networkRef.current !== null) {
@@ -635,7 +630,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         if (selectedNode !== null) {
             const node = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
             if (node.shape === "image") {
-                // console.log("image");
                 setSelectedImage(true);
             }
         } else {
@@ -742,13 +736,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             return node ? node.label : null;
         });
 
-        setSelectedNodeLabels((prevLabels) => [
-            clickedNode.label,
-            ...connectedNodeLabels,
-            rootLabel,
-            ...prevLabels,
-        ]);
-
         const allNodeLabels = Array.from(ymapRef.current.keys())
             .filter((key) => key.startsWith("Node "))
             .map((key) => {
@@ -815,23 +802,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             graph: {
                 nodes: [rootNode],
                 edges: [],
-            },
-            rootNode,
-            events: {
-                select: ({ nodes, edges }) => {
-                    if (nodes.length === 1) {
-                        setSelectedNode(nodes[0]);
-                        setContextMenuPos((prevState) => ({
-                            ...prevState,
-                            selectedNodeId: nodes[0],
-                        }));
-                    } else if (edges.length === 1) {
-                        setSelectedEdge(edges[0]);
-                    }
-                },
-                doubleClick: (events) => handleDoubleClick(events, ymapRef, modifyNode),
-                oncontext: openNodeContextMenu,
-                click: openNodeContextMenu,
             },
         };
     });
@@ -906,6 +876,14 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                         },
                         select: handleUserSelect,
                         oncontext: openNodeContextMenu,
+                        doubleClick: (events) =>
+                            handleDoubleClick(
+                                events,
+                                ymapRef,
+                                modifyNode,
+                                setAlertMessage,
+                                setIsAlertMessageVisible
+                            ),
                     }}
                     style={{ height: "100%", width: "100%" }}
                     getNetwork={(network) => {
@@ -977,7 +955,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 ImageButton={setIsImageSearchVisible}
                 ImageMenuState={isImageSearchVisible}
             />
-
             <ImageSearch
                 createImage={handleCreateImage}
                 isImageSearchVisible={isImageSearchVisible}
