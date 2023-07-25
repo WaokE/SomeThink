@@ -80,6 +80,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const networkRef = useRef(null);
 
     const [selectedImage, setSelectedImage] = useState(false);
+    const [USERLIST, setUSERLIST] = useState([]);
     let options = {
         layout: {
             hierarchical: false,
@@ -110,10 +111,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         },
         manipulation: {
             addEdge: (data, callback) => {},
-            addNode: false,
-            editEdge: false,
-            deleteNode: false,
-            deleteEdge: false,
         },
     };
 
@@ -154,12 +151,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const [selectedNode, setSelectedNode] = useState(null);
     const [selectedEdge, setSelectedEdge] = useState(null);
     const memoizedHandleClickOutside = useCallback(
-        handleClickOutside(
-            contextMenuRef,
-            setIsNodeContextMenuVisible,
-            setIsEdgeContextMenuVisible,
-            setIsTextContextMenuVisible
-        ),
+        handleClickOutside(contextMenuRef, setIsNodeContextMenuVisible, setIsEdgeContextMenuVisible, setIsTextContextMenuVisible),
         [contextMenuRef, setIsNodeContextMenuVisible]
     );
 
@@ -188,13 +180,25 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         };
     }, []);
 
+    const getUserListFromYMap = useCallback(() => {
+        if (!ymapRef.current) {
+            return [];
+        }
+
+        const userList = [];
+        ymapRef.current.forEach((value, key) => {
+            if (typeof value === "boolean" && value === true) {
+                // If value is boolean true, consider it as a username
+                userList.push(key);
+            }
+        });
+
+        return userList;
+    }, []);
+
     useEffect(() => {
         ydocRef.current = new Y.Doc();
-        const provider = new WebsocketProvider(
-            "wss://somethink.online/room",
-            sessionId,
-            ydocRef.current
-        );
+        const provider = new WebsocketProvider("wss://somethink.online/room", sessionId, ydocRef.current);
         // const provider = new WebsocketProvider("ws://localhost:1234", "12327", ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
         ymapRef.current.set("Node 1", JSON.stringify(rootNode));
@@ -246,19 +250,46 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         };
     }, []);
 
+    const yArrayRef = useRef(null);
+
+    const handleSessionJoin = useCallback(() => {
+        if (userName && ymapRef.current && !ymapRef.current.has(userName)) {
+            ymapRef.current.set(userName, true);
+            console.log("User added to Y.Map:", userName);
+        }
+        console.log("Session join in MindMap component!");
+    }, [userName]);
+
+    const handleSessionLeave = useCallback(() => {
+        if (userName && ymapRef.current && ymapRef.current.has(userName)) {
+            ymapRef.current.delete(userName);
+            console.log("User removed from Y.Map:", userName);
+        }
+    }, [userName]);
+
+    useEffect(() => {
+        handleSessionJoin();
+    }, [handleSessionJoin]);
+
+    useEffect(() => {
+        return () => {
+            handleSessionLeave();
+        };
+    }, [handleSessionLeave]);
+
     const handleInputChange = (event) => {
         setInputId(event.target.value.replace(/[^0-9]/g, ""));
     };
 
     const handleMouseMove = (e) => {
         if (networkRef.current !== null) {
-            const coord = networkRef.current.DOMtoCanvas({ x: e.clientX, y: e.clientY });
+            const coord = networkRef.current.DOMtoCanvas({
+                x: e.clientX,
+                y: e.clientY,
+            });
             const nx = coord.x;
             const ny = coord.y;
-            ymapRef.current.set(
-                `Mouse ${userName}`,
-                JSON.stringify({ x: nx, y: ny, id: userName })
-            );
+            ymapRef.current.set(`Mouse ${userName}`, JSON.stringify({ x: nx, y: ny, id: userName }));
         }
     };
 
@@ -275,10 +306,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                     setFromNode(null);
                     return;
                 }
-                if (
-                    ymapRef.current.has(`Edge ${fromNode} to ${toNode}`) ||
-                    ymapRef.current.has(`Edge ${toNode} to ${fromNode}`)
-                ) {
+                if (ymapRef.current.has(`Edge ${fromNode} to ${toNode}`) || ymapRef.current.has(`Edge ${toNode} to ${fromNode}`)) {
                     alert("이미 존재하는 엣지입니다!");
                     setIsCreatingEdge(false);
                     setFromNode(null);
@@ -605,8 +633,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         // NOTE: 임시 유저 ID
         const tempUserId = userName;
         ymapRef.current.delete(`Node ${nodeId}`);
-        ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` &&
-            ymapRef.current.delete(`User ${tempUserId} selected`);
+        ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` && ymapRef.current.delete(`User ${tempUserId} selected`);
     };
 
     const deleteNodes = (nodeId) => {
@@ -655,21 +682,14 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             currentNodeId = parentNodeId;
         }
 
-        const rootLabel = ymapRef.current.get("Node 1")
-            ? JSON.parse(ymapRef.current.get("Node 1"))?.label
-            : null;
+        const rootLabel = ymapRef.current.get("Node 1") ? JSON.parse(ymapRef.current.get("Node 1"))?.label : null;
 
         const connectedNodeLabels = connectedNodeIds.map((nodeId) => {
             const node = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));
             return node ? node.label : null;
         });
 
-        setSelectedNodeLabels((prevLabels) => [
-            clickedNode.label,
-            ...connectedNodeLabels,
-            rootLabel,
-            ...prevLabels,
-        ]);
+        setSelectedNodeLabels((prevLabels) => [clickedNode.label, ...connectedNodeLabels, rootLabel, ...prevLabels]);
 
         const allNodeLabels = Array.from(ymapRef.current.keys())
             .filter((key) => key.startsWith("Node "))
@@ -778,19 +798,21 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         <div
             onKeyDown={handleKeyPress}
             onMouseMove={(e) => handleMouseMove(e)}
-            style={{ position: "absolute", width: "100vw", height: "100vh", zIndex: 0 }}
+            style={{
+                position: "absolute",
+                width: "100vw",
+                height: "100vh",
+                zIndex: 0,
+            }}
         >
-            <UserMouseMove
-                userMouseData={mouseCoordinates}
-                networkRef={networkRef}
-                userName={userName}
-            />
+            <UserMouseMove userMouseData={mouseCoordinates} networkRef={networkRef} userName={userName} userList={getUserListFromYMap()} />
             <TopBar
                 onExportClick={handleExportClick}
                 sessionId={sessionId}
                 leaveSession={leaveSession}
                 toggleAudio={toggleAudio}
                 audioEnabled={audioEnabled}
+                userList={getUserListFromYMap()}
             />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
                 <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
@@ -805,14 +827,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                         dragEnd: (events) => handleNodeDragEnd(events, ymapRef, setSelectedNode),
                         drag: handleCanvasDrag,
                         click: (events) => {
-                            handleAddTextNode(
-                                events,
-                                isCreatingText,
-                                ymapRef,
-                                setSelectedNode,
-                                setSelectedEdge,
-                                setIsCreatingText
-                            );
+                            handleAddTextNode(events, isCreatingText, ymapRef, setSelectedNode, setSelectedEdge, setIsCreatingText);
                         },
                         select: handleUserSelect,
                         oncontext: openNodeContextMenu,
@@ -857,11 +872,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                             top: contextMenuPos.yPos,
                         }}
                     >
-                        <EdgeContextMenu
-                            selectedEdge={contextMenuPos.selectedEdge}
-                            onClose={closeEdgeContextMenu}
-                            deleteEdge={deleteEdge}
-                        />
+                        <EdgeContextMenu selectedEdge={contextMenuPos.selectedEdge} onClose={closeEdgeContextMenu} deleteEdge={deleteEdge} />
                     </div>
                 )}
                 {isTextContextMenuVisible && (
@@ -874,19 +885,11 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                             top: contextMenuPos.yPos,
                         }}
                     >
-                        <TextContextMenu
-                            selectedText={contextMenuPos.selectedNodeId}
-                            onClose={closeTextContextMenu}
-                            deleteNode={deleteNodes}
-                        />
+                        <TextContextMenu selectedText={contextMenuPos.selectedNodeId} onClose={closeTextContextMenu} deleteNode={deleteNodes} />
                     </div>
                 )}
             </div>
-            <LowToolBar
-                FocusButton={handleFocusButtonClick}
-                ImageButton={setIsImageSearchVisible}
-                ImageMenuState={isImageSearchVisible}
-            />
+            <LowToolBar FocusButton={handleFocusButtonClick} ImageButton={setIsImageSearchVisible} ImageMenuState={isImageSearchVisible} />
             {isImageSearchVisible && <ImageSearch createImage={handleCreateImage} />}
         </div>
     );
