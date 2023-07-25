@@ -1,86 +1,96 @@
-// Timer.js
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./Timer.css";
 
-const getSeconds = (time) => {
-    const seconds = Number(time % 60);
-    if (seconds < 10) {
-        return "0" + String(seconds);
-    } else {
-        return String(seconds);
-    }
-};
+const Timer = ({ ymapRef, handleStartTimeChange, handleDurationChange, setIsTimerRunning }) => {
+    const startTime = ymapRef.current.get("StartTime");
+    const duration = ymapRef.current.get("Duration");
+    const isTimerRunning = ymapRef.current.get("TimerRunning");
 
-const Timer = () => {
-    const [minutes, setMinutes] = useState(0);
-    const [seconds, setSeconds] = useState(0);
-    const [time, setTime] = useState(0); // 남은 시간 (단위: 초)
-    const [isRunning, setIsRunning] = useState(false); // 타이머 실행 여부 상태
+    const calculateRemainingTime = () => {
+        const now = Date.now();
+        const startTime = ymapRef.current.get("StartTime") || now;
+        const duration = ymapRef.current.get("Duration") || 0;
+        const elapsed = now - startTime;
+        return Math.max(duration - elapsed, 0);
+    };
 
-    useEffect(() => {
-        setTime(minutes * 60 + seconds);
-    }, [minutes, seconds]);
+    const [remainingTime, setRemainingTime] = useState(calculateRemainingTime());
 
     useEffect(() => {
         let timer;
-        if (isRunning && time > 0) {
+        if (isTimerRunning) {
             timer = setInterval(() => {
-                setTime((prev) => prev - 1);
+                const remaining = calculateRemainingTime();
+                setRemainingTime(remaining);
+                if (remaining <= 0) {
+                    setIsTimerRunning(false);
+                    alert("Time OVER!");
+                }
             }, 1000);
-        } else if (isRunning && time === 0) {
-            alert("Time OVER!");
-            setIsRunning(false);
         }
-
         return () => clearInterval(timer);
-    }, [isRunning, time]);
+    }, [isTimerRunning, setIsTimerRunning]);
 
-    const handleStart = () => {
-        if (time > 0) {
-            setIsRunning(true);
+    const handleStart = (event) => {
+        if (remainingTime > 0) {
+            const now = Date.now();
+            handleStartTimeChange(now);
+            handleDurationChange(remainingTime);
+            setIsTimerRunning(true);
+            ymapRef.current.set("TimerRunning", true);
         }
     };
 
     const handleStop = () => {
-        setIsRunning(false);
-        setTime(0);
-        setMinutes(0);
-        setSeconds(0);
+        setIsTimerRunning(false);
+        ymapRef.current.set("TimerRunning", false);
     };
 
+    const remainingMinutes = Math.floor(remainingTime / (60 * 1000)) || 0;
+    const remainingSeconds = Math.floor((remainingTime / 1000) % 60) || 0;
+
     return (
-        <div className={`timer ${isRunning && time <= 10 ? "red" : ""}`}>
-            {!isRunning && (
+        <div className={`timer ${isTimerRunning && remainingTime <= 10 ? "red" : ""}`}>
+            {!isTimerRunning && (
                 <div>
                     <input
                         className="timer-input"
                         type="number"
                         min="0"
                         max="59"
-                        value={minutes}
-                        onChange={(e) => setMinutes(parseInt(e.target.value))}
+                        value={remainingMinutes}
+                        onChange={(e) => {
+                            const newDuration =
+                                e.target.value * 60 * 1000 + remainingSeconds * 1000;
+                            handleDurationChange(newDuration);
+                            setRemainingTime(newDuration);
+                        }}
                     />
-                    <span>분</span>
-                    <input
-                        className="timer-input"
-                        type="number"
-                        min="0"
-                        max="59"
-                        value={seconds}
-                        onChange={(e) => setSeconds(parseInt(e.target.value))}
-                    />
-                    <span>초</span>
-                </div>
-            )}
-            {isRunning && (
-                <div>
-                    <span>{parseInt(time / 60)}</span>
                     <span> : </span>
-                    <span>{getSeconds(time)}</span>
+                    <input
+                        className="timer-input"
+                        type="number"
+                        min="0"
+                        max="59"
+                        value={remainingSeconds}
+                        onChange={(e) => {
+                            const newDuration =
+                                remainingMinutes * 60 * 1000 + e.target.value * 1000;
+                            handleDurationChange(newDuration);
+                            setRemainingTime(newDuration);
+                        }}
+                    />
                 </div>
             )}
-            {!isRunning && <button onClick={handleStart}>시작</button>}
-            {isRunning && <button onClick={handleStop}>중지</button>}
+            {isTimerRunning && (
+                <div>
+                    <span>{remainingMinutes}</span>
+                    <span> : </span>
+                    <span>{remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds}</span>
+                </div>
+            )}
+            {!isTimerRunning && <button onClick={handleStart}>시작</button>}
+            {isTimerRunning && <button onClick={handleStop}>중지</button>}
         </div>
     );
 };
