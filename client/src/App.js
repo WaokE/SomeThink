@@ -1,11 +1,12 @@
 import React, { Component } from "react";
 import MindMap from "./components/Canvas/MindMap";
-
+import "./App.css";
 import { OpenVidu } from "openvidu-browser";
 import axios from "axios";
 import UserVideoComponent from "./components/Audio/UserVideoComponent";
 
-const APPLICATION_SERVER_URL = process.env.NODE_ENV === "production" ? "" : "https://somethink.online/";
+const APPLICATION_SERVER_URL =
+    process.env.NODE_ENV === "production" ? "" : "https://somethink.online/";
 
 class App extends Component {
     constructor(props) {
@@ -24,7 +25,6 @@ class App extends Component {
 
         this.joinSession = this.joinSession.bind(this);
         this.leaveSession = this.leaveSession.bind(this);
-        // this.switchCamera = this.switchCamera.bind(this);
         this.toggleAudio = this.toggleAudio.bind(this);
         this.handleChangeSessionId = this.handleChangeSessionId.bind(this);
         this.handleChangeUserName = this.handleChangeUserName.bind(this);
@@ -146,29 +146,19 @@ class App extends Component {
 
                             mySession.publish(publisher);
 
-                            // // Obtain the current video device in use
-                            // var devices = await this.OV.getDevices();
-                            // var videoDevices = devices.filter(
-                            //     (device) => device.kind === "videoinput"
-                            // );
-                            // var currentVideoDeviceId = publisher.stream
-                            //     .getMediaStream()
-                            //     .getVideoTracks()[0]
-                            //     .getSettings().deviceId;
-                            // var currentVideoDevice = videoDevices.find(
-                            //     (device) => device.deviceId === currentVideoDeviceId
-                            // );
-
                             // Set the main video in the page to display our webcam and store our Publisher
                             this.setState({
-                                // currentVideoDevice: currentVideoDevice,
                                 mainStreamManager: publisher,
                                 publisher: publisher,
                             });
                             this.handleSessionJoin();
                         })
                         .catch((error) => {
-                            console.log("There was an error connecting to the session:", error.code, error.message);
+                            console.log(
+                                "There was an error connecting to the session:",
+                                error.code,
+                                error.message
+                            );
                         });
                 });
             }
@@ -196,40 +186,6 @@ class App extends Component {
         });
     }
 
-    async switchCamera() {
-        try {
-            const devices = await this.OV.getDevices();
-            var videoDevices = devices.filter((device) => device.kind === "videoinput");
-
-            if (videoDevices && videoDevices.length > 1) {
-                var newVideoDevice = videoDevices.filter((device) => device.deviceId !== this.state.currentVideoDevice.deviceId);
-
-                if (newVideoDevice.length > 0) {
-                    // Creating a new publisher with specific videoSource
-                    // In mobile devices the default and first camera is the front one
-                    var newPublisher = this.OV.initPublisher(undefined, {
-                        videoSource: newVideoDevice[0].deviceId,
-                        publishAudio: true,
-                        publishVideo: true,
-                        mirror: true,
-                    });
-
-                    //newPublisher.once("accessAllowed", () => {
-                    await this.state.session.unpublish(this.state.mainStreamManager);
-
-                    await this.state.session.publish(newPublisher);
-                    this.setState({
-                        currentVideoDevice: newVideoDevice[0],
-                        mainStreamManager: newPublisher,
-                        publisher: newPublisher,
-                    });
-                }
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
     toggleAudio() {
         const { publisher, audioEnabled } = this.state;
 
@@ -251,10 +207,10 @@ class App extends Component {
                 {this.state.session === undefined ? (
                     <div id="join">
                         <div id="join-dialog" className="jumbotron vertical-center">
-                            <h1> SomeThink </h1>
+                            <h1 className="logo"></h1>
                             <form className="form-group" onSubmit={this.joinSession}>
                                 <p>
-                                    <label>Participant: </label>
+                                    <label>Name </label>
                                     <input
                                         className="form-control"
                                         type="text"
@@ -265,7 +221,7 @@ class App extends Component {
                                     />
                                 </p>
                                 <p>
-                                    <label> Room: </label>
+                                    <label> Room </label>
                                     <input
                                         className="form-control"
                                         type="text"
@@ -276,7 +232,12 @@ class App extends Component {
                                     />
                                 </p>
                                 <p className="text-center">
-                                    <input className="btn btn-lg btn-success" name="commit" type="submit" value="JOIN" />
+                                    <input
+                                        className="btn btn-lg btn-success"
+                                        name="commit"
+                                        type="submit"
+                                        value="JOIN"
+                                    />
                                 </p>
                             </form>
                         </div>
@@ -286,7 +247,6 @@ class App extends Component {
                 {this.state.session !== undefined ? (
                     <div id="session">
                         <div id="session-header">
-                            {/* <h1 id="session-title">{mySessionId}</h1> */}
                             <MindMap
                                 sessionId={mySessionId}
                                 leaveSession={this.leaveSession}
@@ -295,39 +255,16 @@ class App extends Component {
                                 userName={myUserName}
                                 onSessionJoin={this.handleSessionJoin}
                             />
-                            {/* <input
-                                className="btn btn-large btn-danger"
-                                type="button"
-                                id="buttonLeaveSession"
-                                onClick={this.leaveSession}
-                                value="Leave session"
-                            /> */}
-                            {/* <input
-                                className="btn btn-large btn-success"
-                                type="button"
-                                id="buttonSwitchCamera"
-                                onClick={this.switchCamera}
-                                value="Switch Camera"
-                            /> */}
                         </div>
 
-                        {/* <div id="video-container" className="col-md-6"> */}
                         <div id="video-container">
                             {this.state.publisher !== undefined ? (
-                                <div
-                                //     className="stream-container col-md-6 col-xs-6"
-                                //     onClick={() => this.handleMainVideoStream(this.state.publisher)}
-                                >
+                                <div>
                                     <UserVideoComponent streamManager={this.state.publisher} />
                                 </div>
                             ) : null}
                             {this.state.subscribers.map((sub, i) => (
-                                <div
-                                // key={sub.id}
-                                // className="stream-container col-md-6 col-xs-6"
-                                // onClick={() => this.handleMainVideoStream(sub)}
-                                >
-                                    {/* <span>{sub.id}</span> */}
+                                <div>
                                     <UserVideoComponent streamManager={sub} />
                                 </div>
                             ))}
@@ -381,11 +318,7 @@ class App extends Component {
     }
 }
 
-// function App() {
 // Apply CSS to prevent scrolling
 document.body.style.overflow = "hidden";
-
-// return <MindMap />;
-// }
 
 export default App;
