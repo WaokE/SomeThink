@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import "./TopBar.css";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
@@ -25,11 +25,40 @@ const colors = [
     "#9AFF33", // 연두색
 ];
 
-function TopBar({ onExportClick, sessionId, leaveSession, toggleAudio, audioEnabled, userList, userName }) {
+function TopBar({
+    onExportClick,
+    sessionId,
+    leaveSession,
+    toggleAudio,
+    audioEnabled,
+    userList,
+    userName,
+}) {
     // userName과 일치하는 아바타를 찾아서 따로 저장합니다.
     const userAvatar = userList.find((user) => user === userName);
     // userAvatar를 userList에서 제거합니다.
     const updatedUserList = userList.filter((user) => user !== userName);
+
+    const getCurrentTime = () => {
+        const date = new Date();
+        const offset = date.getTimezoneOffset() + 9 * 60; // Add the offset for Korea Standard Time (UTC+9)
+        const kstDate = new Date(date.getTime() + offset * 60 * 1000);
+        const hours = kstDate.getHours();
+        const minutes = kstDate.getMinutes();
+        const seconds = kstDate.getSeconds();
+        return `${hours.toString().padStart(2, "0")}:${minutes
+            .toString()
+            .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+    };
+
+    const [currentTime, setCurrentTime] = useState(getCurrentTime());
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(getCurrentTime());
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     return (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1 }}>
@@ -62,12 +91,32 @@ function TopBar({ onExportClick, sessionId, leaveSession, toggleAudio, audioEnab
                         )}
                         {/* 나머지 아바타들을 출력합니다. */}
                         {updatedUserList.map((user, index) => (
-                            <Chip key={user} avatar={<Avatar sx={{ bgcolor: colors[index + 1], color: "#fff" }} alt={user} />} label={user} />
+                            <Chip
+                                key={user}
+                                avatar={
+                                    <Avatar
+                                        sx={{ bgcolor: colors[index + 1], color: "#fff" }}
+                                        alt={user}
+                                    />
+                                }
+                                label={user}
+                            />
                         ))}
                     </div>
                     <div className="button-container">
-                        {audioEnabled ? <MicOffSharpIcon sx={{ color: "gray" }} /> : <MicSharpIcon sx={{ color: "gray" }} />}
-                        <Switch checked={!audioEnabled} onChange={toggleAudio} inputProps={{ "aria-label": "controlled" }} />
+                        <div className="clock-container">
+                            <p>{currentTime}</p>
+                        </div>
+                        {audioEnabled ? (
+                            <MicOffSharpIcon sx={{ color: "gray" }} />
+                        ) : (
+                            <MicSharpIcon sx={{ color: "gray" }} />
+                        )}
+                        <Switch
+                            checked={!audioEnabled}
+                            onChange={toggleAudio}
+                            inputProps={{ "aria-label": "controlled" }}
+                        />
                         <IconButton aria-label="CameraAltIcon" size="large" onClick={onExportClick}>
                             <CameraAltIcon fontSize="inherit" />
                         </IconButton>

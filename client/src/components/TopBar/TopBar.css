@@ -34,3 +34,26 @@
     display: flex;
     align-items: center;
 }
+
+.clock-container {
+    display: flex;
+    justify-content: center;
+    font-size: 1.2rem; /* Increased font size */
+    margin-right: 15px; /* Added right margin */
+}
+
+.topbar-menu {
+    display: flex; /* This makes .topbar-menu a flex container */
+    align-items: center; /* This vertically centers the <p> inside .topbar-menu */
+}
+
+.topbar-menu p {
+    margin: 0; /* Remove vertical margins */
+    padding: 0; /* Remove padding */
+}
+.clock-container p {
+    margin: 0; /* Remove vertical margins */
+    padding: 0; /* Remove padding */
+    color: #333;
+    font-weight: bold;
+}

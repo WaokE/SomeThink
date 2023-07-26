@@ -2,8 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import "./Timer.css";
 
 const Timer = ({ ymapRef, handleStartTimeChange, handleDurationChange, setIsTimerRunning }) => {
-    const startTime = ymapRef.current.get("StartTime");
-    const duration = ymapRef.current.get("Duration");
     const isTimerRunning = ymapRef.current.get("TimerRunning");
 
     const calculateRemainingTime = () => {
