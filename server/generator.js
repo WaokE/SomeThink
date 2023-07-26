@@ -9,8 +9,7 @@ module.exports = async function (req, res) {
     if (!configuration.apiKey) {
         res.status(500).json({
             error: {
-                message:
-                    "OpenAI API key not configured, please follow instructions in README.md",
+                message: "OpenAI API key not configured, please follow instructions in README.md",
             },
         });
         return;
@@ -52,17 +51,17 @@ module.exports = async function (req, res) {
 
 function generatePrompt(keyword, allKeywords) {
     console.log(keyword);
-    return `If I provide keywords from the sub-concepts to the higher-level concepts in mind map, 
-    please analyze those keywords and recommend two more specific and closely related keywords. 
-    These recommended keywords should be nouns, and even if there is no specific information about the main topic, 
-    please make sure to provide only two keyword recommendations. The recommended keywords should be sub-concepts and keywords should be korean.
-    If the keyword that I'm trying to recommend is in the [${allKeywords}] list, please recommend a different keyword instead.
+    return `I am looking to receive appropriate recommendations for the sub-concepts in a mind map. 
+    Please analyze the provided keywords from the sub-concepts to the higher-level concepts and suggest two more specific and closely related keywords. 
+    The recommended keywords should be nouns, and I only need two keyword recommendations, even if there is limited information about the main topic. 
+    The recommended keywords should be in Korean. 
+    If any of the keywords I provide are already in the [${allKeywords}] list, please suggest different keywords instead.
 
     Question: Felidae, Mammal, Animal, Biology
-    Answer: Tiger, Domestic Cat"
+    Answer: 호랑이, 고양이"
   
     Question: Programming Language, Software, Computer
-    Answer: Java, Python"
+    Answer: 자바, 파이썬"
   
     Question: ${keyword}
     Answer:`;
