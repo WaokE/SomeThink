@@ -119,15 +119,84 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         },
     };
 
-    const rootNode = {
-        id: 1,
-        label: "Root",
-        x: 0,
-        y: 0,
-        physics: false,
-        fixed: true,
-        color: "#f5b252",
-    };
+    const templateNodes = [
+        {
+            id: 1,
+            label: "Root",
+            x: 0,
+            y: 0,
+            physics: false,
+            fixed: true,
+            color: "#f5b252",
+        },
+        {
+            id: 2,
+            label: "노드를 우클릭하여 메뉴를 열 수 있습니다.",
+            x: 100,
+            y: 100,
+            physics: false,
+            fixed: true,
+            color: "#FBD85D",
+            shape: "box",
+            widthConstraint: 100,
+        },
+        {
+            id: 3,
+            label: "노드를 더블클릭하여 키워드를 수정할 수 있습니다.",
+            x: -100,
+            y: 100,
+            physics: false,
+            fixed: true,
+            color: "#FBD85D",
+            shape: "box",
+            widthConstraint: 100,
+        },
+        {
+            id: 4,
+            label: "노드를 드래그하여 이동할 수 있습니다.",
+            x: 100,
+            y: -100,
+            physics: false,
+            fixed: true,
+            color: "#FBD85D",
+            shape: "box",
+            widthConstraint: 100,
+        },
+        {
+            id: 5,
+            label: "하단 메뉴를 통해 이미지와 텍스트, 노드를 쉽게 추가할 수 있습니다.",
+            x: -100,
+            y: -100,
+            physics: false,
+            fixed: true,
+            color: "#FBD85D",
+            shape: "box",
+            widthConstraint: 100,
+        },
+    ];
+
+    const templateEdges = [
+        {
+            from: 1,
+            to: 2,
+            id: "1 to 2",
+        },
+        {
+            from: 1,
+            to: 3,
+            id: "1 to 3",
+        },
+        {
+            from: 1,
+            to: 4,
+            id: "1 to 4",
+        },
+        {
+            from: 1,
+            to: 5,
+            id: "1 to 5",
+        },
+    ];
 
     if (!selectedImage) {
         options = {
@@ -205,7 +274,12 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         );
 
         ymapRef.current = ydocRef.current.getMap("MindMap");
-        ymapRef.current.set("Node 1", JSON.stringify(rootNode));
+        templateNodes.forEach((node) => {
+            ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
+        });
+        templateEdges.forEach((edge) => {
+            ymapRef.current.set(`Edge ${edge.from} to ${edge.to}`, JSON.stringify(edge));
+        });
 
         ymapRef.current.observe((event) => {
             const updatedGraph = {
@@ -456,14 +530,17 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             const currentUserData = getUserListFromYMap();
 
             ymapRef.current.clear();
+            templateNodes.forEach((node) => {
+                ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
+            });
+            templateEdges.forEach((edge) => {
+                ymapRef.current.set(`Edge ${edge.from} to ${edge.to}`, JSON.stringify(edge));
+            });
 
-            // Re-add user data to ymapRef for each user in the currentUserData array
             currentUserData.forEach((user) => {
                 console.log(user);
                 ymapRef.current.set(user, true);
             });
-
-            ymapRef.current.set("Node 1", JSON.stringify(rootNode));
         }
     };
 
@@ -541,6 +618,21 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         setIsEdgeContextMenuVisible(false);
     };
 
+    const checkquadrant = (x, y) => {
+        if (x > 0 && y > 0) {
+            return 1;
+        } else if (x < 0 && y > 0) {
+            return 2;
+        } else if (x < 0 && y < 0) {
+            return 3;
+        } else {
+            return 4;
+        }
+    };
+
+    const nx = [100, -100, -100, 100];
+    const ny = [100, 100, -100, -100];
+
     const createNode = (selectedNodeId) => {
         const selectedNode = JSON.parse(ymapRef.current.get(`Node ${selectedNodeId}`));
         const nodeId = Math.floor(Math.random() * 1000);
@@ -555,11 +647,13 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 setIsAlertMessageVisible(true);
                 removeTextInput();
             } else {
+                const quadrant = checkquadrant(selectedNode.x, selectedNode.y);
+                console.log(quadrant);
                 const newNode = {
                     id: nodeId,
                     label: label,
-                    x: selectedNode.x,
-                    y: selectedNode.y + 100,
+                    x: selectedNode.x + nx[quadrant - 1],
+                    y: selectedNode.y + ny[quadrant - 1],
                     color: "#FBD85D",
                 };
 
@@ -805,7 +899,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const [MindMap, setMindMap] = useState(() => {
         return {
             graph: {
-                nodes: [rootNode],
+                nodes: templateNodes,
                 edges: [],
             },
         };
