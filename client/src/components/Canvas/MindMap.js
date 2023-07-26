@@ -291,12 +291,14 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         );
 
         ymapRef.current = ydocRef.current.getMap("MindMap");
-        templateNodes.forEach((node) => {
-            ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
-        });
-        templateEdges.forEach((edge) => {
-            ymapRef.current.set(`Edge ${edge.from} to ${edge.to}`, JSON.stringify(edge));
-        });
+        ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
+
+        // templateNodes.forEach((node) => {
+        //     ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
+        // });
+        // templateEdges.forEach((edge) => {
+        //     ymapRef.current.set(`Edge ${edge.from} to ${edge.to}`, JSON.stringify(edge));
+        // });
 
         ymapRef.current.observe((event) => {
             const updatedGraph = {
