@@ -30,10 +30,10 @@ const styles = {
 
 export default function LowToolBar(props) {
     const makeNode = () => {
-        window.dispatchEvent(new CustomEvent("addNode"));
+        props.NodeButton(props.selectedNode);
     };
     const makeText = () => {
-        window.dispatchEvent(new CustomEvent("addText"));
+        props.TextButton();
     };
     const makeImage = () => {
         if (!props.ImageMenuState) props.ImageButton(true);
@@ -61,7 +61,7 @@ export default function LowToolBar(props) {
                 onClick={makeNode}
             />
             <BottomNavigationAction
-                value="nearby"
+                value="text"
                 icon={<EditNoteRoundedIcon sx={{ fontSize: "20px" }} />}
                 sx={styles.action}
                 onClick={makeText}
