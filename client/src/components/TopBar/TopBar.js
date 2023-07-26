@@ -117,9 +117,9 @@ function TopBar({
                             onChange={toggleAudio}
                             inputProps={{ "aria-label": "controlled" }}
                         />
-                        <IconButton aria-label="CameraAltIcon" size="large" onClick={onExportClick}>
+                        {/* <IconButton aria-label="CameraAltIcon" size="large" onClick={onExportClick}>
                             <CameraAltIcon fontSize="inherit" />
-                        </IconButton>
+                        </IconButton> */}
                         <IconButton aria-label="ExitToApp" size="large" onClick={leaveSession}>
                             <ExitToApp fontSize="inherit" />
                         </IconButton>
