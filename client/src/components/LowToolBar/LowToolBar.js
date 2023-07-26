@@ -33,7 +33,7 @@ export default function LowToolBar(props) {
         props.NodeButton(props.selectedNode);
     };
     const makeText = () => {
-        props.TextButton(true);
+        props.TextButton();
     };
     const makeImage = () => {
         if (!props.ImageMenuState) props.ImageButton(true);

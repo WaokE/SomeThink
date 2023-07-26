@@ -526,6 +526,12 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         });
     };
 
+    const handleTextButton = () => {
+        setIsCreatingText(true);
+        setInfoMessage("원하는 위치를 클릭하여 텍스트를 추가하세요.");
+        setIsInfoMessageVisible(true);
+    };
+
     const handleReset = () => {
         const IsReset = window.confirm("모든 노드를 삭제하시겠습니까?");
         if (ymapRef.current && IsReset) {
@@ -1043,8 +1049,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                             top: contextMenuPos.yPos,
                         }}
                     >
-                        <TextContextMenu
-                            selectedText={contextMenuPos.selectedNodeId}
+                        <TextContextMenun
+                            selectedText={contextMeuPos.selectedNodeId}
                             onClose={closeTextContextMenu}
                             deleteNode={deleteNodes}
                         />
@@ -1054,7 +1060,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             <LowToolBar
                 FocusButton={handleFocusButtonClick}
                 NodeButton={createNode}
-                TextButton={setIsCreatingText}
+                TextButton={handleTextButton}
                 ImageButton={setIsImageSearchVisible}
                 ImageMenuState={isImageSearchVisible}
                 selectedNode={selectedNode}
