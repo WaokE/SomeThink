@@ -17,7 +17,7 @@ const UserMouseMove = (props) => {
 
     const filteredUserMouseData = userMouseData.filter((data) => {
         const [id] = data;
-        return userList.includes(id) && id !== userName;
+        return userList.includes(id);
     });
 
     return filteredUserMouseData.map((data) => {
@@ -49,7 +49,7 @@ const UserMouseMove = (props) => {
                         position: "absolute",
                         left: "-10px", // Adjust the left value to position the arrow on the left side of the red circle
                         top: "-10px", // Adjust the top value to center the arrow vertically
-                        fontSize: "12px",
+                        fontSize: "9px",
                         color: "white",
                         backgroundColor: color, // Assign colors from the colors array based on the user's index
                         padding: "5px",
@@ -63,9 +63,9 @@ const UserMouseMove = (props) => {
                         style={{
                             width: "0",
                             height: "0",
-                            borderLeft: "5px solid transparent",
-                            borderRight: "5px solid transparent",
-                            borderBottom: "10px solid white",
+                            borderLeft: "3px solid transparent",
+                            borderRight: "3px solid transparent",
+                            borderBottom: "5px solid white",
                             marginRight: "5px",
                         }}
                     />

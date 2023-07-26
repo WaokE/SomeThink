@@ -13,7 +13,7 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { ExitToApp } from "@mui/icons-material";
 
 const colors = [
-    "#F0F0F0", // 빨간색
+    "#FF5733", // 빨간색
     "#33A7FF", // 파란색
     "#9A33FF", // 보라색
     "#FF33E4", // 분홍색
@@ -36,8 +36,6 @@ function TopBar({
 }) {
     // userName과 일치하는 아바타를 찾아서 따로 저장합니다.
     const userAvatar = userList.find((user) => user === userName);
-    // userAvatar를 userList에서 제거합니다.
-    const updatedUserList = userList.filter((user) => user !== userName);
 
     const getCurrentTime = () => {
         const date = new Date();
@@ -76,7 +74,7 @@ function TopBar({
                                 avatar={
                                     <Avatar
                                         sx={{
-                                            bgcolor: colors[0],
+                                            bgcolor: "#F0F0F0",
                                             color: "#fff",
                                         }}
                                         alt={userAvatar}
@@ -90,18 +88,22 @@ function TopBar({
                             />
                         )}
                         {/* 나머지 아바타들을 출력합니다. */}
-                        {updatedUserList.map((user, index) => (
-                            <Chip
-                                key={user}
-                                avatar={
-                                    <Avatar
-                                        sx={{ bgcolor: colors[index + 1], color: "#fff" }}
-                                        alt={user}
+                        {userList.map(
+                            (user, index) =>
+                                // Check if the user's username is not "username"
+                                user !== userName && (
+                                    <Chip
+                                        key={user}
+                                        avatar={
+                                            <Avatar
+                                                sx={{ bgcolor: colors[index], color: "#fff" }}
+                                                alt={user}
+                                            />
+                                        }
+                                        label={user}
                                     />
-                                }
-                                label={user}
-                            />
-                        ))}
+                                )
+                        )}
                     </div>
                     <div className="button-container">
                         <div className="clock-container">
