@@ -659,7 +659,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             return;
         }
         const selectedNode = JSON.parse(ymapRef.current.get(`Node ${selectedNodeId}`));
-        const nodeId = Math.floor(Math.random() * 1000);
+        const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
 
         if (!selectedNode) {
             return;
@@ -714,7 +714,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     };
 
     const handleCreateImage = (url, searchWord) => {
-        const nodeId = Math.floor(Math.random() * 1000);
+        const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
         const newNode = {
             id: nodeId,
             label: searchWord,
@@ -723,7 +723,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             x: 0,
             y: 0,
             physics: false,
-            size: 30,
+            size: 20,
         };
 
         ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
@@ -880,7 +880,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             const newNodeLabels = data.result.split(",");
 
             const newNodes = newNodeLabels.map((label, index) => {
-                const nodeId = Math.floor(Math.random() * 1000);
+                const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
                 const newNode = {
                     id: nodeId,
                     label: label.trim(),

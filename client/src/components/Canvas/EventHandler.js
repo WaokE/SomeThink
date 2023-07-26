@@ -208,7 +208,7 @@ export const handleAddTextNode = (
         setIsCreatingText(false);
 
         if (label) {
-            const nodeId = Math.floor(Math.random() * 1000);
+            const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
             const newNode = {
                 id: nodeId,
                 shape: "text",
