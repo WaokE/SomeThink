@@ -863,7 +863,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             });
 
         try {
-            const response = await fetch("/api/generate", {
+            const response = await fetch("http://localhost:5050/api/generate", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -882,12 +882,13 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             const newNodeLabels = data.result.split(",");
 
             const newNodes = newNodeLabels.map((label, index) => {
+
                 const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
                 const newNode = {
                     id: nodeId,
                     label: label.trim(),
-                    x: clickedNode.x + 100 * (index + 1),
-                    y: clickedNode.y + 100,
+                    x: clickedNode.x + nx[quadrant - 1] * (1-index),
+                    y: clickedNode.y + nx[quadrant - 1] * (index),
                     physics: false,
                     color: "#FBD85D",
                     size: 30,
