@@ -539,12 +539,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             const currentUserData = getUserListFromYMap();
 
             ymapRef.current.clear();
-            templateNodes.forEach((node) => {
-                ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
-            });
-            templateEdges.forEach((edge) => {
-                ymapRef.current.set(`Edge ${edge.from} to ${edge.to}`, JSON.stringify(edge));
-            });
+            ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
 
             currentUserData.forEach((user) => {
                 console.log(user);
