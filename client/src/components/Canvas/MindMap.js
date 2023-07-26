@@ -31,7 +31,8 @@ import LowToolBar from "../LowToolBar/LowToolBar";
 import UserMouseMove from "./UserMouseMove";
 import Memo from "./MemoNode";
 import Timer from "./Timer";
-import Alert from "../ToastMessage/Alert";
+import AlertToast from "../ToastMessage/Alert";
+import InformationToast from "../ToastMessage/Information";
 
 import "./MindMap.css";
 const PreventRefresh = () => {
@@ -208,6 +209,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         };
     }
 
+    const [isInfoMessageVisible, setIsInfoMessageVisible] = useState(false);
+    const [infoMessage, setInfoMessage] = useState("");
     const [isAlertMessageVisible, setIsAlertMessageVisible] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
     const [isImageSearchVisible, setIsImageSearchVisible] = useState(false);
@@ -634,6 +637,11 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const ny = [100, 100, -100, -100];
 
     const createNode = (selectedNodeId) => {
+        if (!selectedNodeId) {
+            setInfoMessage("노드를 선택한 후에 버튼을 눌러 노드를 추가하세요!");
+            setIsInfoMessageVisible(true);
+            return;
+        }
         const selectedNode = JSON.parse(ymapRef.current.get(`Node ${selectedNodeId}`));
         const nodeId = Math.floor(Math.random() * 1000);
 
@@ -741,9 +749,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             }
             createNode(selectedNode);
         };
-        const __handleAddTextNode = (event) => {
-            setIsCreatingText(true);
-        };
+
         const handleSwitchMemo = (event) => {
             setIsMemoVisible((prev) => !prev);
         };
@@ -756,15 +762,11 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             setIsTimerVisible((prev) => !prev);
         };
         document.addEventListener("click", memoizedHandleClickOutside);
-        window.addEventListener("addNode", handleAddNode);
-        window.addEventListener("addText", __handleAddTextNode);
         window.addEventListener("switchMemo", handleSwitchMemo);
         window.addEventListener("wheel", __handleMouseWheel);
         window.addEventListener("setTimer", __handleSetTimer);
         return () => {
             document.removeEventListener("click", handleClickOutside);
-            window.removeEventListener("addNode", handleAddNode);
-            window.removeEventListener("addText", __handleAddTextNode);
             window.removeEventListener("switchMemo", handleSwitchMemo);
             window.removeEventListener("wheel", __handleMouseWheel);
             window.removeEventListener("setTimer", __handleSetTimer);
@@ -1051,17 +1053,25 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             </div>
             <LowToolBar
                 FocusButton={handleFocusButtonClick}
+                NodeButton={createNode}
+                TextButton={setIsCreatingText}
                 ImageButton={setIsImageSearchVisible}
                 ImageMenuState={isImageSearchVisible}
+                selectedNode={selectedNode}
             />
             <ImageSearch
                 createImage={handleCreateImage}
                 isImageSearchVisible={isImageSearchVisible}
             />
-            <Alert
+            <AlertToast
                 message={alertMessage}
                 open={isAlertMessageVisible}
                 visible={setIsAlertMessageVisible}
+            />
+            <InformationToast
+                message={infoMessage}
+                open={isInfoMessageVisible}
+                visible={setIsInfoMessageVisible}
             />
         </div>
     );
