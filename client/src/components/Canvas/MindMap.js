@@ -484,7 +484,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             selectedNode.borderWidth = 2;
             if (selectedNode.id === 1) {
                 selectedNode.color = {
-                    border: "#CBFFA9",
+                    border: colors[indexOfUser],
                 };
             } else {
                 selectedNode.color = {
