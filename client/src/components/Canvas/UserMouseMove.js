@@ -27,12 +27,12 @@ const UserMouseMove = (props) => {
         const coord = networkRef.current.canvasToDOM({ x: x, y: y });
         const nx = coord.x;
         const ny = coord.y;
-    
+
         // 만약 id가 userName과 일치하면 출력하지 않도록 처리합니다.
         if (id === userName) {
             return null;
         }
-    
+
         return (
             <div
                 key={id}
@@ -74,6 +74,6 @@ const UserMouseMove = (props) => {
             </div>
         );
     });
-};    
+};
 
 export default UserMouseMove;

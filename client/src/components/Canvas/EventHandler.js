@@ -1,4 +1,18 @@
+import { useCallback } from "react";
 import Alert from "../ToastMessage/Alert";
+
+const colors = [
+    "#FF5733", // 빨간색
+    "#33A7FF", // 파란색
+    "#9A33FF", // 보라색
+    "#FF33E4", // 분홍색
+    "#33FFC4", // 청록색
+    "#336DFF", // 하늘색
+    "#FF33A9", // 자홍색
+    "#33FF49", // 녹색
+    "#FF8C33", // 적갈색
+    "#9AFF33", // 연두색
+];
 
 export const createTextInput = (initialValue, onEnter, onCancel) => {
     const textField = document.createElement("input");
@@ -98,6 +112,17 @@ export const handleNodeDragEnd = (event, ymapRef, setSelectedNode) => {
 };
 
 export const handleNodeDragging = (event, ymapRef, userName) => {
+    const userList = [];
+    ymapRef.current.forEach((value, key) => {
+        if (typeof value === "boolean" && value === true && key !== "TimerRunning") {
+            // 만약 값이 true인 경우, 해당 키를 유저명으로 간주하고 userList에 추가합니다.
+            userList.push(key);
+        }
+    });
+    userList.sort();
+
+    const indexOfUser = userList.indexOf(userName);
+
     const { nodes, pointer } = event;
     if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
         return;
@@ -118,7 +143,7 @@ export const handleNodeDragging = (event, ymapRef, userName) => {
         };
     } else {
         selectedNode.color = {
-            border: "#CBFFA9",
+            border: colors[indexOfUser],
             background: "#FBD85D",
         };
     }
