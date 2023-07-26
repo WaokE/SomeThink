@@ -208,7 +208,7 @@ export const handleAddTextNode = (
         setIsCreatingText(false);
 
         if (label) {
-            const nodeId = Math.floor(Math.random() * 1000);
+            const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
             const newNode = {
                 id: nodeId,
                 shape: "text",
@@ -217,7 +217,7 @@ export const handleAddTextNode = (
                 y: pointer.canvas.y,
                 physics: false,
                 font: {
-                    size: 30,
+                    size: 15,
                 },
                 widthConstraint: false,
             };
@@ -342,7 +342,7 @@ export const handleMouseWheel = (event, selectedNode, ymapRef) => {
     const node = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
     if (node.shape === "image") {
         if (event.deltaY < 0) {
-            if (node.size < 100) {
+            if (node.size < 70) {
                 console.log("size up");
                 ymapRef.current.set(
                     `Node ${selectedNode}`,
@@ -350,7 +350,7 @@ export const handleMouseWheel = (event, selectedNode, ymapRef) => {
                 );
             }
         } else if (event.deltaY > 0) {
-            if (node.size > 30) {
+            if (node.size > 20) {
                 ymapRef.current.set(
                     `Node ${selectedNode}`,
                     JSON.stringify({ ...node, size: node.size - 10 })
