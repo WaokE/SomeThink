@@ -17,7 +17,7 @@ export default function InformationToast(props) {
 
     return (
         <Stack spacing={1} sx={{ width: "100%" }}>
-            <Snackbar open={props.open} autoHideDuration={6000} onClose={handleClose}>
+            <Snackbar open={props.open} autoHideDuration={3000} onClose={handleClose}>
                 <Alert severity="info" sx={{ width: "100%" }}>
                     {props.message}
                 </Alert>
