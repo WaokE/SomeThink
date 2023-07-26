@@ -33,6 +33,7 @@ import Memo from "./MemoNode";
 import Timer from "./Timer";
 import AlertToast from "../ToastMessage/Alert";
 import InformationToast from "../ToastMessage/Information";
+import GraphToMarkdown from "./MarkDown";
 
 import "./MindMap.css";
 const PreventRefresh = () => {
@@ -921,6 +922,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     };
 
     const { graph, events } = MindMap;
+    const { nodes, edges } = graph;
     return (
         <div
             onKeyDown={handleKeyPress}
@@ -947,6 +949,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 userList={getUserListFromYMap()}
                 userName={userName}
             />
+            <GraphToMarkdown nodes={nodes} edges={edges} sessionId={sessionId} />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
                 <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
                 <PreventRefresh />
