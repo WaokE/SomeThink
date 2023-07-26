@@ -1049,8 +1049,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                             top: contextMenuPos.yPos,
                         }}
                     >
-                        <TextContextMenun
-                            selectedText={contextMeuPos.selectedNodeId}
+                        <TextContextMenu
+                            selectedText={contextMenuPos.selectedNodeId}
                             onClose={closeTextContextMenu}
                             deleteNode={deleteNodes}
                         />
