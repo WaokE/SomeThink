@@ -33,6 +33,7 @@ import Memo from "./MemoNode";
 import Timer from "./Timer";
 import AlertToast from "../ToastMessage/Alert";
 import InformationToast from "../ToastMessage/Information";
+import GraphToMarkdown from "./MarkDown";
 
 import "./MindMap.css";
 const PreventRefresh = () => {
@@ -290,12 +291,14 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         );
 
         ymapRef.current = ydocRef.current.getMap("MindMap");
-        templateNodes.forEach((node) => {
-            ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
-        });
-        templateEdges.forEach((edge) => {
-            ymapRef.current.set(`Edge ${edge.from} to ${edge.to}`, JSON.stringify(edge));
-        });
+        ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
+
+        // templateNodes.forEach((node) => {
+        //     ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
+        // });
+        // templateEdges.forEach((edge) => {
+        //     ymapRef.current.set(`Edge ${edge.from} to ${edge.to}`, JSON.stringify(edge));
+        // });
 
         ymapRef.current.observe((event) => {
             const updatedGraph = {
@@ -484,7 +487,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             selectedNode.borderWidth = 2;
             if (selectedNode.id === 1) {
                 selectedNode.color = {
-                    border: "#CBFFA9",
+                    border: colors[indexOfUser],
                 };
             } else {
                 selectedNode.color = {
@@ -658,7 +661,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             return;
         }
         const selectedNode = JSON.parse(ymapRef.current.get(`Node ${selectedNodeId}`));
-        const nodeId = Math.floor(Math.random() * 1000);
+        const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
 
         if (!selectedNode) {
             return;
@@ -713,7 +716,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     };
 
     const handleCreateImage = (url, searchWord) => {
-        const nodeId = Math.floor(Math.random() * 1000);
+        const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
         const newNode = {
             id: nodeId,
             label: searchWord,
@@ -722,7 +725,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             x: 0,
             y: 0,
             physics: false,
-            size: 30,
+            size: 20,
         };
 
         ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
@@ -879,8 +882,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             const newNodeLabels = data.result.split(",");
 
             const newNodes = newNodeLabels.map((label, index) => {
-                const quadrant = checkquadrant(clickedNode.x, clickedNode.y);
-                const nodeId = Math.floor(Math.random() * 1000);
+
+                const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
                 const newNode = {
                     id: nodeId,
                     label: label.trim(),
@@ -929,13 +932,15 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         if (captureRef.current) {
             html2canvas(captureRef.current).then((canvas) => {
                 canvas.toBlob((blob) => {
-                    fileDownload(blob, "screenshot.png");
+                    fileDownload(blob, `${sessionId}.png`);
                 });
             });
         }
     };
 
     const { graph, events } = MindMap;
+    const { nodes, edges } = graph;
+
     return (
         <div
             onKeyDown={handleKeyPress}
@@ -962,6 +967,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 userList={getUserListFromYMap()}
                 userName={userName}
             />
+            <GraphToMarkdown nodes={nodes} edges={edges} sessionId={sessionId} />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
                 <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
                 <PreventRefresh />
@@ -1074,6 +1080,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 ImageButton={setIsImageSearchVisible}
                 ImageMenuState={isImageSearchVisible}
                 selectedNode={selectedNode}
+                onExportClick={handleExportClick}
             />
             <ImageSearch
                 createImage={handleCreateImage}
