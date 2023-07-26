@@ -55,10 +55,10 @@ const GraphToMarkdown = ({ nodes, edges, sessionId }) => {
         setMarkdown(markdownString);
     }, [nodes, edges]);
 
-    const copyToClipboard = () => {
-        navigator.clipboard.writeText(markdown);
-        alert("Copied to clipboard!");
-    };
+    // const copyToClipboard = () => {
+    //     navigator.clipboard.writeText(markdown);
+    //     alert("Copied to clipboard!");
+    // };
 
     const handleDownload = () => {
         const element = document.createElement("a");
@@ -69,13 +69,23 @@ const GraphToMarkdown = ({ nodes, edges, sessionId }) => {
         element.click();
     };
 
-    return (
-        <div>
-            <textarea value={markdown} readOnly={true} style={{ width: "100%", height: "400px" }} />
-            <button onClick={copyToClipboard}>Copy to clipboard</button>
-            <button onClick={handleDownload}>Download .md</button>
-        </div>
-    );
+    useEffect(() => {
+        window.addEventListener("makeMarkdown", handleDownload);
+        // window.addEventListener("copyMarkdown", copyToClipboard); 
+        return () => {
+            window.removeEventListener("makeMarkdown", handleDownload);
+            // window.removeEventListener("copyMarkdown", copyToClipboard);
+        };
+    }, [markdown]);
+
+    // return (
+    //     <div>
+    //         {/* <textarea value={markdown} readOnly={true} style={{ width: "100%", height: "400px" }} /> */}
+    //         {/* <h1>1</h1> */}
+    //         {/* <button onClick={copyToClipboard}>Copy to clipboard</button> */}
+    //         <button onClick={handleDownload}>Download .md</button>
+    //     </div>
+    // );
 };
 
 export default GraphToMarkdown;

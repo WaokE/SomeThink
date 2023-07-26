@@ -1063,6 +1063,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 ImageButton={setIsImageSearchVisible}
                 ImageMenuState={isImageSearchVisible}
                 selectedNode={selectedNode}
+                onExportClick={handleExportClick}
             />
             <ImageSearch
                 createImage={handleCreateImage}

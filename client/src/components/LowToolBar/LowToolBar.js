@@ -9,6 +9,14 @@ import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
 import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
 import AccessAlarmRoundedIcon from "@mui/icons-material/AccessAlarmRounded";
 
+import Box from "@mui/material/Box";
+import SpeedDial from "@mui/material/SpeedDial";
+import SpeedDialIcon from "@mui/material/SpeedDialIcon";
+import SpeedDialAction from "@mui/material/SpeedDialAction";
+import FileCopyIcon from "@mui/icons-material/FileCopyOutlined";
+import SaveIcon from "@mui/icons-material/Save";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
+
 const styles = {
     bottomNav: {
         width: "400px", // 너비 조정
@@ -52,50 +60,84 @@ export default function LowToolBar(props) {
         window.dispatchEvent(new CustomEvent("resetNode"));
     };
 
+    const hendleExportClick = () => {
+        props.onExportClick();
+    };
+
+    const makeMarkdown = () => {
+        window.dispatchEvent(new CustomEvent("makeMarkdown"));
+    };
+
+    // const copyMarkdown = () => {
+    //     window.dispatchEvent(new CustomEvent("copyMarkdown"));
+    // };
+
+    const actions = [
+        // { icon: <FileCopyIcon />, name: "Copy Markdown", onclick: copyMarkdown },
+        { icon: <SaveIcon />, name: "Save Markdown", onclick: makeMarkdown },
+        { icon: <CameraAltIcon />, name: "Capture Canvas", onclick: hendleExportClick },
+    ];
+
     return (
-        <BottomNavigation sx={styles.bottomNav}>
-            <BottomNavigationAction
-                value="recents"
-                icon={<AddCircleIcon sx={{ fontSize: "20px" }} />}
-                sx={styles.action}
-                onClick={makeNode}
-            />
-            <BottomNavigationAction
-                value="text"
-                icon={<EditNoteRoundedIcon sx={{ fontSize: "20px" }} />}
-                sx={styles.action}
-                onClick={makeText}
-            />
-            <BottomNavigationAction
-                value="image"
-                icon={<AddPhotoAlternateIcon sx={{ fontSize: "20px" }} />}
-                sx={styles.action}
-                onClick={makeImage}
-            />
-            <BottomNavigationAction
-                value="memo"
-                icon={<ContentPasteRoundedIcon sx={{ fontSize: "20px" }} />}
-                sx={styles.action}
-                onClick={switchMemo}
-            />
-            <BottomNavigationAction
-                value="focus"
-                icon={<CenterFocusStrongIcon sx={{ fontSize: "20px" }} />}
-                sx={styles.action}
-                onClick={focusMindMap}
-            />
-            <BottomNavigationAction
-                value="timer"
-                icon={<AccessAlarmRoundedIcon sx={{ fontSize: "20px" }} />}
-                sx={styles.action}
-                onClick={setTimer}
-            />
-            <BottomNavigationAction
-                value="reset"
-                icon={<DeleteForeverRoundedIcon sx={{ fontSize: "20px" }} />}
-                sx={styles.action}
-                onClick={resetNode}
-            />
-        </BottomNavigation>
+        <div>
+            <BottomNavigation sx={styles.bottomNav}>
+                <BottomNavigationAction
+                    value="recents"
+                    icon={<AddCircleIcon sx={{ fontSize: "20px" }} />}
+                    sx={styles.action}
+                    onClick={makeNode}
+                />
+                <BottomNavigationAction
+                    value="text"
+                    icon={<EditNoteRoundedIcon sx={{ fontSize: "20px" }} />}
+                    sx={styles.action}
+                    onClick={makeText}
+                />
+                <BottomNavigationAction
+                    value="image"
+                    icon={<AddPhotoAlternateIcon sx={{ fontSize: "20px" }} />}
+                    sx={styles.action}
+                    onClick={makeImage}
+                />
+                <BottomNavigationAction
+                    value="memo"
+                    icon={<ContentPasteRoundedIcon sx={{ fontSize: "20px" }} />}
+                    sx={styles.action}
+                    onClick={switchMemo}
+                />
+                <BottomNavigationAction
+                    value="focus"
+                    icon={<CenterFocusStrongIcon sx={{ fontSize: "20px" }} />}
+                    sx={styles.action}
+                    onClick={focusMindMap}
+                />
+                <BottomNavigationAction
+                    value="timer"
+                    icon={<AccessAlarmRoundedIcon sx={{ fontSize: "20px" }} />}
+                    sx={styles.action}
+                    onClick={setTimer}
+                />
+                <BottomNavigationAction
+                    value="reset"
+                    icon={<DeleteForeverRoundedIcon sx={{ fontSize: "20px" }} />}
+                    sx={styles.action}
+                    onClick={resetNode}
+                />
+            </BottomNavigation>
+            <SpeedDial
+                ariaLabel="SpeedDial for export and save"
+                sx={{ position: "absolute", bottom: 35, right: 50 }}
+                icon={<SpeedDialIcon />}
+            >
+                {actions.map((action) => (
+                    <SpeedDialAction
+                        key={action.name}
+                        icon={action.icon}
+                        tooltipTitle={action.name}
+                        onClick={action.onclick}
+                    />
+                ))}
+            </SpeedDial>
+        </div>
     );
 }
