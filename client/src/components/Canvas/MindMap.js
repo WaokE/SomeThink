@@ -88,6 +88,19 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
 
     const [selectedImage, setSelectedImage] = useState(false);
 
+    const colors = [
+        "#FF5733", // 빨간색
+        "#33A7FF", // 파란색
+        "#9A33FF", // 보라색
+        "#FF33E4", // 분홍색
+        "#33FFC4", // 청록색
+        "#336DFF", // 하늘색
+        "#FF33A9", // 자홍색
+        "#33FF49", // 녹색
+        "#FF8C33", // 적갈색
+        "#9AFF33", // 연두색
+    ];
+
     let options = {
         layout: {
             hierarchical: false,
@@ -378,12 +391,13 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
 
         const userList = [];
         ymapRef.current.forEach((value, key) => {
-            if (typeof value === "boolean" && value === true) {
+            if (typeof value === "boolean" && value === true && key !== "TimerRunning") {
                 // 만약 값이 true인 경우, 해당 키를 유저명으로 간주하고 userList에 추가합니다.
                 userList.push(key);
             }
         });
 
+        userList.sort();
         return userList;
     }, []);
 
@@ -403,8 +417,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     };
 
     const handleUserSelect = (event) => {
-        // NOTE: 임시 유저 ID
         const tempUserId = userName;
+        const indexOfUser = getUserListFromYMap().indexOf(tempUserId);
 
         if (isCreatingEdge) {
             if (event.nodes.length > 0) {
@@ -462,8 +476,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             return;
         }
 
+        // 노드 선택시
         if (event.nodes.length > 0) {
-            // 노드 선택시
             setSelectedNode(event.nodes[0]);
             checkPrevSelected(tempUserId);
             let selectedNode = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
@@ -471,11 +485,11 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             selectedNode.borderWidth = 2;
             if (selectedNode.id === 1) {
                 selectedNode.color = {
-                    border: "#CBFFA9",
+                    border: colors[indexOfUser],
                 };
             } else {
                 selectedNode.color = {
-                    border: "#CBFFA9",
+                    border: colors[indexOfUser],
                     background: "#FBD85D",
                 };
             }

@@ -8,6 +8,7 @@ import EditNoteRoundedIcon from "@mui/icons-material/EditNoteRounded";
 import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
 import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
 import AccessAlarmRoundedIcon from "@mui/icons-material/AccessAlarmRounded";
+import Tooltip from "@mui/material/Tooltip";
 
 import Box from "@mui/material/Box";
 import SpeedDial from "@mui/material/SpeedDial";
@@ -33,6 +34,13 @@ const styles = {
         borderRadius: "100px", // 테두리를 둥글게 만듦
         flex: "1", // 각 요소의 비율을 동일하게 설정하여 가로 간격을 줄임
         margin: "0px -10px", // 버튼간의 간격을 추가하여 침범하지 않도록 함
+    },
+    tooltip: {
+        position: "absolute",
+    },
+    icon: {
+        fontSize: "20px",
+        "&:hover": { color: "#FFE17B" },
     },
 };
 
@@ -81,49 +89,63 @@ export default function LowToolBar(props) {
     return (
         <div>
             <BottomNavigation sx={styles.bottomNav}>
+            <Tooltip title="노드 생성" placement="top" sx={styles.tooltip}>
                 <BottomNavigationAction
                     value="recents"
-                    icon={<AddCircleIcon sx={{ fontSize: "20px" }} />}
+                    icon={<AddCircleIcon sx={styles.icon} />}
                     sx={styles.action}
                     onClick={makeNode}
                 />
+            </Tooltip>
+            <Tooltip title="텍스트 생성" placement="top" sx={styles.tooltip}>
                 <BottomNavigationAction
                     value="text"
-                    icon={<EditNoteRoundedIcon sx={{ fontSize: "20px" }} />}
+                    icon={<EditNoteRoundedIcon sx={styles.icon} />}
                     sx={styles.action}
                     onClick={makeText}
                 />
+            </Tooltip>
+            <Tooltip title="이미지 생성" placement="top" sx={styles.tooltip}>
                 <BottomNavigationAction
                     value="image"
-                    icon={<AddPhotoAlternateIcon sx={{ fontSize: "20px" }} />}
+                    icon={<AddPhotoAlternateIcon sx={styles.icon} />}
                     sx={styles.action}
                     onClick={makeImage}
                 />
+            </Tooltip>
+            <Tooltip title="메모 토글" placement="top" sx={styles.tooltip}>
                 <BottomNavigationAction
                     value="memo"
-                    icon={<ContentPasteRoundedIcon sx={{ fontSize: "20px" }} />}
+                    icon={<ContentPasteRoundedIcon sx={styles.icon} />}
                     sx={styles.action}
                     onClick={switchMemo}
                 />
+            </Tooltip>
+            <Tooltip title="포커스" placement="top" sx={styles.tooltip}>
                 <BottomNavigationAction
                     value="focus"
-                    icon={<CenterFocusStrongIcon sx={{ fontSize: "20px" }} />}
+                    icon={<CenterFocusStrongIcon sx={styles.icon} />}
                     sx={styles.action}
                     onClick={focusMindMap}
                 />
+            </Tooltip>
+            <Tooltip title="타이머 토글" placement="top" sx={styles.tooltip}>
                 <BottomNavigationAction
                     value="timer"
-                    icon={<AccessAlarmRoundedIcon sx={{ fontSize: "20px" }} />}
+                    icon={<AccessAlarmRoundedIcon sx={styles.icon} />}
                     sx={styles.action}
                     onClick={setTimer}
                 />
+            </Tooltip>
+            <Tooltip title="초기화" placement="top" sx={styles.tooltip}>
                 <BottomNavigationAction
                     value="reset"
-                    icon={<DeleteForeverRoundedIcon sx={{ fontSize: "20px" }} />}
+                    icon={<DeleteForeverRoundedIcon sx={styles.icon} />}
                     sx={styles.action}
                     onClick={resetNode}
                 />
-            </BottomNavigation>
+            </Tooltip>
+        </BottomNavigation>
             <SpeedDial
                 ariaLabel="SpeedDial for export and save"
                 sx={{ position: "absolute", bottom: 35, right: 50 }}
