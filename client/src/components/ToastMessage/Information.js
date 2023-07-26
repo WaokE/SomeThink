@@ -7,7 +7,7 @@ const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-export default function AlertToast(props) {
+export default function InformationToast(props) {
     const handleClose = (event, reason) => {
         if (reason === "clickaway") {
             return;
@@ -18,7 +18,7 @@ export default function AlertToast(props) {
     return (
         <Stack spacing={1} sx={{ width: "100%" }}>
             <Snackbar open={props.open} autoHideDuration={6000} onClose={handleClose}>
-                <Alert severity="warning" sx={{ width: "100%" }}>
+                <Alert severity="info" sx={{ width: "100%" }}>
                     {props.message}
                 </Alert>
             </Snackbar>
