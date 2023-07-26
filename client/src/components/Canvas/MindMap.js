@@ -915,7 +915,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         if (captureRef.current) {
             html2canvas(captureRef.current).then((canvas) => {
                 canvas.toBlob((blob) => {
-                    fileDownload(blob, "screenshot.png");
+                    fileDownload(blob, `${sessionId}.png`);
                 });
             });
         }
@@ -923,6 +923,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
 
     const { graph, events } = MindMap;
     const { nodes, edges } = graph;
+
     return (
         <div
             onKeyDown={handleKeyPress}
