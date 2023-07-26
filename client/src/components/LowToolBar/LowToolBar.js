@@ -30,7 +30,7 @@ const styles = {
 
 export default function LowToolBar(props) {
     const makeNode = () => {
-        window.dispatchEvent(new CustomEvent("addNode"));
+        props.NodeButton(props.selectedNode);
     };
     const makeText = () => {
         window.dispatchEvent(new CustomEvent("addText"));
