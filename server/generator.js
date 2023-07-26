@@ -52,10 +52,10 @@ module.exports = async function (req, res) {
 
 function generatePrompt(keyword, allKeywords) {
     console.log(keyword);
-    return `If I provide keywords from the sub-concepts to the higher-level concepts in my mind map, 
+    return `If I provide keywords from the sub-concepts to the higher-level concepts in mind map, 
     please analyze those keywords and recommend two more specific and closely related keywords. 
     These recommended keywords should be nouns, and even if there is no specific information about the main topic, 
-    please make sure to provide two keyword recommendations.
+    please make sure to provide only two keyword recommendations. The recommended keywords should be sub-concepts and keywords should be korean.
     If the keyword that I'm trying to recommend is in the [${allKeywords}] list, please recommend a different keyword instead.
 
     Question: Felidae, Mammal, Animal, Biology
