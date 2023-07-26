@@ -10,6 +10,14 @@ import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
 import AccessAlarmRoundedIcon from "@mui/icons-material/AccessAlarmRounded";
 import Tooltip from "@mui/material/Tooltip";
 
+import Box from "@mui/material/Box";
+import SpeedDial from "@mui/material/SpeedDial";
+import SpeedDialIcon from "@mui/material/SpeedDialIcon";
+import SpeedDialAction from "@mui/material/SpeedDialAction";
+import FileCopyIcon from "@mui/icons-material/FileCopyOutlined";
+import SaveIcon from "@mui/icons-material/Save";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
+
 const styles = {
     bottomNav: {
         width: "400px", // 너비 조정
@@ -60,8 +68,27 @@ export default function LowToolBar(props) {
         window.dispatchEvent(new CustomEvent("resetNode"));
     };
 
+    const hendleExportClick = () => {
+        props.onExportClick();
+    };
+
+    const makeMarkdown = () => {
+        window.dispatchEvent(new CustomEvent("makeMarkdown"));
+    };
+
+    // const copyMarkdown = () => {
+    //     window.dispatchEvent(new CustomEvent("copyMarkdown"));
+    // };
+
+    const actions = [
+        // { icon: <FileCopyIcon />, name: "Copy Markdown", onclick: copyMarkdown },
+        { icon: <SaveIcon />, name: "Save Markdown", onclick: makeMarkdown },
+        { icon: <CameraAltIcon />, name: "Capture Canvas", onclick: hendleExportClick },
+    ];
+
     return (
-        <BottomNavigation sx={styles.bottomNav}>
+        <div>
+            <BottomNavigation sx={styles.bottomNav}>
             <Tooltip title="노드 생성" placement="top" sx={styles.tooltip}>
                 <BottomNavigationAction
                     value="recents"
@@ -119,5 +146,20 @@ export default function LowToolBar(props) {
                 />
             </Tooltip>
         </BottomNavigation>
+            <SpeedDial
+                ariaLabel="SpeedDial for export and save"
+                sx={{ position: "absolute", bottom: 35, right: 50 }}
+                icon={<SpeedDialIcon />}
+            >
+                {actions.map((action) => (
+                    <SpeedDialAction
+                        key={action.name}
+                        icon={action.icon}
+                        tooltipTitle={action.name}
+                        onClick={action.onclick}
+                    />
+                ))}
+            </SpeedDial>
+        </div>
     );
 }
