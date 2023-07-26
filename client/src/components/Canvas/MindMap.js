@@ -85,7 +85,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const networkRef = useRef(null);
 
     const [selectedImage, setSelectedImage] = useState(false);
-    const [USERLIST, setUSERLIST] = useState([]);
+
     let options = {
         layout: {
             hierarchical: false,
@@ -177,6 +177,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         setIsTextContextMenuVisible,
         ymapRef,
     });
+
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [windowHeight, setWindowHeight] = useState(window.innerHeight);
 
@@ -194,8 +195,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             window.removeEventListener("resize", handleResize);
         };
     }, []);
-
-    
 
     useEffect(() => {
         ydocRef.current = new Y.Doc();
@@ -275,15 +274,12 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const handleSessionJoin = useCallback(() => {
         if (userName && ymapRef.current && !ymapRef.current.has(userName)) {
             ymapRef.current.set(userName, true);
-            console.log("User added to Y.Map:", userName);
         }
-        console.log("Session join in MindMap component!");
     }, [userName]);
 
     const handleSessionLeave = useCallback(() => {
         if (userName && ymapRef.current && ymapRef.current.has(userName)) {
             ymapRef.current.delete(userName);
-            console.log("User removed from Y.Map:", userName);
         }
     }, [userName]);
 
@@ -299,20 +295,19 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
 
     const getUserListFromYMap = useCallback(() => {
         if (!ymapRef.current) {
-          return [];
+            return [];
         }
-      
+
         const userList = [];
         ymapRef.current.forEach((value, key) => {
-          if (typeof value === "boolean" && value === true) {
-            // 만약 값이 true인 경우, 해당 키를 유저명으로 간주하고 userList에 추가합니다.
-            userList.push(key);
-          }
+            if (typeof value === "boolean" && value === true) {
+                // 만약 값이 true인 경우, 해당 키를 유저명으로 간주하고 userList에 추가합니다.
+                userList.push(key);
+            }
         });
-      
-        return userList;
-      }, []);
 
+        return userList;
+    }, []);
 
     const handleMouseMove = (e) => {
         if (networkRef.current !== null) {
@@ -457,8 +452,17 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const handleReset = () => {
         const IsReset = window.confirm("모든 노드를 삭제하시겠습니까?");
         if (ymapRef.current && IsReset) {
-            // ymap이 초기화되었을 경우에만 clear() 메서드를 호출합니다.
+            // Create a copy of currentUserData to preserve the original data
+            const currentUserData = getUserListFromYMap();
+
             ymapRef.current.clear();
+
+            // Re-add user data to ymapRef for each user in the currentUserData array
+            currentUserData.forEach((user) => {
+                console.log(user);
+                ymapRef.current.set(user, true);
+            });
+
             ymapRef.current.set("Node 1", JSON.stringify(rootNode));
         }
     };
