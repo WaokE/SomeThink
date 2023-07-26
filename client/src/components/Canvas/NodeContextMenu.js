@@ -6,7 +6,6 @@ const NodeContextMenu = ({
     onClose,
     deleteNode,
     createNode,
-    setIsCreatingText,
     setIsCreatingEdge,
     setFromNode,
     handleNodeSelect,
@@ -17,10 +16,6 @@ const NodeContextMenu = ({
     };
     const handleAddChildNode = () => {
         createNode(selectedNodeId);
-        onClose();
-    };
-    const handleAddTextNode = () => {
-        setIsCreatingText(true);
         onClose();
     };
 
@@ -40,7 +35,6 @@ const NodeContextMenu = ({
             <li onClick={handleAddChildNode}>자식 노드 추가</li>
             <li onClick={handleDeleteNode}>노드 제거</li>
             <li onClick={handleAddEdge}>엣지 추가</li>
-            <li onClick={handleAddTextNode}>텍스트 추가</li>
             <li onClick={handleairecommend}>ai 추천 노드</li>
         </ul>
     );
