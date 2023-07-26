@@ -14,10 +14,10 @@ class App extends Component {
 
         // These properties are in the state's component in order to re-render the HTML whenever their values change
         this.state = {
-            mySessionId: "SessionA",
-            myUserName: "Participant" + Math.floor(Math.random() * 100),
+            mySessionId: "RoomA",
+            myUserName: "User" + Math.floor(Math.random() * 200),
             session: undefined,
-            mainStreamManager: undefined, // Main video of the page. Will be the 'publisher' or one of the 'subscribers'
+            mainStreamManager: undefined,
             publisher: undefined,
             subscribers: [],
             audioEnabled: false,

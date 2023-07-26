@@ -1,6 +1,14 @@
+body {
+    margin: 0; /* Remove default body margin */
+    background-color: #f9f9f9; /* Set the body background color */
+}
+
 #join {
-    text-align: center;
-    height: 800px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -11,12 +19,10 @@
     border-radius: 10px;
     padding: 20px;
     width: 100%;
-    /* Remove height: 100%; to cover the full height */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100%;
 }
 
 h1.logo {
@@ -25,9 +31,8 @@ h1.logo {
     background-repeat: no-repeat;
     background-position: center;
     width: 100%;
-    height: 120px; /* Adjust the height according to your logo's dimensions */
+    height: 120px;
     margin-bottom: 20px;
-    /* Remove text-indent: -9999px; since it's not needed anymore */
 }
 
 .btn-success {
@@ -61,6 +66,8 @@ p {
     padding: 15px 30px;
     border-radius: 50px;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+    display: block;
+    margin: 0 auto;
 }
 
 .btn-success:hover {
@@ -72,7 +79,6 @@ p {
 @media (max-width: 768px) {
     #join-dialog {
         width: 100%;
-        /* Remove height: 100%; to cover the full height */
     }
 
     .form-control {
@@ -83,6 +89,5 @@ p {
 @media (max-width: 480px) {
     #join-dialog {
         width: 100%;
-        /* Remove height: 100%; to cover the full height */
     }
 }
