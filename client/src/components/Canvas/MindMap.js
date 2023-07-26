@@ -1008,7 +1008,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                             onClose={closeNodeContextMenu}
                             deleteNode={deleteNodes}
                             createNode={createNode}
-                            setIsCreatingText={setIsCreatingText}
                             setIsCreatingEdge={setIsCreatingEdge}
                             setFromNode={setFromNode}
                             handleNodeSelect={handleNodeSelect}
