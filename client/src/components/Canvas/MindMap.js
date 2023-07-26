@@ -882,13 +882,13 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             const newNodeLabels = data.result.split(",");
 
             const newNodes = newNodeLabels.map((label, index) => {
-
+                const quadrant = checkquadrant(clickedNode.x, clickedNode.y);
                 const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
                 const newNode = {
                     id: nodeId,
                     label: label.trim(),
-                    x: clickedNode.x + nx[quadrant - 1] * (1-index),
-                    y: clickedNode.y + nx[quadrant - 1] * (index),
+                    x: clickedNode.x + nx[quadrant - 1] * (1 - index),
+                    y: clickedNode.y + ny[quadrant - 1] * index,
                     physics: false,
                     color: "#FBD85D",
                     size: 30,

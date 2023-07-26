@@ -55,7 +55,7 @@ function generatePrompt(keyword, allKeywords) {
     return `I am looking to receive appropriate creative recommendations for the sub-concepts in a mind map. 
     Please analyze the provided keywords (it from the sub-concepts to the higher-level concepts) and suggest two more specific and closely related creative keywords. 
     The recommended creative keywords must be nouns, and I only want two creative keyword recommendations, even if there is limited information about the main topic. 
-    The recommended creative keywords must be in English. 
+    The recommended creative keywords must be in Korean. 
     If any of the keywords I provide are already in the [${allKeywords}] list, please suggest different keywords instead.
 
     Question: Felidae, Mammal, Animal, Biology
