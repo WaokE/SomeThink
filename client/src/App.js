@@ -179,8 +179,8 @@ class App extends Component {
         this.setState({
             session: undefined,
             subscribers: [],
-            mySessionId: "SessionA",
-            myUserName: "Participant" + Math.floor(Math.random() * 100),
+            mySessionId: "RoomA",
+            myUserName: "User" + Math.floor(Math.random() * 200),
             mainStreamManager: undefined,
             publisher: undefined,
         });
