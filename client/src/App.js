@@ -169,7 +169,7 @@ class App extends Component {
         // --- 7) Leave the session by calling 'disconnect' method over the Session object ---
 
         const mySession = this.state.session;
-
+        document.body.style.backgroundColor = "#fbd85d";
         if (mySession) {
             mySession.disconnect();
         }
