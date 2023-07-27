@@ -296,6 +296,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
 
         ymapRef.current = ydocRef.current.getMap("MindMap");
         ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
+        ymapRef.current.set("RootQuadrant", 0);
 
         // templateNodes.forEach((node) => {
         //     ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
@@ -681,8 +682,13 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 setIsAlertMessageVisible(true);
                 removeTextInput();
             } else {
-                const quadrant = checkquadrant(selectedNode.x, selectedNode.y);
-                console.log(quadrant);
+                let quadrant = "";
+                if (selectedNode.id === 1) {
+                    quadrant = (ymapRef.current.get("RootQuadrant") % 4) + 1;
+                    ymapRef.current.set("RootQuadrant", ymapRef.current.get("RootQuadrant") + 1);
+                } else {
+                    quadrant = checkquadrant(selectedNode.x, selectedNode.y);
+                }
                 const newNode = {
                     id: nodeId,
                     label: label,
