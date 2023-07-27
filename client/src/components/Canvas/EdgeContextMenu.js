@@ -1,4 +1,4 @@
-import "./EdgeContextMenu.css";
+import "./ContextMenu.css";
 
 const EdgeContextMenu = ({ selectedEdge, deleteEdge, onClose }) => {
     const handleDeleteEdge = () => {

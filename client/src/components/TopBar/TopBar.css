@@ -1,57 +1,59 @@
-.topbar-background {
+/* Add styles for the logo */
+.logo {
+    background-image: url("../../img/icon/somethink.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 250px; /* Set the desired width */
+    height: 45px; /* Set the desired height */
+}
+
+/* Add the following CSS rules */
+.top-bar-container {
     display: flex;
-    flex-direction: row;
-    background-color: #bdbdbd;
-    padding: 30px;
     justify-content: space-between;
+    align-items: center;
+}
+
+.avatar-group-container {
+    display: flex;
+    align-items: left;
+    width: 100%;
+    left: -100px;
+}
+
+.streamcomponent {
+    display: none;
 }
 
 .code {
-    display: inline;
+    font-size: 20px;
+    color: black;
+}
+
+.button-container {
+    display: flex;
+    align-items: center;
+}
+
+.clock-container {
+    display: flex;
+    justify-content: center;
+    font-size: 1.2rem; /* Increased font size */
+    margin-right: 15px; /* Added right margin */
 }
 
 .topbar-menu {
-    display: flex;
-    flex-direction: row;
-    align-items: center; /* 중앙 정렬을 위해 추가 */
+    display: flex; /* This makes .topbar-menu a flex container */
+    align-items: center; /* This vertically centers the <p> inside .topbar-menu */
 }
 
-.member-info {
-    display: inline;
+.topbar-menu p {
+    margin: 0; /* Remove vertical margins */
+    padding: 0; /* Remove padding */
 }
-
-.export-btn {
-    display: inline;
-    margin-left: 20px; /* 왼쪽 여백을 20px로 지정 */
-}
-
-.person {
-    background-image: url("../../img/icon/person.png");
-    background-color: #aaaaaa;
-}
-
-.button {
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-    padding: 30px;
-    width: 70%;
-    aspect-ratio: 1/1;
-    border: none;
-    background-color: #bdbdbd;
-}
-
-.member-info {
-    background-color: #bdbdbd;
-}
-
-.export-button {
-    padding: 10px;
-    width: 100%;
-    aspect-ratio: 1.5/1;
-    background-color: chocolate;
-}
-
-.count {
-    padding-right: 20px;
+.clock-container p {
+    margin: 0; /* Remove vertical margins */
+    padding: 0; /* Remove padding */
+    color: #333;
+    font-weight: bold;
 }

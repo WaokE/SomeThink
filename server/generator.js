@@ -9,8 +9,7 @@ module.exports = async function (req, res) {
     if (!configuration.apiKey) {
         res.status(500).json({
             error: {
-                message:
-                    "OpenAI API key not configured, please follow instructions in README.md",
+                message: "OpenAI API key not configured, please follow instructions in README.md",
             },
         });
         return;
@@ -33,6 +32,7 @@ module.exports = async function (req, res) {
             temperature: 1.0,
             max_tokens: 100, // 원하는 길이로 설정
         });
+
         res.status(200).json({ result: completion.data.choices[0].text });
     } catch (error) {
         // Consider adjusting the error handling logic for your use case
@@ -51,18 +51,18 @@ module.exports = async function (req, res) {
 };
 
 function generatePrompt(keyword, allKeywords) {
-    console.log(keyword);
-    return `If I provide keywords from the sub-concepts to the higher-level concepts in my mind map, 
-    please analyze those keywords and recommend two more specific and closely related keywords. 
-    These recommended keywords should be nouns, and even if there is no specific information about the main topic, 
-    please make sure to provide two keyword recommendations.
-    If the keyword that I'm trying to recommend is in the [${allKeywords}] list, please recommend a different keyword instead.
+    console.log(allKeywords);
+    return `I am looking to receive appropriate creative recommendations for the sub-concepts in a mind map. 
+    Please analyze the provided keywords (it from the sub-concepts to the higher-level concepts) and suggest two more specific and closely related creative keywords. 
+    The recommended creative keywords must be nouns, and I only want two creative keyword recommendations, even if there is limited information about the main topic. 
+    The recommended creative keywords must be in Korean. 
+    If any of the keywords I provide are already in the [${allKeywords}] list, please suggest different keywords instead.
 
     Question: Felidae, Mammal, Animal, Biology
-    Answer: Tiger, Domestic Cat"
+    Answer: 호랑이, 고양이"
   
     Question: Programming Language, Software, Computer
-    Answer: Java, Python"
+    Answer: 자바, 파이썬"
   
     Question: ${keyword}
     Answer:`;
