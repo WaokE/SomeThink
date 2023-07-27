@@ -87,7 +87,7 @@ class App extends Component {
         this.OV = new OpenVidu();
 
         // --- 2) Init a session ---
-
+        document.body.style.backgroundColor = "white";
         this.setState(
             {
                 session: this.OV.initSession(),
@@ -206,14 +206,14 @@ class App extends Component {
             <div className="container">
                 {this.state.session === undefined ? (
                     <div id="join">
-                        <div className="big-circles">
+                        <div className="big-circles" style={{ pointerEvents: "none" }}>
                             <div className="big-circle"></div>
                             <div className="big-circle"></div>
                             <div className="big-circle"></div>
                         </div>
                         <section id="home">
                             <div className="slide-wrapper">
-                                <div className="smallcircles">
+                                <div className="smallcircles" style={{ pointerEvents: "none" }}>
                                     <div className="small-circle"></div>
                                     <div className="small-circle"></div>
                                     <div className="small-circle"></div>
@@ -243,6 +243,9 @@ class App extends Component {
                                                 id="sessionId"
                                                 value={mySessionId}
                                                 onChange={this.handleChangeSessionId}
+                                                style={{ pointerEvents: "auto" }}
+                                                pattern="[0-9A-Za-z]+"
+                                                title="영어나 숫자만 입력해주세요"
                                                 required
                                             />
                                         </p>

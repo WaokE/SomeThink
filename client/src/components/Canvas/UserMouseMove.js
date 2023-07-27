@@ -42,6 +42,7 @@ const UserMouseMove = (props) => {
                     top: ny, // Use the cursor's Y-coordinate directly
                     zIndex: 9999,
                     pointerEvents: "none", // Disable interactivity for the arrow element
+                    whiteSpace: "nowrap",
                 }}
             >
                 <div
