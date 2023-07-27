@@ -115,11 +115,11 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             },
         },
         edges: {
-            // arrows: {
-            //     to: {
-            //         enabled: true,
-            //     },
-            // },
+            arrows: {
+                to: {
+                    enabled: false,
+                },
+            },
             color: "#000000",
         },
         physics: {
