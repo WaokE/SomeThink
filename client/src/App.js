@@ -1,9 +1,11 @@
 import React, { Component } from "react";
 import MindMap from "./components/Canvas/MindMap";
-import "./App.css";
 import { OpenVidu } from "openvidu-browser";
 import axios from "axios";
 import UserVideoComponent from "./components/Audio/UserVideoComponent";
+
+import "./App.css";
+import "./Fonts/Font.css";
 
 const APPLICATION_SERVER_URL =
     process.env.NODE_ENV === "production" ? "" : "https://somethink.online/";

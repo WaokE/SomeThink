@@ -4,12 +4,10 @@ import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Avatar from "@mui/material/Avatar";
 import Chip from "@mui/material/Chip";
-import { deepOrange } from "@mui/material/colors";
 import IconButton from "@mui/material/IconButton";
 import MicSharpIcon from "@mui/icons-material/MicSharp";
 import MicOffSharpIcon from "@mui/icons-material/MicOffSharp";
 import Switch from "@mui/material/Switch";
-import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { ExitToApp } from "@mui/icons-material";
 
 const colors = [
