@@ -113,6 +113,9 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             widthConstraint: {
                 maximum: 60,
             },
+            font: {
+                face: "MainFont",
+            },
         },
         edges: {
             arrows: {
