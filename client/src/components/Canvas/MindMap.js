@@ -123,6 +123,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                     enabled: false,
                 },
             },
+            width: 2,
             color: "#000000",
         },
         physics: {
