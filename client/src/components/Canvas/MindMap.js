@@ -544,6 +544,10 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             position: { x: 0, y: 0 },
             scale: 1.0,
             offset: { x: 0, y: 0 },
+            animation: {
+                duration: 1000,
+                easingFunction: "easeInOutQuad",
+            },
         });
     };
 
