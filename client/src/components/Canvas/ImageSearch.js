@@ -59,6 +59,12 @@ const ImageSearch = (props) => {
         props.createImage(url, searchWord);
     };
 
+    const handleEnterKeyEvent = (key) => {
+        if (key === "Enter") {
+            submit();
+        }
+    };
+
     return (
         <Slide direction="right" in={props.isImageSearchVisible} mountOnEnter unmountOnExit>
             <Box sx={styles.ImageSearch}>
@@ -69,6 +75,7 @@ const ImageSearch = (props) => {
                         label="원하는 이미지를 검색하세요."
                         variant="outlined"
                         onChange={(e) => setImg(e.target.value)}
+                        onKeyDown={(e) => handleEnterKeyEvent(e.key)}
                     />
                     <Button variant="contained" type="submit" onClick={submit}>
                         <ImageSearchIcon />
