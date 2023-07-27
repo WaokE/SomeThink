@@ -87,7 +87,7 @@ class App extends Component {
         this.OV = new OpenVidu();
 
         // --- 2) Init a session ---
-
+        document.body.style.backgroundColor = "white";
         this.setState(
             {
                 session: this.OV.initSession(),
