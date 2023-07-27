@@ -206,41 +206,58 @@ class App extends Component {
             <div className="container">
                 {this.state.session === undefined ? (
                     <div id="join">
-                        <div id="join-dialog" className="jumbotron vertical-center">
-                            <h1 className="logo"></h1>
-                            <form className="form-group" onSubmit={this.joinSession}>
-                                <p>
-                                    <label>Name </label>
-                                    <input
-                                        className="form-control"
-                                        type="text"
-                                        id="userName"
-                                        value={myUserName}
-                                        onChange={this.handleChangeUserName}
-                                        required
-                                    />
-                                </p>
-                                <p>
-                                    <label> Room </label>
-                                    <input
-                                        className="form-control"
-                                        type="text"
-                                        id="sessionId"
-                                        value={mySessionId}
-                                        onChange={this.handleChangeSessionId}
-                                        required
-                                    />
-                                </p>
-                                <p className="text-center">
-                                    <input
-                                        className="btn btn-lg btn-success"
-                                        name="commit"
-                                        type="submit"
-                                        value="JOIN"
-                                    />
-                                </p>
-                            </form>
+                        <div className="big-circles">
+                            <div className="big-circle"></div>
+                            <div className="big-circle"></div>
+                            <div className="big-circle"></div>
                         </div>
+                        <section id="home">
+                            <div className="slide-wrapper">
+                                <div className="smallcircles">
+                                    <div className="small-circle"></div>
+                                    <div className="small-circle"></div>
+                                    <div className="small-circle"></div>
+                                    <div className="small-circle"></div>
+                                    <div className="small-circle"></div>
+                                    <div className="small-circle"></div>
+                                </div>
+                                <div id="join-dialog" className="jumbotron vertical-center">
+                                    <h1 className="logo"></h1>
+                                    <form className="form-group" onSubmit={this.joinSession}>
+                                        <p>
+                                            <label>Name </label>
+                                            <input
+                                                className="form-control"
+                                                type="text"
+                                                id="userName"
+                                                value={myUserName}
+                                                onChange={this.handleChangeUserName}
+                                                required
+                                            />
+                                        </p>
+                                        <p>
+                                            <label> Room </label>
+                                            <input
+                                                className="form-control"
+                                                type="text"
+                                                id="sessionId"
+                                                value={mySessionId}
+                                                onChange={this.handleChangeSessionId}
+                                                required
+                                            />
+                                        </p>
+                                        <p className="text-center">
+                                            <input
+                                                className="btn btn-lg btn-success"
+                                                name="commit"
+                                                type="submit"
+                                                value="JOIN"
+                                            />
+                                        </p>
+                                    </form>
+                                </div>
+                            </div>
+                        </section>
                     </div>
                 ) : null}
 
