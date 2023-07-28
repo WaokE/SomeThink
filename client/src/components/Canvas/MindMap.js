@@ -5,6 +5,7 @@ import TopBar from "../TopBar/TopBar";
 import html2canvas from "html2canvas";
 import fileDownload from "js-file-download";
 import ImageSearch from "./ImageSearch";
+import { createTextInput } from "./CreateTextInput";
 
 import {
     handleDoubleClick,
@@ -14,7 +15,6 @@ import {
     handleAddTextNode,
     handleNodeContextMenu,
     handleNodeDragging,
-    createTextInput,
     makeHandleMemoChange,
     handleMouseWheel,
 } from "./EventHandler";
@@ -168,29 +168,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         },
     ];
 
-    // const templateEdges = [
-    //     {
-    //         from: 1,
-    //         to: 2,
-    //         id: "1 to 2",
-    //     },
-    //     {
-    //         from: 1,
-    //         to: 3,
-    //         id: "1 to 3",
-    //     },
-    //     {
-    //         from: 1,
-    //         to: 4,
-    //         id: "1 to 4",
-    //     },
-    //     {
-    //         from: 1,
-    //         to: 5,
-    //         id: "1 to 5",
-    //     },
-    // ];
-
     if (!selectedImage) {
         options = {
             ...options,
@@ -269,13 +246,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         ymapRef.current = ydocRef.current.getMap("MindMap");
         ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
         ymapRef.current.set("RootQuadrant", 0);
-
-        // templateNodes.forEach((node) => {
-        //     ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
-        // });
-        // templateEdges.forEach((edge) => {
-        //     ymapRef.current.set(`Edge ${edge.from} to ${edge.to}`, JSON.stringify(edge));
-        // });
 
         ymapRef.current.observe((event) => {
             const updatedGraph = {
@@ -798,18 +768,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         setSelectedNode(null);
     };
 
-    const handleNodeSelect = async ({ nodes }) => {
-        if (nodes.length === 0) {
-            return;
-        }
-
-        const clickedNodeId = nodes[0];
-        const clickedNode = JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`));
-
-        if (!clickedNode) {
-            return;
-        }
-
+    const getConnectedNodeLabels = (clickedNodeId, ymapRef) => {
         const connectedNodeIds = [clickedNodeId];
         let currentNodeId = clickedNodeId;
 
@@ -831,6 +790,10 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             return node ? node.label : null;
         });
 
+        return connectedNodeLabels;
+    };
+
+    const getAllNodeLabels = (ymapRef) => {
         const allNodeLabels = Array.from(ymapRef.current.keys())
             .filter((key) => key.startsWith("Node "))
             .map((key) => {
@@ -838,8 +801,12 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 return node ? node.label : null;
             });
 
+        return allNodeLabels;
+    };
+
+    const fetchNewNodeLabels = async (connectedNodeLabels, allNodeLabels) => {
         try {
-            const response = await fetch("/api/generate", {
+            const response = await fetch("http://localhost:5050/api/generate", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -855,40 +822,64 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 throw data.error || new Error(`Request failed with status ${response.status}`);
             }
 
-            const newNodeLabels = data.result.split(",");
-
-            const newNodes = newNodeLabels.map((label, index) => {
-                const quadrant = checkquadrant(clickedNode.x, clickedNode.y);
-                const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
-                const newNode = {
-                    id: nodeId,
-                    label: label.trim(),
-                    x: clickedNode.x + nx[quadrant - 1] * (1 - index),
-                    y: clickedNode.y + ny[quadrant - 1] * index,
-                    physics: false,
-                    color: "#FBD85D",
-                    size: 30,
-                };
-
-                ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
-                return newNode;
-            });
-
-            const newEdges = newNodes.map((node) => {
-                const edge = {
-                    from: clickedNodeId,
-                    to: node.id,
-                    id: `${clickedNodeId} to ${node.id}`,
-                };
-                const edgeKey = `Edge ${clickedNodeId} to ${node.id}`;
-                ymapRef.current.set(edgeKey, JSON.stringify(edge));
-
-                return edge;
-            });
+            return data.result.split(",");
         } catch (error) {
             console.error(error);
             alert(error.message);
+            return [];
         }
+    };
+
+    const addNewNodesAndEdges = (clickedNode, newNodeLabels, clickedNodeId, ymapRef) => {
+        return newNodeLabels.map((label, index) => {
+            const quadrant = checkquadrant(clickedNode.x, clickedNode.y);
+            const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
+            const newNode = {
+                id: nodeId,
+                label: label.trim(),
+                x: clickedNode.x + nx[quadrant - 1] * (1 - index),
+                y: clickedNode.y + ny[quadrant - 1] * index,
+                physics: false,
+                color: "#FBD85D",
+                size: 30,
+            };
+
+            ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
+
+            const edge = {
+                from: clickedNodeId,
+                to: nodeId,
+                id: `${clickedNodeId} to ${nodeId}`,
+            };
+            const edgeKey = `Edge ${clickedNodeId} to ${nodeId}`;
+            ymapRef.current.set(edgeKey, JSON.stringify(edge));
+
+            return { newNode, edge };
+        });
+    };
+
+    const handleNodeSelect = async ({ nodes }) => {
+        if (nodes.length === 0) {
+            return;
+        }
+
+        const clickedNodeId = nodes[0];
+        const clickedNode = JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`));
+
+        if (!clickedNode) {
+            return;
+        }
+
+        const connectedNodeLabels = getConnectedNodeLabels(clickedNodeId, ymapRef);
+        const allNodeLabels = getAllNodeLabels(ymapRef);
+        const newNodeLabels = await fetchNewNodeLabels(connectedNodeLabels, allNodeLabels);
+
+        const newNodesAndEdges = addNewNodesAndEdges(
+            clickedNode,
+            newNodeLabels,
+            clickedNodeId,
+            ymapRef
+        );
     };
 
     const handleMemoChange = makeHandleMemoChange(ymapRef, setMemo);

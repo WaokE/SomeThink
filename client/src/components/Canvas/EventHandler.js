@@ -1,3 +1,6 @@
+import React, { useState, useRef, useEffect } from "react";
+import { createTextInput } from "./CreateTextInput";
+
 const colors = [
     "#FF5733", // 빨간색
     "#33A7FF", // 파란색
@@ -10,49 +13,6 @@ const colors = [
     "#FF8C33", // 적갈색
     "#9AFF33", // 연두색
 ];
-
-export const createTextInput = (initialValue, onEnter, onCancel) => {
-    const textField = document.createElement("input");
-    const canvasRect = document.querySelector(".vis-network canvas").getBoundingClientRect();
-    textField.value = initialValue;
-    textField.style.position = "absolute";
-    textField.style.width = "150px";
-    textField.style.height = "30px";
-    textField.style.zIndex = "10";
-    textField.style.textAlign = "center";
-    textField.style.top = `${canvasRect.top + canvasRect.height / 2}px`;
-    textField.style.left = `${canvasRect.left + canvasRect.width / 2}px`;
-    textField.style.transform = "translate(-50%, -50%)";
-
-    const handleKeyDown = (e) => {
-        if (e.key === "Enter") {
-            const newLabel = textField.value.trim();
-            onEnter(newLabel);
-            removeTextFieldEventListeners();
-        } else if (e.key === "Escape") {
-            onCancel();
-            removeTextFieldEventListeners();
-        }
-    };
-
-    const handleOutside = (e) => {
-        if (!textField.contains(e.target)) {
-            onCancel();
-            removeTextFieldEventListeners();
-        }
-    };
-
-    const removeTextFieldEventListeners = () => {
-        document.removeEventListener("mousedown", handleOutside);
-        textField.removeEventListener("keydown", handleKeyDown);
-    };
-
-    textField.addEventListener("keydown", handleKeyDown);
-    textField.addEventListener("click", (e) => e.stopPropagation());
-    document.addEventListener("mousedown", handleOutside);
-
-    return textField;
-};
 
 export const handleDoubleClick = (
     event,
