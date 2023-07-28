@@ -9,10 +9,10 @@ import ImageSearchIcon from "@mui/icons-material/ImageSearch";
 
 const styles = {
     ImageSearch: {
-        width: "20%",
+        width: "25%",
         height: "80%",
         position: "fixed",
-        bottom: "5%",
+        bottom: "10%",
         border: "2px solid #d9d9d9",
         overflow: "auto",
         backgroundColor: "#f8f8f8",
@@ -51,7 +51,14 @@ const ImageSearch = (props) => {
 
     const submit = () => {
         searchWordRef.current = img;
-        fetchRequest();
+        console.log("img", img);
+        if (img.includes("http")) {
+            console.log("HTTP!!", img);
+            props.createImage(img, "");
+            setImg("");
+        } else {
+            fetchRequest();
+        }
         setImg("");
     };
 
@@ -81,7 +88,7 @@ const ImageSearch = (props) => {
                         <ImageSearchIcon />
                     </Button>
                 </Box>
-                <ImageList sx={styles.ImageList} variant="masonry" cols={2} rowHeight={121}>
+                <ImageList sx={styles.ImageList} variant="masonry" cols={3} rowHeight={121}>
                     {res.map((val) => {
                         return (
                             <ImageListItem key={val.id}>
