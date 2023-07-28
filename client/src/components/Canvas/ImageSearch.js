@@ -51,6 +51,7 @@ const ImageSearch = (props) => {
 
     const submit = () => {
         searchWordRef.current = img;
+
         if (img.includes("http")) {
             props.createImage(img, "");
         } else {
@@ -78,6 +79,7 @@ const ImageSearch = (props) => {
                         id="outlined-basic"
                         label="Search Image with Keyword or URL"
                         variant="outlined"
+                        value={img}
                         onChange={(e) => setImg(e.target.value)}
                         onKeyDown={(e) => handleEnterKeyEvent(e.key)}
                     />
