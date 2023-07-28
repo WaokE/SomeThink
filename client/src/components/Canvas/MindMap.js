@@ -17,9 +17,6 @@ import {
     createTextInput,
     makeHandleMemoChange,
     handleMouseWheel,
-    makeHandleStartTimeChange,
-    makeHandleDurationChange,
-    makeHandleTimerRunning,
 } from "./EventHandler";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
@@ -244,12 +241,11 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const [isCreatingText, setIsCreatingText] = useState(false);
     const [memo, setMemo] = useState("");
     const [isTimerVisible, setIsTimerVisible] = useState(false);
-    const [startTime, setStartTime] = useState(Date.now());
-    const [duration, setDuration] = useState(0);
-    const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [isMemoVisible, setIsMemoVisible] = useState(false);
     const [selectedNode, setSelectedNode] = useState(null);
     const [selectedEdge, setSelectedEdge] = useState(null);
+    const [isTimerRunning, setIsTimerRunning] = useState(false);
+
     const memoizedHandleClickOutside = useCallback(
         handleClickOutside(
             contextMenuRef,
@@ -316,7 +312,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             };
 
             const Mouses = [];
-            let newStartTime, newDuration, newIsTimerRunning;
 
             ymapRef.current.forEach((value, key) => {
                 if (key.startsWith("Node")) {
@@ -330,12 +325,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 } else if (key.startsWith("Mouse")) {
                     const coordinate = JSON.parse(value);
                     Mouses.push([coordinate.id, coordinate.x, coordinate.y]);
-                } else if (key === "StartTime") {
-                    newStartTime = Number(value);
-                } else if (key === "Duration") {
-                    newDuration = Number(value);
-                } else if (key === "TimerRunning") {
-                    newIsTimerRunning = Boolean(value);
                 }
             });
 
@@ -345,17 +334,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             }));
             setMemo(updatedMemo.memo);
             setMouseCoordinates(Mouses);
-
-            // update startTime, duration, and isTimerRunning
-            if (newStartTime !== undefined) {
-                setStartTime(newStartTime);
-            }
-            if (newDuration !== undefined) {
-                setDuration(newDuration);
-            }
-            if (newIsTimerRunning !== undefined) {
-                setIsTimerRunning(newIsTimerRunning);
-            }
         });
 
         const handleResetNode = () => {
@@ -989,10 +967,9 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 <PreventRefresh />
                 {isTimerVisible && (
                     <Timer
-                        ymapRef={ymapRef}
-                        handleStartTimeChange={makeHandleStartTimeChange(ymapRef)}
-                        handleDurationChange={makeHandleDurationChange(ymapRef)}
-                        setIsTimerRunning={makeHandleTimerRunning(ymapRef)}
+                        sessionId={sessionId}
+                        isTimerRunning={isTimerRunning}
+                        setIsTimerRunning={setIsTimerRunning}
                     />
                 )}
                 {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
