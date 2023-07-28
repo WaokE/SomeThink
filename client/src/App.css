@@ -105,7 +105,8 @@ p {
     display: block;
     width: 250px;
     height: 250px;
-    background: #f9f9f9;
+    /* background: #f9f9f9; */
+    background: #fbf8e6;
     margin-top: -125px;
     margin-left: -125px;
     border-radius: 125px;
@@ -160,7 +161,8 @@ p {
     display: block;
     width: 500px;
     height: 500px;
-    background: #f9f9f9;
+    /* background: #f9f9f9; */
+    background: #fbf8e6;
     margin-top: -250px;
     margin-left: -250px;
     border-radius: 250px;

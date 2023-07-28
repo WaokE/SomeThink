@@ -320,24 +320,6 @@ export const makeHandleMemoChange = (ymapRef, setMemo) => (event) => {
     setMemo(newMemo);
 };
 
-export const makeHandleStartTimeChange = (ymapRef) => (newStartTime) => {
-    if (!newStartTime || isNaN(newStartTime)) {
-        newStartTime = 0;
-    }
-    ymapRef.current.set("StartTime", Number(newStartTime));
-};
-
-export const makeHandleDurationChange = (ymapRef) => (newDuration) => {
-    if (!newDuration || isNaN(newDuration)) {
-        newDuration = 0;
-    }
-    ymapRef.current.set("Duration", Number(newDuration));
-};
-
-export const makeHandleTimerRunning = (ymapRef) => (isRunning) => {
-    ymapRef.current.set("TimerRunning", isRunning);
-};
-
 export const handleMouseWheel = (event, selectedNode, ymapRef) => {
     const node = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
     if (node.shape === "image") {
