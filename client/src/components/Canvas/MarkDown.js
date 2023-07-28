@@ -135,7 +135,7 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
             window.removeEventListener("makeMarkdown", handleDownload);
             // window.removeEventListener("copyMarkdown", copyToClipboard);
         };
-    }, []);
+    }, [markdown]);
 
     return (
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
