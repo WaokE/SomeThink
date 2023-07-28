@@ -1,4 +1,3 @@
-import React, { useState, useRef, useEffect } from "react";
 import { createTextInput } from "./CreateTextInput";
 
 const colors = [

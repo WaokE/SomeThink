@@ -831,6 +831,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     };
 
     const addNewNodesAndEdges = (clickedNode, newNodeLabels, clickedNodeId, ymapRef) => {
+
         return newNodeLabels.map((label, index) => {
             const quadrant = checkquadrant(clickedNode.x, clickedNode.y);
             const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);

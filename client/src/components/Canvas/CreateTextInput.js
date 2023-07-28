@@ -1,57 +1,56 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 
 const TextInputComponent = ({ initialValue, onEnter, onCancel }) => {
-    const [inputValue, setInputValue] = useState(initialValue);
     const textFieldRef = useRef(null);
-
-    const handleKeyDown = (e) => {
-        if (e.key === "Enter") {
-            const newLabel = inputValue.trim();
-            onEnter(newLabel);
-        } else if (e.key === "Escape") {
-            onCancel();
-        }
-    };
-
-    const handleOutside = (e) => {
-        if (textFieldRef.current && !textFieldRef.current.contains(e.target)) {
-            onCancel();
-        }
-    };
-
-    useEffect(() => {
-        document.addEventListener("mousedown", handleOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleOutside);
-        };
-    }, []);
 
     useEffect(() => {
         const textField = textFieldRef.current;
-        if (textField) {
-            textField.focus();
-        }
-    }, []);
 
-    return (
-        <input
-            ref={textFieldRef}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            style={{
-                position: "absolute",
-                width: "150px",
-                height: "30px",
-                zIndex: "10",
-                textAlign: "center",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-            }}
-        />
-    );
+        const canvasRect = document.querySelector(".vis-network canvas").getBoundingClientRect();
+        textField.value = initialValue;
+        textField.style.position = "absolute";
+        textField.style.width = "150px";
+        textField.style.height = "30px";
+        textField.style.zIndex = "10";
+        textField.style.textAlign = "center";
+        textField.style.top = `${canvasRect.top + canvasRect.height / 2}px`;
+        textField.style.left = `${canvasRect.left + canvasRect.width / 2}px`;
+        textField.style.transform = "translate(-50%, -50%)";
+
+        const handleKeyDown = (e) => {
+            if (e.key === "Enter") {
+                const newLabel = textField.value.trim();
+                onEnter(newLabel);
+                removeTextFieldEventListeners();
+            } else if (e.key === "Escape") {
+                onCancel();
+                removeTextFieldEventListeners();
+            }
+        };
+
+        const handleOutside = (e) => {
+            if (!textField.contains(e.target)) {
+                onCancel();
+                removeTextFieldEventListeners();
+            }
+        };
+
+        const removeTextFieldEventListeners = () => {
+            document.removeEventListener("mousedown", handleOutside);
+            textField.removeEventListener("keydown", handleKeyDown);
+        };
+
+        textField.addEventListener("keydown", handleKeyDown);
+        textField.addEventListener("click", (e) => e.stopPropagation());
+        document.addEventListener("mousedown", handleOutside);
+
+        return () => {
+            removeTextFieldEventListeners();
+        };
+    }, [initialValue, onEnter, onCancel]);
+
+    return <input ref={textFieldRef} />;
 };
 
 export const createTextInput = (initialValue, onEnter, onCancel) => {
