@@ -287,6 +287,7 @@ exports.setupWSConnection = (
         }
     }, pingTimeout);
     conn.on("close", () => {
+        console.log("dissconnect");
         closeConn(doc, conn);
         clearInterval(pingInterval);
     });

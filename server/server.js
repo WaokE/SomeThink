@@ -7,14 +7,18 @@
 require("dotenv").config(!!process.env.CONFIG ? { path: process.env.CONFIG } : {});
 const WebSocket = require("ws");
 const http = require("http");
-const wss = new WebSocket.Server({ noServer: true });
-const setupWSConnection = require("./utils.js").setupWSConnection;
-const host = process.env.HOST || "localhost";
-const SYNCPORT = process.env.PORT || 1234;
+const Y = require("yjs");
 const server = http.createServer((request, response) => {
     response.writeHead(200, { "Content-Type": "text/plain" });
     response.end("okay");
 });
+const wss = new WebSocket.Server({ noServer: true });
+const { WebsocketProvider } = require("y-websocket");
+const setupWSConnection = require("./utils.js").setupWSConnection;
+const host = process.env.HOST || "localhost";
+const SYNCPORT = process.env.PORT || 1234;
+
+const rooms = new Map();
 
 const express = require("express");
 const cors = require("cors"); // Add this line to import CORS
@@ -39,12 +43,10 @@ app.use(
 );
 app.use(express.json()); // for parsing application/json
 wss.on("connection", setupWSConnection);
-
 // Allow application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 // Allow application/json
 app.use(bodyParser.json());
-
 server.on("upgrade", (request, socket, head) => {
     // You may check auth of request here..
     // See https://github.com/websockets/ws#client-authentication
@@ -60,7 +62,10 @@ server.on("upgrade", (request, socket, head) => {
 server.listen(SYNCPORT, host, () => {
     console.log(`running at '${host}' on port ${SYNCPORT}`);
 });
-
+app.post("/api/leavesession", (req, res) => {
+    wss.close();
+    return res.status(201).json("success");
+});
 app.post("/api/generate", generatorHandler);
 
 app.post("/api/sessions", async (req, res) => {
