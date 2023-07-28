@@ -213,6 +213,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
     const [isEdgeContextMenuVisible, setIsEdgeContextMenuVisible] = useState(false);
     const [isTextContextMenuVisible, setIsTextContextMenuVisible] = useState(false);
+    const [isMarkdownVisible, setIsMarkdownVisible] = useState(true);
     const contextMenuRef = useRef(null);
     const [isCreatingText, setIsCreatingText] = useState(false);
     const [memo, setMemo] = useState("");
@@ -943,7 +944,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 userList={getUserListFromYMap()}
                 userName={userName}
             />
-            <GraphToMarkdown nodes={nodes} edges={edges} sessionId={sessionId} />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
                 <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
                 {isTimerVisible && (
@@ -1051,10 +1051,18 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 FocusButton={handleFocusButtonClick}
                 NodeButton={createNode}
                 TextButton={handleTextButton}
-                ImageButton={setIsImageSearchVisible}
-                ImageMenuState={isImageSearchVisible}
+                isImageSearchVisible={isImageSearchVisible}
+                setIsImageSearchVisible={setIsImageSearchVisible}
+                isMarkdownVisible={isMarkdownVisible}
+                setIsMarkdownVisible={setIsMarkdownVisible}
                 selectedNode={selectedNode}
                 onExportClick={handleExportClick}
+            />
+            <GraphToMarkdown
+                nodes={nodes}
+                edges={edges}
+                isMarkdownVisible={isMarkdownVisible}
+                networkRef={networkRef}
             />
             <ImageSearch
                 createImage={handleCreateImage}

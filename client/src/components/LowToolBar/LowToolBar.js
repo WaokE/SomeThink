@@ -14,9 +14,9 @@ import Box from "@mui/material/Box";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
-import FileCopyIcon from "@mui/icons-material/FileCopyOutlined";
 import SaveIcon from "@mui/icons-material/Save";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import FormatListBulletedSharpIcon from "@mui/icons-material/FormatListBulletedSharp";
 
 const styles = {
     bottomNav: {
@@ -52,8 +52,8 @@ export default function LowToolBar(props) {
         props.TextButton();
     };
     const makeImage = () => {
-        if (!props.ImageMenuState) props.ImageButton(true);
-        else props.ImageButton(false);
+        if (!props.isImageSearchVisible) props.setIsImageSearchVisible(true);
+        else props.setIsImageSearchVisible(false);
     };
     const switchMemo = () => {
         window.dispatchEvent(new CustomEvent("switchMemo"));
@@ -76,76 +76,78 @@ export default function LowToolBar(props) {
         window.dispatchEvent(new CustomEvent("makeMarkdown"));
     };
 
-    // const copyMarkdown = () => {
-    //     window.dispatchEvent(new CustomEvent("copyMarkdown"));
-    // };
+    const openMarkdown = () => {
+        if (!props.isMarkdownVisible) props.setIsMarkdownVisible(true);
+        else props.setIsMarkdownVisible(false);
+        console.log("openMarkdown", props.isMarkdownVisible);
+    };
 
     const actions = [
-        // { icon: <FileCopyIcon />, name: "Copy Markdown", onclick: copyMarkdown },
-        { icon: <SaveIcon />, name: "Save Markdown", onclick: makeMarkdown },
         { icon: <CameraAltIcon />, name: "Capture Canvas", onclick: hendleExportClick },
+        { icon: <SaveIcon />, name: "Save Markdown", onclick: makeMarkdown },
+        { icon: <FormatListBulletedSharpIcon />, name: "Open Markdown", onclick: openMarkdown },
     ];
 
     return (
         <div>
             <BottomNavigation sx={styles.bottomNav}>
-            <Tooltip title="노드 생성" placement="top" sx={styles.tooltip}>
-                <BottomNavigationAction
-                    value="recents"
-                    icon={<AddCircleIcon sx={styles.icon} />}
-                    sx={styles.action}
-                    onClick={makeNode}
-                />
-            </Tooltip>
-            <Tooltip title="텍스트 생성" placement="top" sx={styles.tooltip}>
-                <BottomNavigationAction
-                    value="text"
-                    icon={<EditNoteRoundedIcon sx={styles.icon} />}
-                    sx={styles.action}
-                    onClick={makeText}
-                />
-            </Tooltip>
-            <Tooltip title="이미지 생성" placement="top" sx={styles.tooltip}>
-                <BottomNavigationAction
-                    value="image"
-                    icon={<AddPhotoAlternateIcon sx={styles.icon} />}
-                    sx={styles.action}
-                    onClick={makeImage}
-                />
-            </Tooltip>
-            <Tooltip title="메모 토글" placement="top" sx={styles.tooltip}>
-                <BottomNavigationAction
-                    value="memo"
-                    icon={<ContentPasteRoundedIcon sx={styles.icon} />}
-                    sx={styles.action}
-                    onClick={switchMemo}
-                />
-            </Tooltip>
-            <Tooltip title="포커스" placement="top" sx={styles.tooltip}>
-                <BottomNavigationAction
-                    value="focus"
-                    icon={<CenterFocusStrongIcon sx={styles.icon} />}
-                    sx={styles.action}
-                    onClick={focusMindMap}
-                />
-            </Tooltip>
-            <Tooltip title="타이머 토글" placement="top" sx={styles.tooltip}>
-                <BottomNavigationAction
-                    value="timer"
-                    icon={<AccessAlarmRoundedIcon sx={styles.icon} />}
-                    sx={styles.action}
-                    onClick={setTimer}
-                />
-            </Tooltip>
-            <Tooltip title="초기화" placement="top" sx={styles.tooltip}>
-                <BottomNavigationAction
-                    value="reset"
-                    icon={<DeleteForeverRoundedIcon sx={styles.icon} />}
-                    sx={styles.action}
-                    onClick={resetNode}
-                />
-            </Tooltip>
-        </BottomNavigation>
+                <Tooltip title="노드 생성" placement="top" sx={styles.tooltip}>
+                    <BottomNavigationAction
+                        value="recents"
+                        icon={<AddCircleIcon sx={styles.icon} />}
+                        sx={styles.action}
+                        onClick={makeNode}
+                    />
+                </Tooltip>
+                <Tooltip title="텍스트 생성" placement="top" sx={styles.tooltip}>
+                    <BottomNavigationAction
+                        value="text"
+                        icon={<EditNoteRoundedIcon sx={styles.icon} />}
+                        sx={styles.action}
+                        onClick={makeText}
+                    />
+                </Tooltip>
+                <Tooltip title="이미지 생성" placement="top" sx={styles.tooltip}>
+                    <BottomNavigationAction
+                        value="image"
+                        icon={<AddPhotoAlternateIcon sx={styles.icon} />}
+                        sx={styles.action}
+                        onClick={makeImage}
+                    />
+                </Tooltip>
+                <Tooltip title="메모 토글" placement="top" sx={styles.tooltip}>
+                    <BottomNavigationAction
+                        value="memo"
+                        icon={<ContentPasteRoundedIcon sx={styles.icon} />}
+                        sx={styles.action}
+                        onClick={switchMemo}
+                    />
+                </Tooltip>
+                <Tooltip title="포커스" placement="top" sx={styles.tooltip}>
+                    <BottomNavigationAction
+                        value="focus"
+                        icon={<CenterFocusStrongIcon sx={styles.icon} />}
+                        sx={styles.action}
+                        onClick={focusMindMap}
+                    />
+                </Tooltip>
+                <Tooltip title="타이머 토글" placement="top" sx={styles.tooltip}>
+                    <BottomNavigationAction
+                        value="timer"
+                        icon={<AccessAlarmRoundedIcon sx={styles.icon} />}
+                        sx={styles.action}
+                        onClick={setTimer}
+                    />
+                </Tooltip>
+                <Tooltip title="초기화" placement="top" sx={styles.tooltip}>
+                    <BottomNavigationAction
+                        value="reset"
+                        icon={<DeleteForeverRoundedIcon sx={styles.icon} />}
+                        sx={styles.action}
+                        onClick={resetNode}
+                    />
+                </Tooltip>
+            </BottomNavigation>
             <SpeedDial
                 ariaLabel="SpeedDial for export and save"
                 sx={{ position: "absolute", bottom: 35, right: 50 }}
