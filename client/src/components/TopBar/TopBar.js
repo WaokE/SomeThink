@@ -63,6 +63,7 @@ function TopBar({
             audio.play();
         } else if (userList.length < prevUserListLength) {
             const audio = new Audio("leave.mp3");
+            audio.volume = 0.5;
             audio.play();
         }
         setPrevUserListLength(userList.length);
