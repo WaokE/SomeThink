@@ -186,6 +186,21 @@ class App extends Component {
             mySession.disconnect();
         }
 
+        const { myUserName, mySessionId } = this.state;
+        axios
+            .post(APPLICATION_SERVER_URL + "api/leavesession", {
+                userName: myUserName,
+                sessionId: mySessionId,
+            })
+            .then(() => {
+                console.log("User left the session on the server.");
+            })
+            .catch((error) => {
+                console.error("Error leaving the session on the server:", error);
+            });
+
+        window.location.reload();
+
         // Empty all properties...
         this.OV = null;
         this.setState({

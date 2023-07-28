@@ -33,29 +33,6 @@ import InformationToast from "../ToastMessage/Information";
 import GraphToMarkdown from "./MarkDown";
 
 import "./MindMap.css";
-const PreventRefresh = () => {
-    useEffect(() => {
-        const handleBeforeUnload = (event) => {
-            event.preventDefault();
-            event.returnValue = ""; // 이 줄은 최신 버전의 Chrome에서 필요합니다.
-        };
-
-        const handleUnload = () => {
-            // 페이지를 떠날 때 처리할 작업을 여기에 추가합니다.
-            // 예를 들어, 변경된 데이터를 저장하거나 서버에 업데이트를 요청하는 등의 작업을 수행할 수 있습니다.
-        };
-
-        window.addEventListener("beforeunload", handleBeforeUnload);
-        window.addEventListener("unload", handleUnload);
-
-        return () => {
-            window.removeEventListener("beforeunload", handleBeforeUnload);
-            window.removeEventListener("unload", handleUnload);
-        };
-    }, []);
-
-    return <></>;
-};
 
 const isCyclic = (graph, fromNode, toNode) => {
     const insertEdge = `Edge ${fromNode} to ${toNode}`;
@@ -716,7 +693,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             canvas.height = image.height;
             const ctx = canvas.getContext("2d");
             ctx.drawImage(image, 0, 0);
-            const dataURL = canvas.toDataURL()
+            const dataURL = canvas.toDataURL();
 
             const newNode = {
                 id: nodeId,
@@ -969,7 +946,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             <GraphToMarkdown nodes={nodes} edges={edges} sessionId={sessionId} />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
                 <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
-                <PreventRefresh />
                 {isTimerVisible && (
                     <Timer
                         sessionId={sessionId}
