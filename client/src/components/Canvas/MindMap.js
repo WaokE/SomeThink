@@ -373,12 +373,14 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         if (userName && ymapRef.current && !ymapRef.current.has(userName)) {
             ymapRef.current.set(userName, true);
         }
+        console.log("handleSessionJoin");
     }, [userName]);
 
     const handleSessionLeave = useCallback(() => {
         if (userName && ymapRef.current && ymapRef.current.has(userName)) {
             ymapRef.current.delete(userName);
         }
+        console.log("handleSessionLeave");
     }, [userName]);
 
     useEffect(() => {

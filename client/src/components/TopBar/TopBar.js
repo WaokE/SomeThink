@@ -48,6 +48,7 @@ function TopBar({
     };
 
     const [currentTime, setCurrentTime] = useState(getCurrentTime());
+    const [prevUserListLength, setPrevUserListLength] = useState(userList.length);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -55,6 +56,17 @@ function TopBar({
         }, 1000);
         return () => clearInterval(timer);
     }, []);
+
+    useEffect(() => {
+        if (userList.length > prevUserListLength) {
+            const audio = new Audio("enter.mp3");
+            audio.play();
+        } else if (userList.length < prevUserListLength) {
+            const audio = new Audio("leave.mp3");
+            audio.play();
+        }
+        setPrevUserListLength(userList.length);
+    }, [userList.length, prevUserListLength]);
 
     return (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1 }}>
@@ -80,7 +92,7 @@ function TopBar({
                                 }
                                 label={userAvatar}
                                 sx={{
-                                    border: `1px solid white`, // Add orange border to the entire Chip
+                                    border: `1px solid white`, // White border around the avatar
                                     borderRadius: "15px", // Rounded border for the entire Chip
                                 }}
                             />
