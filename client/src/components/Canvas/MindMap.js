@@ -1082,7 +1082,12 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 selectedNode={selectedNode}
                 onExportClick={handleExportClick}
             />
-            <GraphToMarkdown nodes={nodes} edges={edges} isMarkdownVisible={isMarkdownVisible} />
+            <GraphToMarkdown
+                nodes={nodes}
+                edges={edges}
+                isMarkdownVisible={isMarkdownVisible}
+                networkRef={networkRef}
+            />
             <ImageSearch
                 createImage={handleCreateImage}
                 isImageSearchVisible={isImageSearchVisible}

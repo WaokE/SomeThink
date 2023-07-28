@@ -1,14 +1,29 @@
 import React, { useState, useEffect } from "react";
 import Slide from "@mui/material/Slide";
+import Box from "@mui/material/Box";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
 
-const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible }) => {
-    const [markdown, setMarkdown] = useState("");
+const styles = {
+    markdown: {
+        width: "25%",
+        height: "80%",
+        position: "fixed",
+        right: "0%",
+        bottom: "10%",
+        border: "2px solid #d9d9d9",
+        overflow: "auto",
+        backgroundColor: "#f8f8f8",
+    },
+};
+
+const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
+    const [markdown, setMarkdown] = useState([]);
 
     useEffect(() => {
         let nodeHierarchy = {};
-        let markdownString = "";
+        let markdownLines = [];
 
-        // build node hierarchy
         edges.forEach((edge) => {
             const parent = nodes.find((node) => node.id === edge.from);
             const child = nodes.find((node) => node.id === edge.to);
@@ -29,15 +44,19 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible }) => {
             const space = " ".repeat((depth > 2 ? depth - 2 : 0) * 2);
             const bullet = "- ";
             const header = "#".repeat(depth + 1);
-            const markdownLine = `${
-                depth === 0
-                    ? header + " **" + node.label + "**\n"
-                    : depth === 1
-                    ? "\n" + header + " " + node.label + "\n"
-                    : space + bullet + node.label
-            }\n`;
+            const markdownLine = {
+                line: `${
+                    depth === 0
+                        ? header + " **" + node.label + "**\n"
+                        : depth === 1
+                        ? "\n" + header + " " + node.label + "\n"
+                        : space + bullet + node.label
+                }\n`,
+                x: node.x,
+                y: node.y,
+            };
 
-            markdownString += markdownLine;
+            markdownLines.push(markdownLine);
 
             const parentNode = nodeHierarchy[node.id];
             if (parentNode && parentNode.children) {
@@ -47,27 +66,47 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible }) => {
             }
         }
 
-        // start building from root node
         const rootNode = nodes.find((node) => node.id === 1);
         if (rootNode) {
             buildMarkdownString(rootNode);
         }
 
-        setMarkdown(markdownString);
+        setMarkdown(markdownLines);
     }, [nodes, edges]);
 
-    // const copyToClipboard = () => {
-    //     navigator.clipboard.writeText(markdown);
-    //     alert("Copied to clipboard!");
-    // };
+    const handleFocusButtonClick = (x, y) => {
+        networkRef.current.moveTo({
+            position: { x: x, y: y },
+            scale: 1.0,
+            offset: { x: 0, y: 0 },
+            animation: {
+                duration: 1000,
+                easingFunction: "easeInOutQuad",
+            },
+        });
+    };
 
     const handleDownload = () => {
+        const markdownString = markdown.map((lineObj) => lineObj.line).join("");
         const element = document.createElement("a");
-        const file = new Blob([markdown], { type: "text/plain" });
+        const file = new Blob([markdownString], { type: "text/plain" });
         element.href = URL.createObjectURL(file);
         element.download = `${nodes[0].label}.md`;
         document.body.appendChild(element);
         element.click();
+    };
+
+    const displayMarkdown = () => {
+        return markdown.map((lineObj, index) => (
+            <ListItem
+                button
+                key={index}
+                onClick={() => handleFocusButtonClick(lineObj.x, lineObj.y)}
+                style={{ whiteSpace: "pre" }}
+            >
+                {lineObj.line}
+            </ListItem>
+        ));
     };
 
     useEffect(() => {
@@ -77,17 +116,13 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible }) => {
             window.removeEventListener("makeMarkdown", handleDownload);
             // window.removeEventListener("copyMarkdown", copyToClipboard);
         };
-    }, [markdown]);
+    }, []);
 
     return (
-        <Slide direction="right" in={isMarkdownVisible} mountOnEnter unmountOnExit>
-            <div className="markdown">
-                <textarea
-                    value={markdown}
-                    readOnly={true}
-                    style={{ width: "100%", height: "400px" }}
-                />{" "}
-            </div>
+        <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
+            <Box sx={styles.markdown}>
+                <List>{displayMarkdown()}</List>
+            </Box>
         </Slide>
     );
 };
