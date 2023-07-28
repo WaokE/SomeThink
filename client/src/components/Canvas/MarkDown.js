@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import Slide from "@mui/material/Slide";
 
-const GraphToMarkdown = ({ nodes, edges, sessionId }) => {
+const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible }) => {
     const [markdown, setMarkdown] = useState("");
 
     useEffect(() => {
@@ -71,21 +72,24 @@ const GraphToMarkdown = ({ nodes, edges, sessionId }) => {
 
     useEffect(() => {
         window.addEventListener("makeMarkdown", handleDownload);
-        // window.addEventListener("copyMarkdown", copyToClipboard); 
+        // window.addEventListener("copyMarkdown", copyToClipboard);
         return () => {
             window.removeEventListener("makeMarkdown", handleDownload);
             // window.removeEventListener("copyMarkdown", copyToClipboard);
         };
     }, [markdown]);
 
-    // return (
-    //     <div>
-    //         {/* <textarea value={markdown} readOnly={true} style={{ width: "100%", height: "400px" }} /> */}
-    //         {/* <h1>1</h1> */}
-    //         {/* <button onClick={copyToClipboard}>Copy to clipboard</button> */}
-    //         <button onClick={handleDownload}>Download .md</button>
-    //     </div>
-    // );
+    return (
+        <Slide direction="right" in={isMarkdownVisible} mountOnEnter unmountOnExit>
+            <div className="markdown">
+                <textarea
+                    value={markdown}
+                    readOnly={true}
+                    style={{ width: "100%", height: "400px" }}
+                />{" "}
+            </div>
+        </Slide>
+    );
 };
 
 export default GraphToMarkdown;
