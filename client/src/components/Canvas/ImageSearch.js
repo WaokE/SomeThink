@@ -51,11 +51,8 @@ const ImageSearch = (props) => {
 
     const submit = () => {
         searchWordRef.current = img;
-        console.log("img", img);
         if (img.includes("http")) {
-            console.log("HTTP!!", img);
             props.createImage(img, "");
-            setImg("");
         } else {
             fetchRequest();
         }
@@ -79,7 +76,7 @@ const ImageSearch = (props) => {
                     <TextField
                         sx={{ width: "80%" }}
                         id="outlined-basic"
-                        label="원하는 이미지를 검색하세요."
+                        label="Search Image with Keyword or URL"
                         variant="outlined"
                         onChange={(e) => setImg(e.target.value)}
                         onKeyDown={(e) => handleEnterKeyEvent(e.key)}
