@@ -1,8 +1,10 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import MindMap from "./components/Canvas/MindMap";
 import { OpenVidu } from "openvidu-browser";
 import axios from "axios";
 import UserVideoComponent from "./components/Audio/UserVideoComponent";
+
+import LoadingBox from "./components/LoadingScreen/LoadingBox";
 
 import "./App.css";
 import "./Fonts/Font.css";
@@ -13,6 +15,10 @@ const APPLICATION_SERVER_URL =
 class App extends Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            isLoading: false,
+        };
 
         // These properties are in the state's component in order to re-render the HTML whenever their values change
         this.state = {
@@ -80,6 +86,10 @@ class App extends Component {
     handleSessionJoin() {
         this.setState({
             sessionJoined: true,
+        });
+
+        this.setState({
+            isLoading: false,
         });
     }
 
@@ -201,6 +211,7 @@ class App extends Component {
     }
 
     render() {
+        const { isLoading } = this.state;
         const mySessionId = this.state.mySessionId;
         const myUserName = this.state.myUserName;
         const audioEnabled = this.state.audioEnabled;
@@ -253,6 +264,16 @@ class App extends Component {
                                         </p>
                                         <p className="text-center">
                                             <input
+                                                onClick={() => {
+                                                    this.setState(
+                                                        {
+                                                            isLoading: true,
+                                                        },
+                                                        () => {
+                                                            this.forceUpdate();
+                                                        }
+                                                    );
+                                                }}
                                                 className="btn btn-lg btn-success"
                                                 name="commit"
                                                 type="submit"
@@ -291,6 +312,7 @@ class App extends Component {
                                 </div>
                             ))}
                         </div>
+                        {isLoading && <LoadingBox roomNumb={mySessionId} />}
                     </div>
                 ) : null}
             </div>
