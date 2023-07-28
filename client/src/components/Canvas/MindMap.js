@@ -194,28 +194,28 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         },
     ];
 
-    const templateEdges = [
-        {
-            from: 1,
-            to: 2,
-            id: "1 to 2",
-        },
-        {
-            from: 1,
-            to: 3,
-            id: "1 to 3",
-        },
-        {
-            from: 1,
-            to: 4,
-            id: "1 to 4",
-        },
-        {
-            from: 1,
-            to: 5,
-            id: "1 to 5",
-        },
-    ];
+    // const templateEdges = [
+    //     {
+    //         from: 1,
+    //         to: 2,
+    //         id: "1 to 2",
+    //     },
+    //     {
+    //         from: 1,
+    //         to: 3,
+    //         id: "1 to 3",
+    //     },
+    //     {
+    //         from: 1,
+    //         to: 4,
+    //         id: "1 to 4",
+    //     },
+    //     {
+    //         from: 1,
+    //         to: 5,
+    //         id: "1 to 5",
+    //     },
+    // ];
 
     if (!selectedImage) {
         options = {
@@ -234,7 +234,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const [isImageSearchVisible, setIsImageSearchVisible] = useState(false);
     const [fromNode, setFromNode] = useState(null);
     const [isCreatingEdge, setIsCreatingEdge] = useState(false);
-    const [inputId, setInputId] = useState("");
     const [mouseCoordinates, setMouseCoordinates] = useState([]);
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
     const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
@@ -604,7 +603,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     };
 
     const sortEdgesCorrectly = (edges, createdEdge) => {
-        let edgeList = edges.filter((edge) => edge != createdEdge);
+        let edgeList = edges.filter((edge) => edge !== createdEdge);
         let newEdgeList = [];
         let bfsq = [`${createdEdge.split(" ")[3]}`];
         while (bfsq.length > 0) {
@@ -613,14 +612,12 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 if (edge.startsWith(`Edge ${current} to `)) {
                     newEdgeList.push(edge);
                     ymapRef.current.delete(edge);
-                    // FIXME: 반복을 인덱싱을 통해 하도록 해서 삭제 성능개선을 할 수 있을듯?
-                    edgeList = edgeList.filter((e) => e != edge);
+                    edgeList = edgeList.filter((e) => e !== edge);
                     bfsq.push(edge.split(" ")[3]);
                 } else if (edge.endsWith(` to ${current}`)) {
                     newEdgeList.push(`Edge ${current} to ${edge.split(" ")[1]}`);
                     ymapRef.current.delete(edge);
-                    // FIXME: 반복을 인덱싱을 통해 하도록 해서 삭제 성능개선을 할 수 있을듯?
-                    edgeList = edgeList.filter((e) => e != edge);
+                    edgeList = edgeList.filter((e) => e !== edge);
                     bfsq.push(edge.split(" ")[1]);
                 }
             });
@@ -861,10 +858,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             connectedNodeIds.push(parentNodeId);
             currentNodeId = parentNodeId;
         }
-
-        const rootLabel = ymapRef.current.get("Node 1")
-            ? JSON.parse(ymapRef.current.get("Node 1"))?.label
-            : null;
 
         const connectedNodeLabels = connectedNodeIds.map((nodeId) => {
             const node = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));

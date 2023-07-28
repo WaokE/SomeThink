@@ -1,6 +1,3 @@
-import { useCallback } from "react";
-import Alert from "../ToastMessage/Alert";
-
 const colors = [
     "#FF5733", // 빨간색
     "#33A7FF", // 파란색
@@ -68,10 +65,8 @@ export const handleDoubleClick = (
         const selectedNodeId = event.nodes[0];
         const nodeData = ymapRef.current.get(`Node ${selectedNodeId}`);
         if (nodeData) {
-            const node = JSON.parse(nodeData);
             const canvas = document.querySelector(".vis-network canvas");
             if (canvas) {
-                const canvasRect = canvas.getBoundingClientRect();
                 const node = JSON.parse(nodeData);
 
                 const textField = createTextInput(
