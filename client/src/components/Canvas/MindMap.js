@@ -708,18 +708,30 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
 
     const handleCreateImage = (url, searchWord) => {
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
-        const newNode = {
-            id: nodeId,
-            label: searchWord,
-            shape: "image",
-            image: url,
-            x: 0,
-            y: 0,
-            physics: false,
-            size: 20,
-        };
+        const image = new Image();
+        image.crossOrigin = "Anonymous";
+        image.onload = function () {
+            const canvas = document.createElement("canvas");
+            canvas.width = image.width;
+            canvas.height = image.height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(image, 0, 0);
+            const dataURL = canvas.toDataURL()
 
-        ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
+            const newNode = {
+                id: nodeId,
+                label: searchWord,
+                shape: "image",
+                image: dataURL,
+                x: 0,
+                y: 0,
+                physics: false,
+                size: 20,
+            };
+
+            ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
+        };
+        image.src = url;
     };
 
     const closeNodeContextMenu = () => {
