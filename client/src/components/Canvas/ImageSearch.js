@@ -16,6 +16,7 @@ const styles = {
         border: "2px solid #d9d9d9",
         overflow: "auto",
         backgroundColor: "#f8f8f8",
+        borderRadius: "10px",
     },
 
     ImageList: {

@@ -3,6 +3,7 @@ import Slide from "@mui/material/Slide";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
+import Typography from "@mui/material/Typography";
 
 const styles = {
     markdown: {
@@ -14,6 +15,7 @@ const styles = {
         border: "2px solid #d9d9d9",
         overflow: "auto",
         backgroundColor: "#f8f8f8",
+        borderRadius: "10px",
     },
 };
 
@@ -52,6 +54,7 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
                         ? "\n" + header + " " + node.label + "\n"
                         : space + bullet + node.label
                 }\n`,
+                depth: depth,
                 x: node.x,
                 y: node.y,
             };
@@ -87,7 +90,9 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
     };
 
     const handleDownload = () => {
-        const markdownString = markdown.map((lineObj) => lineObj.line).join("");
+        const markdownString = markdown
+            .map((lineObj) => (lineObj.line ? lineObj.line : ""))
+            .join("");
         const element = document.createElement("a");
         const file = new Blob([markdownString], { type: "text/plain" });
         element.href = URL.createObjectURL(file);
@@ -102,9 +107,23 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
                 button
                 key={index}
                 onClick={() => handleFocusButtonClick(lineObj.x, lineObj.y)}
-                style={{ whiteSpace: "pre" }}
+                style={{
+                    whiteSpace: "pre",
+                    padding: "1px",
+                    minHeight: "fit-content",
+                    paddingLeft: "10px",
+                }}
             >
-                {lineObj.line}
+                <Typography
+                    style={{
+                        fontSize:
+                            lineObj.depth === 0 ? "1.35em" : lineObj.depth === 1 ? "1.2em" : "1em",
+                        display: "inline-block",
+                        lineHeight: "0.6em",
+                    }}
+                >
+                    {lineObj.line}
+                </Typography>
             </ListItem>
         ));
     };
@@ -116,7 +135,7 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
             window.removeEventListener("makeMarkdown", handleDownload);
             // window.removeEventListener("copyMarkdown", copyToClipboard);
         };
-    }, []);
+    }, [markdown]);
 
     return (
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
