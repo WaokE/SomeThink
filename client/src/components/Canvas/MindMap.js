@@ -476,7 +476,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 deleteEdge([`${selectedEdge}`]);
             }
         }
-        if (e.key === "z" && e.ctrlKey) {
+        if ((e.key === "z" && e.ctrlKey) || (e.key === "z" && e.metaKey)) {
             console.log("undo");
             handleUndo(
                 setAlertMessage,
