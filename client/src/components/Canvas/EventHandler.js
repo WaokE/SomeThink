@@ -79,7 +79,6 @@ export const handleNodeDragStart = (event, ymapRef, setUserActionStack, setActio
             ];
         } else {
             setActionStackPointer(prev.length);
-            console.log(node, node.x, node.y);
             return [
                 ...prev,
                 {
@@ -347,15 +346,13 @@ export const handleUndo = (
     ymapRef
 ) => {
     if (userActionStack.length === 0 || actionStackPointer === -1) return;
-    console.log(userActionStack, actionStackPointer);
     let action = userActionStack[actionStackPointer].action;
     // 이전 동작이 move 인 경우
     if (action === "move") {
-        const tartgetNode = JSON.parse(
-            ymapRef.current.get(`Node ${userActionStack[actionStackPointer].nodeId}`)
-        );
+        const ymapValue = ymapRef.current.get(`Node ${userActionStack[actionStackPointer].nodeId}`);
         // ymap에서 해당 노드를 찾을 수 있다면
-        if (tartgetNode !== undefined) {
+        if (ymapValue !== undefined) {
+            const tartgetNode = JSON.parse(ymapValue);
             // 기존의 좌표로 되돌림
             ymapRef.current.set(
                 `Node ${userActionStack[actionStackPointer].nodeId}`,
