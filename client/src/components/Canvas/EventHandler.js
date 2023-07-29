@@ -109,7 +109,7 @@ export const handleNodeDragEnd = (event, ymapRef, setSelectedNode, setUserAction
         let prevArray = [...prev];
         prevArray[prev.length - 1] = { ...lastAction, newX: x, newY: y };
 
-        return [prevArray];
+        return prevArray;
     });
 
     setSelectedNode(nodeId);
@@ -355,6 +355,7 @@ export const handleUndo = (
     setActionStackPointer,
     ymapRef
 ) => {
+    console.log(userActionStack);
     if (userActionStack.length === 0 || actionStackPointer === -1) return;
     let action = userActionStack[actionStackPointer].action;
     // 이전 동작이 move 인 경우
@@ -383,6 +384,50 @@ export const handleUndo = (
             setIsAlertMessageVisible(true);
             // 스택 포인터를 하나 줄이고, 리턴
             setActionStackPointer((prev) => prev - 1);
+            return;
+        }
+    }
+};
+
+export const handleRedo = (
+    setAlertMessage,
+    setIsAlertMessageVisible,
+    userActionStack,
+    setUserActionStack,
+    actionStackPointer,
+    setActionStackPointer,
+    ymapRef
+) => {
+    // undo가 이루어지지 않았거나, 초기 상태라면 동작하지 않고 리턴
+    if (actionStackPointer === userActionStack.length - 1) return;
+    // redo가 가능한 경우, 스택 포인터를 하나 늘림
+    const prevPointer = actionStackPointer + 1;
+    console.log();
+    let action = userActionStack[prevPointer].action;
+    // console.log(userActionStack[prevPointer]);
+    // 이전 동작이 move 인 경우
+    if (action === "move") {
+        const ymapValue = ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`);
+        // ymap에서 해당 노드를 찾을 수 있다면
+        if (ymapValue !== undefined) {
+            const tartgetNode = JSON.parse(ymapValue);
+            const currentLabel = tartgetNode.label;
+            // 현재의 라벨을 유지한 채, 기존의 좌표로 되돌림
+            ymapRef.current.set(
+                `Node ${userActionStack[prevPointer].nodeId}`,
+                JSON.stringify({
+                    ...tartgetNode,
+                    label: currentLabel,
+                    x: userActionStack[prevPointer].newX,
+                    y: userActionStack[prevPointer].newY,
+                })
+            );
+        }
+        // ymap에서 해당 노드를 찾을 수 없다면
+        else {
+            setAlertMessage("Cannot Redo!");
+            setIsAlertMessageVisible(true);
+            // 리턴
             return;
         }
     }

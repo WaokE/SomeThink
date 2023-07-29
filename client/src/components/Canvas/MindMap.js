@@ -25,6 +25,7 @@ import {
     handleMouseWheel,
     handleNodeDragStart,
     handleUndo,
+    handleRedo,
 } from "./EventHandler";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
@@ -476,7 +477,24 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 deleteEdge([`${selectedEdge}`]);
             }
         }
-        if (((e.key === "z" || e.key === "Z") && e.ctrlKey) || (e.key === "z" && e.metaKey)) {
+        if (
+            ((e.key === "z" || e.key === "Z") && e.ctrlKey && e.shiftKey) ||
+            ((e.key === "z" || e.key === "Z") && e.metaKey && e.shiftKey)
+        ) {
+            console.log("redo");
+            handleRedo(
+                setAlertMessage,
+                setIsAlertMessageVisible,
+                userActionStack,
+                setUserActionStack,
+                actionStackPointer,
+                setActionStackPointer,
+                ymapRef
+            );
+        } else if (
+            ((e.key === "z" || e.key === "Z") && e.ctrlKey) ||
+            (e.key === "z" && e.metaKey)
+        ) {
             console.log("undo");
             handleUndo(
                 setAlertMessage,
@@ -487,12 +505,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 setActionStackPointer,
                 ymapRef
             );
-        }
-        if (
-            ((e.key === "z" || e.key === "Z") && e.ctrlKey && e.shiftKey) ||
-            ((e.key === "z" || e.key === "Z") && e.metaKey && e.shiftKey)
-        ) {
-            console.log("redo");
         }
     };
 
@@ -897,7 +909,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                                 setActionStackPointer
                             ),
                         dragging: (events) => handleNodeDragging(events, ymapRef, userName),
-                        dragEnd: (events) => handleNodeDragEnd(events, ymapRef, setSelectedNode),
+                        dragEnd: (events) =>
+                            handleNodeDragEnd(events, ymapRef, setSelectedNode, setUserActionStack),
                         drag: handleCanvasDrag,
                         click: (events) => {
                             handleAddTextNode(
