@@ -142,7 +142,6 @@ class WSSharedDoc extends Y.Doc {
         }
     }
 }
-
 /**
  * Gets a Y.Doc by name, whether in memory or on disk
  *
@@ -260,6 +259,7 @@ exports.setupWSConnection = (
     conn.binaryType = "arraybuffer";
     // get doc, initialize if it does not exist yet
     const doc = getYDoc(docName, gc);
+    console.log(doc);
     doc.conns.set(conn, new Set());
     // listen and reply to events
     conn.on(
@@ -268,8 +268,14 @@ exports.setupWSConnection = (
             messageListener(conn, doc, new Uint8Array(message))
     );
 
+    // const clientId = generateClientId(8);
+    // conn.clientId = clientId;
+    // rooms.push({ clientid: clientId, roomName: docName });
+    // console.log(`Client ${conn.clientId} connected to room ${docName}`);
+
     // Check if connection is still alive
     let pongReceived = true;
+
     const pingInterval = setInterval(() => {
         if (!pongReceived) {
             if (doc.conns.has(conn)) {
@@ -287,8 +293,14 @@ exports.setupWSConnection = (
         }
     }, pingTimeout);
     conn.on("close", () => {
-        console.log("dissconnect");
+        console.log(`disconnected ${conn.clientId}`);
+        // const result = searchrooms(rooms, docName, conn.clientId);
+        // deleteroom(result);
+        // if(countrooms(rooms, docName) === 0){
+        //     console.log("delete all");
+        // }
         closeConn(doc, conn);
+        // clear
         clearInterval(pingInterval);
     });
     conn.on("pong", () => {
