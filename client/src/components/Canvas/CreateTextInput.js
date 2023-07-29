@@ -7,17 +7,6 @@ const TextInputComponent = ({ initialValue, onEnter, onCancel }) => {
     useEffect(() => {
         const textField = textFieldRef.current;
 
-        const canvasRect = document.querySelector(".vis-network canvas").getBoundingClientRect();
-        textField.value = initialValue;
-        textField.style.position = "absolute";
-        textField.style.width = "150px";
-        textField.style.height = "30px";
-        textField.style.zIndex = "10";
-        textField.style.textAlign = "center";
-        textField.style.top = `${canvasRect.top + canvasRect.height / 2}px`;
-        textField.style.left = `${canvasRect.left + canvasRect.width / 2}px`;
-        textField.style.transform = "translate(-50%, -50%)";
-
         const handleKeyDown = (e) => {
             if (e.key === "Enter") {
                 const newLabel = textField.value.trim();
@@ -48,9 +37,18 @@ const TextInputComponent = ({ initialValue, onEnter, onCancel }) => {
         return () => {
             removeTextFieldEventListeners();
         };
-    }, [initialValue, onEnter, onCancel]);
+    }, [onEnter, onCancel]);
 
-    return <input ref={textFieldRef} />;
+    return <input ref={textFieldRef} defaultValue={initialValue} style={inputStyle} />;
+};
+
+const inputStyle = {
+    position: "absolute",
+    width: "150px",
+    height: "30px",
+    zIndex: "10",
+    textAlign: "center",
+    transform: "translate(-50%, -50%)",
 };
 
 export const createTextInput = (initialValue, onEnter, onCancel) => {
