@@ -13,7 +13,6 @@ const server = http.createServer((request, response) => {
     response.end("okay");
 });
 const wss = new WebSocket.Server({ noServer: true });
-const { WebsocketProvider } = require("y-websocket");
 const setupWSConnection = require("./utils.js").setupWSConnection;
 const host = process.env.HOST || "localhost";
 const SYNCPORT = process.env.PORT || 1234;
@@ -111,7 +110,6 @@ server.listen(SYNCPORT, host, () => {
 });
 app.post("/api/leavesession", (req, res) => {
     const { roomNum } = req.body;
-    wss.close();
     return res.status(201).json({ wsinfo: roomNum });
 });
 app.post("/api/generate", generatorHandler);
