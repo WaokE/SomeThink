@@ -476,7 +476,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 deleteEdge([`${selectedEdge}`]);
             }
         }
-        if ((e.key === "z" && e.ctrlKey) || (e.key === "z" && e.metaKey)) {
+        if (((e.key === "z" || e.key === "Z") && e.ctrlKey) || (e.key === "z" && e.metaKey)) {
             console.log("undo");
             handleUndo(
                 setAlertMessage,
@@ -489,8 +489,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             );
         }
         if (
-            (e.key === "z" && e.ctrlKey && e.shiftKey) ||
-            (e.key === "z" && e.metaKey && e.shiftKey)
+            ((e.key === "z" || e.key === "Z") && e.ctrlKey && e.shiftKey) ||
+            ((e.key === "z" || e.key === "Z") && e.metaKey && e.shiftKey)
         ) {
             console.log("redo");
         }
