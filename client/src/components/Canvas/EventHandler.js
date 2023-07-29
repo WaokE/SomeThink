@@ -1,4 +1,4 @@
-import { createTextInput } from "./CreateTextInput";
+import { CreateTextInput } from "./TextInputComponent";
 
 const colors = [
     "#FF5733", // 빨간색
@@ -28,7 +28,7 @@ export const handleDoubleClick = (
             if (canvas) {
                 const node = JSON.parse(nodeData);
 
-                const textField = createTextInput(
+                const textField = CreateTextInput(
                     node.label,
                     (newLabel) => {
                         if (newLabel === "") {
@@ -46,7 +46,10 @@ export const handleDoubleClick = (
                 );
 
                 document.body.appendChild(textField);
-                textField.focus();
+                const inputField = textField.querySelector("input");
+                if (inputField) {
+                    inputField.focus();
+                }
             }
         }
     }
@@ -186,7 +189,7 @@ export const handleAddTextNode = (
         setIsCreatingText(false);
     };
 
-    const textField = createTextInput(
+    const textField = CreateTextInput(
         "",
         (newLabel) => {
             if (newLabel === "") {
