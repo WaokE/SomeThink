@@ -353,11 +353,13 @@ export const handleUndo = (
         // ymap에서 해당 노드를 찾을 수 있다면
         if (ymapValue !== undefined) {
             const tartgetNode = JSON.parse(ymapValue);
-            // 기존의 좌표로 되돌림
+            const currentLabel = tartgetNode.label;
+            // 현재의 라벨을 유지한 채, 기존의 좌표로 되돌림
             ymapRef.current.set(
                 `Node ${userActionStack[actionStackPointer].nodeId}`,
                 JSON.stringify({
                     ...tartgetNode,
+                    label: currentLabel,
                     x: userActionStack[actionStackPointer].prevX,
                     y: userActionStack[actionStackPointer].prevY,
                 })
