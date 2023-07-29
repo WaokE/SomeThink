@@ -23,6 +23,8 @@ import {
     handleNodeDragging,
     makeHandleMemoChange,
     handleMouseWheel,
+    handleNodeDragStart,
+    handleUndo,
 } from "./EventHandler";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
@@ -184,6 +186,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         };
     }
 
+    const [userActionStack, setUserActionStack] = useState([]);
+    const [actionStackPointer, setActionStackPointer] = useState(-1);
     const [isInfoMessageVisible, setIsInfoMessageVisible] = useState(false);
     const [infoMessage, setInfoMessage] = useState("");
     const [isAlertMessageVisible, setIsAlertMessageVisible] = useState(false);
@@ -443,11 +447,12 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         }
     };
 
-    // 유저가 선택한 값이 있는지 검사
+    // 유저가 기존에 선택했던 값이 있는지 검사
     const checkPrevSelected = (userId) => {
         const tempValue = ymapRef.current.get(`User ${userId} selected`);
         // 있다면 해당 값 원래대로 돌려놓음
         if (tempValue) {
+            if (ymapRef.current.get(tempValue) === undefined) return;
             let userData = JSON.parse(ymapRef.current.get(tempValue));
             if (userData) {
                 if (userData.label) {
@@ -470,6 +475,21 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             } else if (selectedEdge) {
                 deleteEdge([`${selectedEdge}`]);
             }
+        }
+        if (e.key === "z" && e.ctrlKey) {
+            console.log("undo");
+            handleUndo(
+                setAlertMessage,
+                setIsAlertMessageVisible,
+                userActionStack,
+                setUserActionStack,
+                actionStackPointer,
+                setActionStackPointer,
+                ymapRef
+            );
+        }
+        if (e.key === "z" && e.ctrlKey && e.shiftKey) {
+            console.log("redo");
         }
     };
 
@@ -866,6 +886,13 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                     options={options}
                     events={{
                         ...MindMap.events,
+                        dragStart: (events) =>
+                            handleNodeDragStart(
+                                events,
+                                ymapRef,
+                                setUserActionStack,
+                                setActionStackPointer
+                            ),
                         dragging: (events) => handleNodeDragging(events, ymapRef, userName),
                         dragEnd: (events) => handleNodeDragEnd(events, ymapRef, setSelectedNode),
                         drag: handleCanvasDrag,

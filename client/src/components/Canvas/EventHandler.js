@@ -13,6 +13,8 @@ const colors = [
     "#9AFF33", // 연두색
 ];
 
+const MAX_STACK_LENGTH = 10;
+
 export const handleDoubleClick = (
     event,
     ymapRef,
@@ -53,6 +55,42 @@ export const handleDoubleClick = (
             }
         }
     }
+};
+
+export const handleNodeDragStart = (event, ymapRef, setUserActionStack, setActionStackPointer) => {
+    // 캔버스를 드래그하거나, 루트 노드를 드래그했을 경우는 무시
+    if (event.nodes.length === 0 || event.nodes[0] === 1) return;
+    // 드래그한 노드의 이전 좌표를 저장
+    const node = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
+    setUserActionStack((prev) => {
+        // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+
+        // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 이동 기록을 삭제
+        if (prev.length >= MAX_STACK_LENGTH) {
+            setActionStackPointer(prev.length - 1);
+            return [
+                ...prev.slice(1),
+                {
+                    action: "move",
+                    nodeId: node.id,
+                    prevX: node.x,
+                    prevY: node.y,
+                },
+            ];
+        } else {
+            setActionStackPointer(prev.length);
+            console.log(node, node.x, node.y);
+            return [
+                ...prev,
+                {
+                    action: "move",
+                    nodeId: node.id,
+                    prevX: node.x,
+                    prevY: node.y,
+                },
+            ];
+        }
+    });
 };
 
 export const handleNodeDragEnd = (event, ymapRef, setSelectedNode) => {
@@ -295,6 +333,48 @@ export const handleMouseWheel = (event, selectedNode, ymapRef) => {
                     JSON.stringify({ ...node, size: node.size - 10 })
                 );
             }
+        }
+    }
+};
+
+export const handleUndo = (
+    setAlertMessage,
+    setIsAlertMessageVisible,
+    userActionStack,
+    setUserActionStack,
+    actionStackPointer,
+    setActionStackPointer,
+    ymapRef
+) => {
+    if (userActionStack.length === 0 || actionStackPointer === -1) return;
+    console.log(userActionStack, actionStackPointer);
+    let action = userActionStack[actionStackPointer].action;
+    // 이전 동작이 move 인 경우
+    if (action === "move") {
+        const tartgetNode = JSON.parse(
+            ymapRef.current.get(`Node ${userActionStack[actionStackPointer].nodeId}`)
+        );
+        // ymap에서 해당 노드를 찾을 수 있다면
+        if (tartgetNode !== undefined) {
+            // 기존의 좌표로 되돌림
+            ymapRef.current.set(
+                `Node ${userActionStack[actionStackPointer].nodeId}`,
+                JSON.stringify({
+                    ...tartgetNode,
+                    x: userActionStack[actionStackPointer].prevX,
+                    y: userActionStack[actionStackPointer].prevY,
+                })
+            );
+            // 스택 포인터를 하나 줄임
+            setActionStackPointer((prev) => prev - 1);
+        }
+        // ymap에서 해당 노드를 찾을 수 없다면
+        else {
+            setAlertMessage("이미 삭제된 노드는 되돌릴 수 없습니다!");
+            setIsAlertMessageVisible(true);
+            // 스택 포인터를 하나 줄이고, 리턴
+            setActionStackPointer((prev) => prev - 1);
+            return;
         }
     }
 };
