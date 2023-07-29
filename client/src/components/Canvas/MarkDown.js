@@ -20,11 +20,13 @@ const styles = {
 };
 
 const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
-    const [markdown, setMarkdown] = useState([]);
+    const [markdownForDisplay, setMarkdownForDisplay] = useState([]);
+    const [markdownForFile, setMarkdownForDisFile] = useState([]);
 
     useEffect(() => {
         let nodeHierarchy = {};
-        let markdownLines = [];
+        let markdownLinesForDisplay = [];
+        let markdownLinesForFile = [];
 
         edges.forEach((edge) => {
             const parent = nodes.find((node) => node.id === edge.from);
@@ -42,7 +44,28 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
             }
         });
 
-        function buildMarkdownString(node, depth = 0) {
+        function buildMarkdownStringForDisplay(node, depth = 0) {
+            const space = " ".repeat((depth > 1 ? depth - 1 : 0) * 4);
+            const bullet = depth === 0 ? "" : "└ ";
+            const markdownLine = {
+                line: `${space}${bullet}${node.label}`,
+                x: node.x,
+                y: node.y,
+                depth: depth,
+            };
+
+            markdownLinesForDisplay.push(markdownLine);
+
+            const parentNode = nodeHierarchy[node.id];
+            if (parentNode && parentNode.children) {
+                parentNode.children.forEach((childNode, idx) => {
+                    childNode.isLastChild = idx === parentNode.children.length - 1;
+                    buildMarkdownStringForDisplay(childNode, depth + 1);
+                });
+            }
+        }
+
+        function buildMarkdownStringForFile(node, depth = 0) {
             const space = " ".repeat((depth > 2 ? depth - 2 : 0) * 2);
             const bullet = "- ";
             const header = "#".repeat(depth + 1);
@@ -54,27 +77,26 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
                         ? "\n" + header + " " + node.label + "\n"
                         : space + bullet + node.label
                 }\n`,
-                depth: depth,
-                x: node.x,
-                y: node.y,
             };
 
-            markdownLines.push(markdownLine);
+            markdownLinesForFile.push(markdownLine);
 
             const parentNode = nodeHierarchy[node.id];
             if (parentNode && parentNode.children) {
                 parentNode.children.forEach((childNode) =>
-                    buildMarkdownString(childNode, depth + 1)
+                    buildMarkdownStringForFile(childNode, depth + 1)
                 );
             }
         }
 
         const rootNode = nodes.find((node) => node.id === 1);
         if (rootNode) {
-            buildMarkdownString(rootNode);
+            buildMarkdownStringForDisplay(rootNode);
+            buildMarkdownStringForFile(rootNode);
         }
 
-        setMarkdown(markdownLines);
+        setMarkdownForDisplay(markdownLinesForDisplay);
+        setMarkdownForDisFile(markdownLinesForFile);
     }, [nodes, edges]);
 
     const handleFocusButtonClick = (x, y) => {
@@ -90,7 +112,7 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
     };
 
     const handleDownload = () => {
-        const markdownString = markdown
+        const markdownString = markdownForFile
             .map((lineObj) => (lineObj.line ? lineObj.line : ""))
             .join("");
         const element = document.createElement("a");
@@ -102,7 +124,7 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
     };
 
     const displayMarkdown = () => {
-        return markdown.map((lineObj, index) => (
+        return markdownForDisplay.map((lineObj, index) => (
             <ListItem
                 button
                 key={index}
@@ -117,9 +139,9 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
                 <Typography
                     style={{
                         fontSize:
-                            lineObj.depth === 0 ? "1.35em" : lineObj.depth === 1 ? "1.2em" : "1em",
+                            lineObj.depth === 0 ? "1.4em" : lineObj.depth === 1 ? "1.2em" : "1em",
                         display: "inline-block",
-                        lineHeight: "0.6em",
+                        lineHeight: "1em",
                     }}
                 >
                     {lineObj.line}
@@ -133,7 +155,7 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
         return () => {
             window.removeEventListener("makeMarkdown", handleDownload);
         };
-    }, [markdown]);
+    }, [markdownForFile]);
 
     return (
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
