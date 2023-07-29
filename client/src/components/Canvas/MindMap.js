@@ -488,7 +488,10 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 ymapRef
             );
         }
-        if (e.key === "z" && e.ctrlKey && e.shiftKey) {
+        if (
+            (e.key === "z" && e.ctrlKey && e.shiftKey) ||
+            (e.key === "z" && e.metaKey && e.shiftKey)
+        ) {
             console.log("redo");
         }
     };
