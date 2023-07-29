@@ -29,6 +29,7 @@ class App extends Component {
             publisher: undefined,
             subscribers: [],
             audioEnabled: false,
+            speakingUserName: [],
         };
 
         this.joinSession = this.joinSession.bind(this);
@@ -93,10 +94,36 @@ class App extends Component {
         });
     }
 
+    handleSpeakingUser(userName) {
+        const speakingUserName = this.state.speakingUserName;
+        speakingUserName.push(userName);
+        this.setState({
+            speakingUserName: speakingUserName,
+        });
+    }
+
+    handleDeleteSpeakingUser(userName) {
+        const speakingUserName = this.state.speakingUserName;
+        const index = speakingUserName.indexOf(userName);
+        if (index > -1) {
+            speakingUserName.splice(index, 1);
+            this.setState({
+                speakingUserName: speakingUserName,
+            });
+        }
+    }
+
     joinSession() {
         // --- 1) Get an OpenVidu object ---
 
         this.OV = new OpenVidu();
+
+        this.OV.setAdvancedConfiguration({
+            publisherSpeakingEventsOptions: {
+                interval: 20,
+                threshold: -35,
+            },
+        });
 
         // --- 2) Init a session ---
         document.body.style.backgroundColor = "white";
@@ -132,6 +159,18 @@ class App extends Component {
                 // On every asynchronous exception...
                 mySession.on("exception", (exception) => {
                     console.warn(exception);
+                });
+
+                mySession.on("publisherStartSpeaking", (event) => {
+                    // console.log(event.connection.connectionId + " start speaking");
+                    const userName = JSON.parse(event.connection.data).clientData;
+                    this.handleSpeakingUser(userName);
+                });
+
+                mySession.on("publisherStopSpeaking", (event) => {
+                    // console.log(event.connection.connectionId + " stop speaking");
+                    const userName = JSON.parse(event.connection.data).clientData;
+                    this.handleDeleteSpeakingUser(userName);
                 });
 
                 // --- 4) Connect to the session with a valid user token ---
@@ -312,6 +351,7 @@ class App extends Component {
                                 audioEnabled={audioEnabled}
                                 userName={myUserName}
                                 onSessionJoin={this.handleSessionJoin}
+                                speakingUserName={this.state.speakingUserName}
                             />
                         </div>
 

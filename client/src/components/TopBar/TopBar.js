@@ -25,13 +25,13 @@ const colors = [
 ];
 
 function TopBar({
-    onExportClick,
     sessionId,
     leaveSession,
     toggleAudio,
     audioEnabled,
     userList,
     userName,
+    speakingUserName,
 }) {
     // userName과 일치하는 아바타를 찾아서 따로 저장합니다.
     const userAvatar = userList.find((user) => user === userName);
@@ -106,7 +106,9 @@ function TopBar({
                                 }
                                 label={userAvatar}
                                 sx={{
-                                    border: `1px solid white`, // White border around the avatar
+                                    boxShadow: speakingUserName.includes(userName)
+                                        ? `inset 0px 0px 0px 2px #76e465`
+                                        : `inset 0px 0px 0px 1px white`,
                                     borderRadius: "15px", // Rounded border for the entire Chip
                                 }}
                             />
@@ -125,6 +127,17 @@ function TopBar({
                                             />
                                         }
                                         label={user}
+                                        sx={{
+                                            boxShadow:
+                                                // if user in speakingUserName list
+
+                                                speakingUserName.includes(user)
+                                                    ? `inset 0px 0px 0px 2px #76e465`
+                                                    : ``,
+                                            borderRadius: speakingUserName.includes(user)
+                                                ? "15px"
+                                                : "", // Rounded border for the entire Chip
+                                        }}
                                     />
                                 )
                         )}

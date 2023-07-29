@@ -62,8 +62,14 @@ const isCyclic = (graph, fromNode, toNode) => {
     return true;
 };
 
-// const MindMap = (sessionId, leaveSession, toggleAudio, audioEnabled) => {
-const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName }) => {
+const MindMap = ({
+    sessionId,
+    leaveSession,
+    toggleAudio,
+    audioEnabled,
+    userName,
+    speakingUserName,
+}) => {
     const ydocRef = useRef(null);
     const ymapRef = useRef(null);
     const networkRef = useRef(null);
@@ -873,6 +879,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 audioEnabled={audioEnabled}
                 userList={getUserListFromYMap()}
                 userName={userName}
+                speakingUserName={speakingUserName}
             />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
                 <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
