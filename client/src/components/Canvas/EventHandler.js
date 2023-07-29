@@ -63,8 +63,6 @@ export const handleNodeDragStart = (event, ymapRef, setUserActionStack, setActio
     // 드래그한 노드의 이전 좌표를 저장
     const node = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
     setUserActionStack((prev) => {
-        // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
-
         // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 이동 기록을 삭제
         if (prev.length >= MAX_STACK_LENGTH) {
             setActionStackPointer(prev.length - 1);
@@ -77,7 +75,9 @@ export const handleNodeDragStart = (event, ymapRef, setUserActionStack, setActio
                     prevY: node.y,
                 },
             ];
-        } else {
+        }
+        // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+        else {
             setActionStackPointer(prev.length);
             return [
                 ...prev,
@@ -92,7 +92,7 @@ export const handleNodeDragStart = (event, ymapRef, setUserActionStack, setActio
     });
 };
 
-export const handleNodeDragEnd = (event, ymapRef, setSelectedNode) => {
+export const handleNodeDragEnd = (event, ymapRef, setSelectedNode, setUserActionStack) => {
     const { nodes, pointer } = event;
     if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
         return;
@@ -102,6 +102,16 @@ export const handleNodeDragEnd = (event, ymapRef, setSelectedNode) => {
 
     const movedNode = ymapRef.current.get(`Node ${nodeId}`);
     ymapRef.current.set(`Node ${nodeId}`, JSON.stringify({ ...JSON.parse(movedNode), x: x, y: y }));
+
+    setUserActionStack((prev) => {
+        // 드래그가 완료된 좌표를 스택에 추가 저장
+        let lastAction = prev[prev.length - 1];
+        let prevArray = [...prev];
+        prevArray[prev.length - 1] = { ...lastAction, newX: x, newY: y };
+
+        return prevArray;
+    });
+
     setSelectedNode(nodeId);
 };
 
@@ -345,6 +355,7 @@ export const handleUndo = (
     setActionStackPointer,
     ymapRef
 ) => {
+    console.log(userActionStack);
     if (userActionStack.length === 0 || actionStackPointer === -1) return;
     let action = userActionStack[actionStackPointer].action;
     // 이전 동작이 move 인 경우
@@ -373,6 +384,50 @@ export const handleUndo = (
             setIsAlertMessageVisible(true);
             // 스택 포인터를 하나 줄이고, 리턴
             setActionStackPointer((prev) => prev - 1);
+            return;
+        }
+    }
+};
+
+export const handleRedo = (
+    setAlertMessage,
+    setIsAlertMessageVisible,
+    userActionStack,
+    setUserActionStack,
+    actionStackPointer,
+    setActionStackPointer,
+    ymapRef
+) => {
+    // undo가 이루어지지 않았거나, 초기 상태라면 동작하지 않고 리턴
+    if (actionStackPointer === userActionStack.length - 1) return;
+    // redo가 가능한 경우, 스택 포인터를 하나 늘림
+    const prevPointer = actionStackPointer + 1;
+    console.log();
+    let action = userActionStack[prevPointer].action;
+    // console.log(userActionStack[prevPointer]);
+    // 이전 동작이 move 인 경우
+    if (action === "move") {
+        const ymapValue = ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`);
+        // ymap에서 해당 노드를 찾을 수 있다면
+        if (ymapValue !== undefined) {
+            const tartgetNode = JSON.parse(ymapValue);
+            const currentLabel = tartgetNode.label;
+            // 현재의 라벨을 유지한 채, 기존의 좌표로 되돌림
+            ymapRef.current.set(
+                `Node ${userActionStack[prevPointer].nodeId}`,
+                JSON.stringify({
+                    ...tartgetNode,
+                    label: currentLabel,
+                    x: userActionStack[prevPointer].newX,
+                    y: userActionStack[prevPointer].newY,
+                })
+            );
+        }
+        // ymap에서 해당 노드를 찾을 수 없다면
+        else {
+            setAlertMessage("Cannot Redo!");
+            setIsAlertMessageVisible(true);
+            // 리턴
             return;
         }
     }
