@@ -13,12 +13,11 @@ const server = http.createServer((request, response) => {
     response.end("okay");
 });
 const wss = new WebSocket.Server({ noServer: true });
-const { WebsocketProvider } = require("y-websocket");
 const setupWSConnection = require("./utils.js").setupWSConnection;
 const host = process.env.HOST || "localhost";
 const SYNCPORT = process.env.PORT || 1234;
 
-const rooms = new Map();
+const rooms = new Array();
 
 const express = require("express");
 const cors = require("cors"); // Add this line to import CORS
@@ -36,6 +35,37 @@ let OPENVIDU_SECRET = process.env.OPENVIDU_SECRET;
 
 const openvidu = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
 const bodyParser = require("body-parser");
+/* generate Client id */
+
+const generateClientId = (length) => {
+    let result = "";
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charactersLength = characters.length;
+
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+};
+/* search the room */
+
+const searchrooms = (rooms, docName, clientid) => {
+    const room = rooms.filter((room) => (room.roomName === docName && room.clientid === clientid));
+    return room;
+};
+/* delete room */
+
+const deleteroom = (room) => {
+    const index = rooms.indexOf(room[0]);
+    rooms.splice(index, 1);
+    return rooms;
+}
+/* count room */
+
+const countrooms = (rooms, docName) => {
+    const room = rooms.filter((room) => room.roomName === docName);
+    return room.length;
+};
 app.use(
     cors({
         origin: "*",
@@ -43,6 +73,22 @@ app.use(
 );
 app.use(express.json()); // for parsing application/json
 wss.on("connection", setupWSConnection);
+wss.on("connection",(socket,req) => {
+    const clientId = generateClientId(8);
+    socket.clientId = clientId;
+    const roomName = req.url.substring(1);
+    rooms.push({ clientid: clientId, roomName: roomName });
+    console.log(`Client ${socket.clientId} connected to room ${roomName}`);
+
+    socket.on("close", () => {
+        const result = searchrooms(rooms, roomName, socket.clientId);
+        deleteroom(result);
+        if(countrooms(rooms, roomName) === 0){
+            console.log("delete all");
+            wss.close();
+        }
+    })
+})
 // Allow application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 // Allow application/json
@@ -63,14 +109,15 @@ server.listen(SYNCPORT, host, () => {
     console.log(`running at '${host}' on port ${SYNCPORT}`);
 });
 app.post("/api/leavesession", (req, res) => {
-    wss.close();
-    return res.status(201).json("success");
+    const { roomNum } = req.body;
+    return res.status(201).json({ wsinfo: roomNum });
 });
 app.post("/api/generate", generatorHandler);
 
 app.post("/api/sessions", async (req, res) => {
     var session = await openvidu.createSession(req.body);
     res.send(session.sessionId);
+    wss.createConnection();
 });
 
 app.post("/api/sessions/:sessionId/connections", async (req, res) => {
