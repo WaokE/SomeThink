@@ -83,7 +83,7 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
             scale: 1.0,
             offset: { x: 0, y: 0 },
             animation: {
-                duration: 1000,
+                duration: 500,
                 easingFunction: "easeInOutQuad",
             },
         });
@@ -130,10 +130,8 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
 
     useEffect(() => {
         window.addEventListener("makeMarkdown", handleDownload);
-        // window.addEventListener("copyMarkdown", copyToClipboard);
         return () => {
             window.removeEventListener("makeMarkdown", handleDownload);
-            // window.removeEventListener("copyMarkdown", copyToClipboard);
         };
     }, [markdown]);
 
