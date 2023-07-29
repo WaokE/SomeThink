@@ -36,7 +36,7 @@ const getAllNodeLabels = (ymapRef) => {
 
 const fetchNewNodeLabels = async (connectedNodeLabels, allNodeLabels) => {
     try {
-        const response = await fetch("http://localhost:5050/api/generate", {
+        const response = await fetch("/api/generate", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
