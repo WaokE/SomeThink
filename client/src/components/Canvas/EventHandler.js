@@ -442,6 +442,7 @@ export const handleUndo = (
         }));
         setMemo(updatedMemo.memo);
         setMouseCoordinates(Mouses);
+        setUserActionStackPointer((prev) => prev - 1);
     }
 };
 
@@ -506,5 +507,41 @@ export const handleRedo = (
             // 스택 포인터를 하나 늘림
             setUserActionStackPointer((prev) => prev + 1);
         }
+    }
+    // 이전 동작이 reset 인 경우
+    if (action === "reset") {
+        if (!ymapRef.current) {
+            return [];
+        }
+
+        const userList = [];
+        ymapRef.current.forEach((value, key) => {
+            if (typeof value === "boolean" && value === true && key !== "TimerRunning") {
+                // 만약 값이 true인 경우, 해당 키를 유저명으로 간주하고 userList에 추가합니다.
+                userList.push(key);
+            }
+        });
+
+        userList.sort();
+
+        ymapRef.current.clear();
+        ymapRef.current.set(
+            `Node 1`,
+            JSON.stringify({
+                id: 1,
+                label: "start",
+                x: 0,
+                y: 0,
+                physics: false,
+                fixed: true,
+                color: "#f5b252",
+            })
+        );
+        ymapRef.current.set("RootQuadrant", 0);
+
+        userList.forEach((user) => {
+            ymapRef.current.set(user, true);
+        });
+        setUserActionStackPointer((prev) => prev + 1);
     }
 };
