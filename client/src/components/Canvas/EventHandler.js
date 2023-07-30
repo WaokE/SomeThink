@@ -422,6 +422,8 @@ export const handleRedo = (
                     y: userActionStack[prevPointer].newY,
                 })
             );
+            // 스택 포인터를 하나 늘림
+            setActionStackPointer((prev) => prev + 1);
         }
         // ymap에서 해당 노드를 찾을 수 없다면
         else {
