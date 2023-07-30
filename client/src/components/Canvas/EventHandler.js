@@ -57,7 +57,12 @@ export const handleDoubleClick = (
     }
 };
 
-export const handleNodeDragStart = (event, ymapRef, setUserActionStack, setActionStackPointer) => {
+export const handleNodeDragStart = (
+    event,
+    ymapRef,
+    setUserActionStack,
+    setUserActionStackPointer
+) => {
     // 캔버스를 드래그하거나, 루트 노드를 드래그했을 경우는 무시
     if (event.nodes.length === 0 || event.nodes[0] === 1) return;
     // 드래그한 노드의 이전 좌표를 저장
@@ -65,7 +70,7 @@ export const handleNodeDragStart = (event, ymapRef, setUserActionStack, setActio
     setUserActionStack((prev) => {
         // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 이동 기록을 삭제
         if (prev.length >= MAX_STACK_LENGTH) {
-            setActionStackPointer(prev.length - 1);
+            setUserActionStackPointer(prev.length - 1);
             return [
                 ...prev.slice(1),
                 {
@@ -78,7 +83,7 @@ export const handleNodeDragStart = (event, ymapRef, setUserActionStack, setActio
         }
         // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
         else {
-            setActionStackPointer(prev.length);
+            setUserActionStackPointer(prev.length);
             return [
                 ...prev,
                 {
@@ -351,39 +356,41 @@ export const handleUndo = (
     setIsAlertMessageVisible,
     userActionStack,
     setUserActionStack,
-    actionStackPointer,
-    setActionStackPointer,
+    userActionStackPointer,
+    setUserActionStackPointer,
     ymapRef
 ) => {
     console.log(userActionStack);
-    if (userActionStack.length === 0 || actionStackPointer === -1) return;
-    let action = userActionStack[actionStackPointer].action;
+    if (userActionStack.length === 0 || userActionStackPointer === -1) return;
+    let action = userActionStack[userActionStackPointer].action;
     // 이전 동작이 move 인 경우
     if (action === "move") {
-        const ymapValue = ymapRef.current.get(`Node ${userActionStack[actionStackPointer].nodeId}`);
+        const ymapValue = ymapRef.current.get(
+            `Node ${userActionStack[userActionStackPointer].nodeId}`
+        );
         // ymap에서 해당 노드를 찾을 수 있다면
         if (ymapValue !== undefined) {
             const tartgetNode = JSON.parse(ymapValue);
             const currentLabel = tartgetNode.label;
             // 현재의 라벨을 유지한 채, 기존의 좌표로 되돌림
             ymapRef.current.set(
-                `Node ${userActionStack[actionStackPointer].nodeId}`,
+                `Node ${userActionStack[userActionStackPointer].nodeId}`,
                 JSON.stringify({
                     ...tartgetNode,
                     label: currentLabel,
-                    x: userActionStack[actionStackPointer].prevX,
-                    y: userActionStack[actionStackPointer].prevY,
+                    x: userActionStack[userActionStackPointer].prevX,
+                    y: userActionStack[userActionStackPointer].prevY,
                 })
             );
             // 스택 포인터를 하나 줄임
-            setActionStackPointer((prev) => prev - 1);
+            setUserActionStackPointer((prev) => prev - 1);
         }
         // ymap에서 해당 노드를 찾을 수 없다면
         else {
             setAlertMessage("이미 삭제된 노드는 되돌릴 수 없습니다!");
             setIsAlertMessageVisible(true);
             // 스택 포인터를 하나 줄이고, 리턴
-            setActionStackPointer((prev) => prev - 1);
+            setUserActionStackPointer((prev) => prev - 1);
             return;
         }
     }
@@ -394,14 +401,14 @@ export const handleRedo = (
     setIsAlertMessageVisible,
     userActionStack,
     setUserActionStack,
-    actionStackPointer,
-    setActionStackPointer,
+    userActionStackPointer,
+    setUserActionStackPointer,
     ymapRef
 ) => {
     // undo가 이루어지지 않았거나, 초기 상태라면 동작하지 않고 리턴
-    if (actionStackPointer === userActionStack.length - 1) return;
+    if (userActionStackPointer === userActionStack.length - 1) return;
     // redo가 가능한 경우, 스택 포인터를 하나 늘림
-    const prevPointer = actionStackPointer + 1;
+    const prevPointer = userActionStackPointer + 1;
     console.log();
     let action = userActionStack[prevPointer].action;
     // console.log(userActionStack[prevPointer]);
@@ -423,7 +430,7 @@ export const handleRedo = (
                 })
             );
             // 스택 포인터를 하나 늘림
-            setActionStackPointer((prev) => prev + 1);
+            setUserActionStackPointer((prev) => prev + 1);
         }
         // ymap에서 해당 노드를 찾을 수 없다면
         else {

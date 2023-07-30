@@ -194,7 +194,7 @@ const MindMap = ({
     }
 
     const [userActionStack, setUserActionStack] = useState([]);
-    const [actionStackPointer, setActionStackPointer] = useState(-1);
+    const [userActionStackPointer, setUserActionStackPointer] = useState(-1);
     const [isInfoMessageVisible, setIsInfoMessageVisible] = useState(false);
     const [infoMessage, setInfoMessage] = useState("");
     const [isAlertMessageVisible, setIsAlertMessageVisible] = useState(false);
@@ -493,8 +493,8 @@ const MindMap = ({
                 setIsAlertMessageVisible,
                 userActionStack,
                 setUserActionStack,
-                actionStackPointer,
-                setActionStackPointer,
+                userActionStackPointer,
+                setUserActionStackPointer,
                 ymapRef
             );
         } else if (
@@ -507,8 +507,8 @@ const MindMap = ({
                 setIsAlertMessageVisible,
                 userActionStack,
                 setUserActionStack,
-                actionStackPointer,
-                setActionStackPointer,
+                userActionStackPointer,
+                setUserActionStackPointer,
                 ymapRef
             );
         }
@@ -914,7 +914,7 @@ const MindMap = ({
                                 events,
                                 ymapRef,
                                 setUserActionStack,
-                                setActionStackPointer
+                                setUserActionStackPointer
                             ),
                         dragging: (events) => handleNodeDragging(events, ymapRef, userName),
                         dragEnd: (events) =>
