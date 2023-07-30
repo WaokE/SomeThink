@@ -262,12 +262,12 @@ const MindMap = ({
 
     useEffect(() => {
         ydocRef.current = new Y.Doc();
-        // const provider = new WebsocketProvider(
-        //     "wss://somethink.online/room",
-        //     sessionId,
-        //     ydocRef.current
-        // );
-        const provider = new WebsocketProvider("ws://localhost:1234", sessionId, ydocRef.current);
+        const provider = new WebsocketProvider(
+            "wss://somethink.online/room",
+            sessionId,
+            ydocRef.current
+        );
+        // const provider = new WebsocketProvider("ws://localhost:1234", sessionId, ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
         ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
         ymapRef.current.set("RootQuadrant", 0);
