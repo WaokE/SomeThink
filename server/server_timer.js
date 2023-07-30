@@ -26,9 +26,7 @@ app.use(
     })
 );
 app.use(express.json()); // for parsing application/json
-wss.on("connection", (setupWSConnection) => {
-    console.log("connected");
-});
+wss.on("connection", setupWSConnection);
 
 server.on("upgrade", (request, socket, head) => {
     // You may check auth of request here..
