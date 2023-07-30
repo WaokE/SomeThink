@@ -70,6 +70,7 @@ const MindMap = ({
     audioEnabled,
     userName,
     speakingUserName,
+    isLoading,
 }) => {
     const ydocRef = useRef(null);
     const ymapRef = useRef(null);
@@ -132,7 +133,7 @@ const MindMap = ({
     const templateNodes = [
         {
             id: 1,
-            label: "Root",
+            label: "start",
             x: 0,
             y: 0,
             physics: false,
@@ -920,6 +921,8 @@ const MindMap = ({
                 userList={getUserListFromYMap()}
                 userName={userName}
                 speakingUserName={speakingUserName}
+                ymapRef={ymapRef}
+                isLoading={isLoading}
             />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
                 <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />

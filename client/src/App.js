@@ -352,6 +352,7 @@ class App extends Component {
                                 userName={myUserName}
                                 onSessionJoin={this.handleSessionJoin}
                                 speakingUserName={this.state.speakingUserName}
+                                isLoading={isLoading}
                             />
                         </div>
 
