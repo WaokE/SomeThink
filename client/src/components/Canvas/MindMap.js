@@ -540,6 +540,7 @@ const MindMap = ({
 
             ymapRef.current.clear();
             ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
+            ymapRef.current.set("RootQuadrant", 0);
 
             currentUserData.forEach((user) => {
                 console.log(user);
