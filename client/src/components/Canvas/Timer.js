@@ -104,8 +104,8 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
         handleDurationChange(remainingTime);
     };
 
-    const remainingMinutes = Math.floor(remainingTime / (60 * 1000)) || 0;
-    const remainingSeconds = Math.floor((remainingTime / 1000) % 60) || 0;
+    const remainingMinutes = Math.ceil(remainingTime / (60 * 1000)) || 0;
+    const remainingSeconds = Math.ceil((remainingTime / 1000) % 60) || 0;
 
     return (
         <div className={`timer ${isTimerRunning && remainingTime <= 10000 ? "red" : ""}`}>
