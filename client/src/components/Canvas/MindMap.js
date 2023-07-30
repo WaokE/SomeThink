@@ -12,6 +12,7 @@ import {
     fetchNewNodeLabels,
     addNewNodesAndEdges,
 } from "../openai/api";
+import NodeLabelsPopup from "../openai/NodeLabelsPopup";
 
 import {
     handleDoubleClick,
@@ -219,6 +220,9 @@ const MindMap = ({
     const [selectedNode, setSelectedNode] = useState(null);
     const [selectedEdge, setSelectedEdge] = useState(null);
     const [isTimerRunning, setIsTimerRunning] = useState(false);
+    const [showPopup, setShowPopup] = useState(false);
+    const [newNodeLabels, setNewNodeLabels] = useState([]);
+    const [clickedNodeId, setClickedNodeId] = useState("");
 
     const memoizedHandleClickOutside = useCallback(
         handleClickOutside(
@@ -878,8 +882,10 @@ const MindMap = ({
         }
 
         const clickedNodeId = nodes[0];
+        setClickedNodeId(clickedNodeId);
+        console.log("clickedNodeId:", clickedNodeId);
         const clickedNode = JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`));
-
+        console.log("x:", clickedNode.x, "y:", clickedNode.y);
         if (!clickedNode) {
             return;
         }
@@ -888,12 +894,22 @@ const MindMap = ({
         const allNodeLabels = getAllNodeLabels(ymapRef);
         const newNodeLabels = await fetchNewNodeLabels(connectedNodeLabels, allNodeLabels);
 
-        const newNodesAndEdges = addNewNodesAndEdges(
-            clickedNode,
-            newNodeLabels,
-            clickedNodeId,
-            ymapRef
-        );
+        if (newNodeLabels.length === 0) {
+            alert("No new node labels fetched.");
+            return;
+        }
+        setShowPopup(true);
+        setNewNodeLabels(newNodeLabels);
+    };
+
+    const handleDeleteLabel = (labelToDelete) => {
+        setNewNodeLabels((prevLabels) => prevLabels.filter((label) => label !== labelToDelete));
+    };
+
+    const handleCreate = () => {
+        const clickedNode = JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`));
+        addNewNodesAndEdges(clickedNode, newNodeLabels, clickedNodeId, ymapRef);
+        setShowPopup(false);
     };
 
     const handleMemoChange = makeHandleMemoChange(ymapRef, setMemo);
@@ -1096,6 +1112,13 @@ const MindMap = ({
                 open={isInfoMessageVisible}
                 visible={setIsInfoMessageVisible}
             />
+            {showPopup && (
+                <NodeLabelsPopup
+                    newNodeLabels={newNodeLabels}
+                    onDelete={handleDeleteLabel}
+                    onCreate={handleCreate}
+                />
+            )}
         </div>
     );
 };
