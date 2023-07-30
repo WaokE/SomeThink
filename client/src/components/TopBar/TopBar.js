@@ -9,7 +9,6 @@ import MicSharpIcon from "@mui/icons-material/MicSharp";
 import MicOffSharpIcon from "@mui/icons-material/MicOffSharp";
 import Switch from "@mui/material/Switch";
 import { ExitToApp } from "@mui/icons-material";
-import ymapRef from "../Canvas/MindMap";
 
 const colors = [
     "#FF5733", // 빨간색
@@ -32,6 +31,8 @@ function TopBar({
     userList,
     userName,
     speakingUserName,
+    ymapRef,
+    isLoading,
 }) {
     // userName과 일치하는 아바타를 찾아서 따로 저장합니다.
     const userAvatar = userList.find((user) => user === userName);
@@ -59,6 +60,30 @@ function TopBar({
     }, []);
 
     useEffect(() => {
+        if (userList.length >= prevUserListLength) {
+            if (!isLoading && userList.length === 1) {
+                console.log(userList.length, prevUserListLength);
+                const currentUserData = userList;
+                ymapRef.current.clear();
+                ymapRef.current.set(
+                    `Node 1`,
+                    JSON.stringify({
+                        id: 1,
+                        label: "start",
+                        x: 0,
+                        y: 0,
+                        physics: false,
+                        fixed: true,
+                        color: "#f5b252",
+                    })
+                );
+                ymapRef.current.set("RootQuadrant", 0);
+                currentUserData.forEach((user) => {
+                    console.log(user);
+                    ymapRef.current.set(user, true);
+                });
+            }
+        }
         if (userList.length > prevUserListLength) {
             const audio = new Audio("enter.mp3");
             audio.play();
@@ -66,21 +91,9 @@ function TopBar({
             const audio = new Audio("leave.mp3");
             audio.volume = 0.5;
             audio.play();
-            if (userList.length === 0) {
-                ymapRef.current.clear();
-                ymapRef.current.set(`Node 1`, {
-                    id: 1,
-                    label: "Root",
-                    x: 0,
-                    y: 0,
-                    physics: false,
-                    fixed: true,
-                    color: "#f5b252",
-                });
-            }
         }
         setPrevUserListLength(userList.length);
-    }, [userList.length, prevUserListLength]);
+    }, [userList.length, isLoading]);
 
     return (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1 }}>
