@@ -512,6 +512,9 @@ const MindMap = ({
                 setUserActionStack,
                 userActionStackPointer,
                 setUserActionStackPointer,
+                setMindMap,
+                setMemo,
+                setMouseCoordinates,
                 ymapRef
             );
         }
@@ -541,12 +544,36 @@ const MindMap = ({
             // Create a copy of currentUserData to preserve the original data
             const currentUserData = getUserListFromYMap();
 
+            setUserActionStack((prev) => {
+                // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
+                if (prev.length >= MAX_STACK_LENGTH) {
+                    setUserActionStackPointer(prev.length - 1);
+                    return [
+                        ...prev.slice(1),
+                        {
+                            action: "reset",
+                            prevYmap: ymapRef.current.toJSON(),
+                        },
+                    ];
+                }
+                // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+                else {
+                    setUserActionStackPointer(prev.length);
+                    return [
+                        ...prev,
+                        {
+                            action: "reset",
+                            prevYmap: ymapRef.current.toJSON(),
+                        },
+                    ];
+                }
+            });
+
             ymapRef.current.clear();
             ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
             ymapRef.current.set("RootQuadrant", 0);
 
             currentUserData.forEach((user) => {
-                console.log(user);
                 ymapRef.current.set(user, true);
             });
         }
