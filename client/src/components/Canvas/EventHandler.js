@@ -358,6 +358,9 @@ export const handleUndo = (
     setUserActionStack,
     userActionStackPointer,
     setUserActionStackPointer,
+    setMindMap,
+    setMemo,
+    setMouseCoordinates,
     ymapRef
 ) => {
     if (userActionStack.length === 0 || userActionStackPointer === -1) return;
@@ -411,6 +414,34 @@ export const handleUndo = (
             // 스택 포인터를 하나 줄임
             setUserActionStackPointer((prev) => prev - 1);
         }
+    }
+    // 이전 동작이 reset 인 경우
+    if (action === "reset") {
+        const updatedGraph = {
+            nodes: [],
+            edges: [],
+        };
+
+        const updatedMemo = {
+            memo: "",
+        };
+
+        const Mouses = [];
+
+        const mindMapData = userActionStack[userActionStackPointer].prevYmap;
+
+        const entries = Object.entries(mindMapData);
+
+        for (const [key, value] of entries) {
+            ymapRef.current.set(key, value);
+        }
+
+        setMindMap((prevState) => ({
+            ...prevState,
+            graph: updatedGraph,
+        }));
+        setMemo(updatedMemo.memo);
+        setMouseCoordinates(Mouses);
     }
 };
 
