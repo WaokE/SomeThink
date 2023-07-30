@@ -1,0 +1,35 @@
+/* NodeLabelsPopup.css */
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    z-index: 9999;
+    min-width: 200px;
+}
+
+.chip-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.chip {
+    background-color: #f0f0f0;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.create-button {
+    margin-top: 20px;
+    display: block;
+    margin-left: auto;
+    border-radius: 20px;
+    padding: 8px 16px;
+}
