@@ -68,7 +68,7 @@ export const handleNodeDragStart = (
     // 드래그한 노드의 이전 좌표를 저장
     const node = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
     setUserActionStack((prev) => {
-        // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 이동 기록을 삭제
+        // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
         if (prev.length >= MAX_STACK_LENGTH) {
             setUserActionStackPointer(prev.length - 1);
             return [
@@ -360,7 +360,6 @@ export const handleUndo = (
     setUserActionStackPointer,
     ymapRef
 ) => {
-    console.log(userActionStack);
     if (userActionStack.length === 0 || userActionStackPointer === -1) return;
     let action = userActionStack[userActionStackPointer].action;
     // 이전 동작이 move 인 경우
@@ -387,11 +386,30 @@ export const handleUndo = (
         }
         // ymap에서 해당 노드를 찾을 수 없다면
         else {
-            setAlertMessage("이미 삭제된 노드는 되돌릴 수 없습니다!");
+            setAlertMessage("되돌리려는 노드를 찾을 수 없습니다!");
             setIsAlertMessageVisible(true);
             // 스택 포인터를 하나 줄이고, 리턴
             setUserActionStackPointer((prev) => prev - 1);
             return;
+        }
+    }
+    // 이전 동작이 create 인 경우
+    if (action === "create") {
+        const ymapValue = ymapRef.current.get(
+            `Node ${userActionStack[userActionStackPointer].nodeId}`
+        );
+        // ymap에서 해당 노드를 찾을 수 있다면
+        if (ymapValue !== undefined) {
+            ymapRef.current.delete(`Node ${userActionStack[userActionStackPointer].nodeId}`);
+            // 스택 포인터를 하나 줄임
+            setUserActionStackPointer((prev) => prev - 1);
+        }
+        // ymap에서 해당 노드를 찾을 수 없다면
+        else {
+            setAlertMessage("되돌리려는 노드를 찾을 수 없습니다!");
+            setIsAlertMessageVisible(true);
+            // 스택 포인터를 하나 줄임
+            setUserActionStackPointer((prev) => prev - 1);
         }
     }
 };
@@ -409,9 +427,7 @@ export const handleRedo = (
     if (userActionStackPointer === userActionStack.length - 1) return;
     // redo가 가능한 경우, 스택 포인터를 하나 늘림
     const prevPointer = userActionStackPointer + 1;
-    console.log();
     let action = userActionStack[prevPointer].action;
-    // console.log(userActionStack[prevPointer]);
     // 이전 동작이 move 인 경우
     if (action === "move") {
         const ymapValue = ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`);
@@ -436,8 +452,28 @@ export const handleRedo = (
         else {
             setAlertMessage("Cannot Redo!");
             setIsAlertMessageVisible(true);
-            // 리턴
-            return;
+            // 스택 포인터를 하나 늘림
+            setUserActionStackPointer((prev) => prev + 1);
+        }
+    }
+    // 이전 동작이 create 인 경우
+    if (action === "create") {
+        const ymapValue = ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`);
+        // ymap에서 해당 노드를 찾을 수 있다면
+        if (ymapValue !== undefined) {
+            setAlertMessage("복구할 노드가 이미 존재합니다!");
+            setIsAlertMessageVisible(true);
+            // 스택 포인터를 하나 늘림
+            setUserActionStackPointer((prev) => prev + 1);
+        }
+        // ymap에서 해당 노드를 찾을 수 없다면
+        else {
+            ymapRef.current.set(
+                `Node ${userActionStack[prevPointer].nodeId}`,
+                JSON.stringify(userActionStack[prevPointer].newNode)
+            );
+            // 스택 포인터를 하나 늘림
+            setUserActionStackPointer((prev) => prev + 1);
         }
     }
 };
