@@ -140,9 +140,15 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
             )}
             {isTimerRunning && (
                 <div>
-                    <span>{remainingMinutes}</span>
+                    <span>{remainingSeconds === 60 ? remainingMinutes + 1 : remainingMinutes}</span>
                     <span> : </span>
-                    <span>{remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds}</span>
+                    <span>
+                        {remainingSeconds === 60
+                            ? "00"
+                            : remainingSeconds < 10
+                            ? "0" + remainingSeconds
+                            : remainingSeconds}
+                    </span>
                 </div>
             )}
             {!isTimerRunning && <button onClick={handleStart}>시작</button>}

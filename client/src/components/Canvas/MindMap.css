@@ -29,3 +29,11 @@ div.vis-network div.vis-manipulation {
     top: 0;
     width: 100%;
 }
+
+.visible {
+    visibility: visible;
+}
+
+.hidden {
+    visibility: hidden;
+}
