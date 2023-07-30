@@ -926,13 +926,16 @@ const MindMap = ({
             />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
                 <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
-                {isTimerVisible && (
+                <div
+                    className={`
+                ${isTimerVisible ? "visible" : "hidden"}`}
+                >
                     <Timer
                         sessionId={sessionId}
                         isTimerRunning={isTimerRunning}
                         setIsTimerRunning={setIsTimerRunning}
                     />
-                )}
+                </div>
                 {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
                 <Graph
                     graph={MindMap.graph}
