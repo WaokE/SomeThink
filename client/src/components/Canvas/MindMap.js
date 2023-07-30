@@ -91,6 +91,8 @@ const MindMap = ({
         "#9AFF33", // 연두색
     ];
 
+    const MAX_STACK_LENGTH = 10;
+
     let options = {
         layout: {
             hierarchical: false,
@@ -195,7 +197,7 @@ const MindMap = ({
     }
 
     const [userActionStack, setUserActionStack] = useState([]);
-    const [actionStackPointer, setActionStackPointer] = useState(-1);
+    const [userActionStackPointer, setUserActionStackPointer] = useState(-1);
     const [isInfoMessageVisible, setIsInfoMessageVisible] = useState(false);
     const [infoMessage, setInfoMessage] = useState("");
     const [isAlertMessageVisible, setIsAlertMessageVisible] = useState(false);
@@ -494,8 +496,8 @@ const MindMap = ({
                 setIsAlertMessageVisible,
                 userActionStack,
                 setUserActionStack,
-                actionStackPointer,
-                setActionStackPointer,
+                userActionStackPointer,
+                setUserActionStackPointer,
                 ymapRef
             );
         } else if (
@@ -508,8 +510,8 @@ const MindMap = ({
                 setIsAlertMessageVisible,
                 userActionStack,
                 setUserActionStack,
-                actionStackPointer,
-                setActionStackPointer,
+                userActionStackPointer,
+                setUserActionStackPointer,
                 ymapRef
             );
         }
@@ -639,7 +641,7 @@ const MindMap = ({
 
     const createNode = (selectedNodeId) => {
         if (!selectedNodeId) {
-            setInfoMessage("노드를 선택한 후에 버튼을 눌러 노드를 추가하세요!");
+            setInfoMessage("노드를 선택한 후에 버튼을 눌러 자식 노드를 추가하세요!");
             setIsInfoMessageVisible(true);
             return;
         }
@@ -670,6 +672,32 @@ const MindMap = ({
                     y: selectedNode.y + ny[quadrant - 1],
                     color: "#FBD85D",
                 };
+                setUserActionStack((prev) => {
+                    // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
+                    if (prev.length >= MAX_STACK_LENGTH) {
+                        setUserActionStackPointer(prev.length - 1);
+                        return [
+                            ...prev.slice(1),
+                            {
+                                action: "create",
+                                nodeId: newNode.id,
+                                newNode: newNode,
+                            },
+                        ];
+                    }
+                    // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+                    else {
+                        setUserActionStackPointer(prev.length);
+                        return [
+                            ...prev,
+                            {
+                                action: "create",
+                                nodeId: newNode.id,
+                                newNode: newNode,
+                            },
+                        ];
+                    }
+                });
 
                 ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
                 ymapRef.current.set(
@@ -792,7 +820,6 @@ const MindMap = ({
     }, [selectedNode, memoizedHandleClickOutside, selectedImage]);
 
     const deleteSingleNode = (nodeId) => {
-        // NOTE: 임시 유저 ID
         const tempUserId = userName;
         ymapRef.current.delete(`Node ${nodeId}`);
         ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` &&
@@ -917,7 +944,7 @@ const MindMap = ({
                                 events,
                                 ymapRef,
                                 setUserActionStack,
-                                setActionStackPointer
+                                setUserActionStackPointer
                             ),
                         dragging: (events) => handleNodeDragging(events, ymapRef, userName),
                         dragEnd: (events) =>
