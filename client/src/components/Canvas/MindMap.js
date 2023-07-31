@@ -1093,6 +1093,7 @@ const MindMap = ({
                 onExportClick={handleExportClick}
             />
             <GraphToMarkdown
+                style={{ height: isMemoVisible ? "50%" : "80%" }}
                 nodes={nodes}
                 edges={edges}
                 isMarkdownVisible={isMarkdownVisible}
