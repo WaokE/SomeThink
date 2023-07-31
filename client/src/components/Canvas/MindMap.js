@@ -1100,6 +1100,7 @@ const MindMap = ({
                 networkRef={networkRef}
             />
             <ImageSearch
+                style={{ height: isTimerVisible ? "70%" : "80%" }}
                 createImage={handleCreateImage}
                 isImageSearchVisible={isImageSearchVisible}
             />
