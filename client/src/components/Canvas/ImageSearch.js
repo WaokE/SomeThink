@@ -53,8 +53,6 @@ const ImageSearch = (props) => {
     const submit = () => {
         searchWordRef.current = img;
 
-        console.log("img", img);
-
         if (img.includes("http")) {
             props.createImage(img, "");
         } else {
@@ -72,7 +70,6 @@ const ImageSearch = (props) => {
             return;
         }
         if (e.key === "Enter") {
-            console.log("Enter");
             submit();
         }
     };
