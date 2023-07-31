@@ -449,6 +449,7 @@ export const handleUndo = (
         deletedNodes.forEach((node) => {
             ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
         });
+        setUserActionStackPointer((prev) => prev - 1);
     }
 };
 
@@ -547,6 +548,14 @@ export const handleRedo = (
 
         userList.forEach((user) => {
             ymapRef.current.set(user, true);
+        });
+        setUserActionStackPointer((prev) => prev + 1);
+    }
+    // 이전 동작이 delete 인 경우
+    if (action === "delete") {
+        const deletedNodes = userActionStack[prevPointer].deletedNodes;
+        deletedNodes.forEach((node) => {
+            ymapRef.current.delete(`Node ${node.id}`);
         });
         setUserActionStackPointer((prev) => prev + 1);
     }
