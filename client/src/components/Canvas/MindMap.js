@@ -850,8 +850,34 @@ const MindMap = ({
         };
     }, [selectedNode, memoizedHandleClickOutside, selectedImage]);
 
+    const deleteRecursion = (nodeId) => {
+        const childNodes = Array.from(ymapRef.current.keys())
+            .filter((key) => key.startsWith(`Edge ${nodeId} to `))
+            .map((key) => key.split(" ")[3]);
+
+        childNodes.forEach((childNodeId) => {
+            deleteSingleNode(childNodeId);
+            deleteRecursion(childNodeId);
+        });
+
+        deleteSingleNode(nodeId);
+        setSelectedNode(null);
+    };
+
     const deleteSingleNode = (nodeId) => {
         const tempUserId = userName;
+        const willDeleteNode = ymapRef.current.get(`Node ${nodeId}`);
+
+        setUserActionStack((prev) => {
+            if (willDeleteNode) {
+                let lastAction = prev[prev.length - 1];
+                lastAction.deletedNodes.push(JSON.parse(willDeleteNode));
+                prev[prev.length - 1] = lastAction;
+                return [...prev];
+            } else {
+                return [...prev];
+            }
+        });
         ymapRef.current.delete(`Node ${nodeId}`);
         ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` &&
             ymapRef.current.delete(`User ${tempUserId} selected`);
@@ -863,17 +889,33 @@ const MindMap = ({
             setIsAlertMessageVisible(true);
             return;
         }
-        const childNodes = Array.from(ymapRef.current.keys())
-            .filter((key) => key.startsWith(`Edge ${nodeId} to `))
-            .map((key) => key.split(" ")[3]);
 
-        childNodes.forEach((childNodeId) => {
-            deleteSingleNode(childNodeId);
-            deleteNodes(childNodeId);
+        setUserActionStack((prev) => {
+            // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
+            if (prev.length >= MAX_STACK_LENGTH) {
+                setUserActionStackPointer(prev.length - 1);
+                return [
+                    ...prev.slice(1),
+                    {
+                        action: "delete",
+                        deletedNodes: [],
+                    },
+                ];
+            }
+            // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+            else {
+                setUserActionStackPointer(prev.length);
+                return [
+                    ...prev,
+                    {
+                        action: "delete",
+                        deletedNodes: [],
+                    },
+                ];
+            }
         });
 
-        deleteSingleNode(nodeId);
-        setSelectedNode(null);
+        deleteRecursion(nodeId);
     };
 
     const handleNodeSelect = async ({ nodes }) => {
