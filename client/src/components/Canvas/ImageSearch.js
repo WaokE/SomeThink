@@ -17,6 +17,7 @@ const styles = {
         overflow: "auto",
         backgroundColor: "#f8f8f8",
         borderRadius: "10px",
+        left: "2vh",
     },
 
     ImageList: {

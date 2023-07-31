@@ -1,9 +1,9 @@
 .memo {
     position: fixed;
-    top: 12vh;
+    top: 10vh;
     right: 2vh;
     width: 250px;
-    height: 150px;
+    height: 15%;
     background-color: #fbeeac;
     border: 2px solid #e8c55b;
     border-radius: 5px;

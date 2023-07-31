@@ -6,10 +6,10 @@ import ListItem from "@mui/material/ListItem";
 import Typography from "@mui/material/Typography";
 const styles = {
     markdown: {
-        width: "25%",
+        width: "22%",
         height: "80%",
         position: "fixed",
-        right: "0%",
+        right: "2vh",
         bottom: "10%",
         border: "2px solid #d9d9d9",
         overflow: "auto",
