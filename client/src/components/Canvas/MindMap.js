@@ -855,6 +855,12 @@ const MindMap = ({
         ymapRef.current.delete(`Node ${nodeId}`);
         ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` &&
             ymapRef.current.delete(`User ${tempUserId} selected`);
+        setUserActionStack((prev) => {
+            let lastAction = prev[prev.length - 1];
+            lastAction.deletedNodes.push(nodeId);
+            prev[prev.length - 1] = lastAction;
+            return [...prev];
+        });
     };
 
     const deleteNodes = (nodeId) => {
@@ -863,13 +869,43 @@ const MindMap = ({
             setIsAlertMessageVisible(true);
             return;
         }
+
+        setUserActionStack((prev) => {
+            // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
+            if (prev.length >= MAX_STACK_LENGTH) {
+                setUserActionStackPointer(prev.length - 1);
+                return [
+                    ...prev.slice(1),
+                    {
+                        action: "delete",
+                        deletedNodes: [],
+                    },
+                ];
+            }
+            // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+            else {
+                setUserActionStackPointer(prev.length);
+                return [
+                    ...prev,
+                    {
+                        action: "delete",
+                        deletedNodes: [],
+                    },
+                ];
+            }
+        });
+
+        deleteRecursion(nodeId);
+    };
+
+    const deleteRecursion = (nodeId) => {
         const childNodes = Array.from(ymapRef.current.keys())
             .filter((key) => key.startsWith(`Edge ${nodeId} to `))
             .map((key) => key.split(" ")[3]);
 
         childNodes.forEach((childNodeId) => {
             deleteSingleNode(childNodeId);
-            deleteNodes(childNodeId);
+            deleteRecursion(childNodeId);
         });
 
         deleteSingleNode(nodeId);
