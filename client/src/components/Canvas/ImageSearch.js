@@ -40,7 +40,7 @@ const ImageSearch = (props) => {
     let searchWord = "";
 
     useEffect(() => {
-        fetchRequest();
+        // fetchRequest();
     }, []);
 
     const fetchRequest = async () => {
@@ -52,6 +52,8 @@ const ImageSearch = (props) => {
 
     const submit = () => {
         searchWordRef.current = img;
+
+        console.log("img", img);
 
         if (img.includes("http")) {
             props.createImage(img, "");
@@ -65,8 +67,12 @@ const ImageSearch = (props) => {
         props.createImage(url, searchWord);
     };
 
-    const handleEnterKeyEvent = (key) => {
-        if (key === "Enter") {
+    const handleEnterKeyEvent = (e) => {
+        if (e.keyCode === 229 || e.isComposing) {
+            return;
+        }
+        if (e.key === "Enter") {
+            console.log("Enter");
             submit();
         }
     };
@@ -80,9 +86,9 @@ const ImageSearch = (props) => {
                         id="outlined-basic"
                         label="Search Image with Keyword or URL"
                         variant="outlined"
-                        value={img}
                         onChange={(e) => setImg(e.target.value)}
-                        onKeyDown={(e) => handleEnterKeyEvent(e.key)}
+                        onKeyDown={(e) => handleEnterKeyEvent(e)}
+                        value={img}
                     />
                     <Button variant="contained" type="submit" onClick={submit}>
                         <ImageSearchIcon />
