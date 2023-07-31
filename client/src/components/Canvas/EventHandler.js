@@ -444,6 +444,12 @@ export const handleUndo = (
         setMouseCoordinates(Mouses);
         setUserActionStackPointer((prev) => prev - 1);
     }
+    if (action === "delete") {
+        const deletedNodes = userActionStack[userActionStackPointer].deletedNodes;
+        deletedNodes.forEach((node) => {
+            ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
+        });
+    }
 };
 
 export const handleRedo = (

@@ -850,17 +850,37 @@ const MindMap = ({
         };
     }, [selectedNode, memoizedHandleClickOutside, selectedImage]);
 
+    const deleteRecursion = (nodeId) => {
+        const childNodes = Array.from(ymapRef.current.keys())
+            .filter((key) => key.startsWith(`Edge ${nodeId} to `))
+            .map((key) => key.split(" ")[3]);
+
+        childNodes.forEach((childNodeId) => {
+            deleteSingleNode(childNodeId);
+            deleteRecursion(childNodeId);
+        });
+
+        deleteSingleNode(nodeId);
+        setSelectedNode(null);
+    };
+
     const deleteSingleNode = (nodeId) => {
         const tempUserId = userName;
+        const willDeleteNode = ymapRef.current.get(`Node ${nodeId}`);
+
+        setUserActionStack((prev) => {
+            if (willDeleteNode) {
+                let lastAction = prev[prev.length - 1];
+                lastAction.deletedNodes.push(JSON.parse(willDeleteNode));
+                prev[prev.length - 1] = lastAction;
+                return [...prev];
+            } else {
+                return [...prev];
+            }
+        });
         ymapRef.current.delete(`Node ${nodeId}`);
         ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` &&
             ymapRef.current.delete(`User ${tempUserId} selected`);
-        setUserActionStack((prev) => {
-            let lastAction = prev[prev.length - 1];
-            lastAction.deletedNodes.push(nodeId);
-            prev[prev.length - 1] = lastAction;
-            return [...prev];
-        });
     };
 
     const deleteNodes = (nodeId) => {
@@ -896,20 +916,6 @@ const MindMap = ({
         });
 
         deleteRecursion(nodeId);
-    };
-
-    const deleteRecursion = (nodeId) => {
-        const childNodes = Array.from(ymapRef.current.keys())
-            .filter((key) => key.startsWith(`Edge ${nodeId} to `))
-            .map((key) => key.split(" ")[3]);
-
-        childNodes.forEach((childNodeId) => {
-            deleteSingleNode(childNodeId);
-            deleteRecursion(childNodeId);
-        });
-
-        deleteSingleNode(nodeId);
-        setSelectedNode(null);
     };
 
     const handleNodeSelect = async ({ nodes }) => {
