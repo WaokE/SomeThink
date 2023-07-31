@@ -17,6 +17,7 @@ const styles = {
         overflow: "auto",
         backgroundColor: "#f8f8f8",
         borderRadius: "10px",
+        left: "2vh",
     },
 
     ImageList: {
@@ -31,7 +32,7 @@ const styles = {
     },
 };
 
-const ImageSearch = (props) => {
+const ImageSearch = ({ style, ...props }) => {
     const [img, setImg] = useState("");
     const [res, setRes] = useState([]);
     const searchWordRef = useRef(null);
@@ -76,7 +77,7 @@ const ImageSearch = (props) => {
 
     return (
         <Slide direction="right" in={props.isImageSearchVisible} mountOnEnter unmountOnExit>
-            <Box sx={styles.ImageSearch}>
+            <Box sx={{ ...styles.ImageSearch, ...style }}>
                 <Box sx={styles.inputBox}>
                     <TextField
                         sx={{ width: "80%" }}

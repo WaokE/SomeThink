@@ -4,13 +4,12 @@ import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Typography from "@mui/material/Typography";
-
 const styles = {
     markdown: {
-        width: "25%",
+        width: "22%",
         height: "80%",
         position: "fixed",
-        right: "0%",
+        right: "2vh",
         bottom: "10%",
         border: "2px solid #d9d9d9",
         overflow: "auto",
@@ -19,7 +18,7 @@ const styles = {
     },
 };
 
-const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
+const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef }) => {
     const [markdownForDisplay, setMarkdownForDisplay] = useState([]);
     const [markdownForFile, setMarkdownForDisFile] = useState([]);
 
@@ -159,7 +158,7 @@ const GraphToMarkdown = ({ nodes, edges, isMarkdownVisible, networkRef }) => {
 
     return (
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
-            <Box sx={styles.markdown}>
+            <Box sx={{ ...styles.markdown, ...style }}>
                 <List>{displayMarkdown()}</List>
             </Box>
         </Slide>

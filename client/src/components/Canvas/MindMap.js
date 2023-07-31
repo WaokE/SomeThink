@@ -1129,12 +1129,14 @@ const MindMap = ({
                 onExportClick={handleExportClick}
             />
             <GraphToMarkdown
+                style={{ height: isMemoVisible ? "calc(80% - 23%)" : "80%" }}
                 nodes={nodes}
                 edges={edges}
                 isMarkdownVisible={isMarkdownVisible}
                 networkRef={networkRef}
             />
             <ImageSearch
+                style={{ height: isTimerVisible ? "calc(80% - 13%)" : "80%" }}
                 createImage={handleCreateImage}
                 isImageSearchVisible={isImageSearchVisible}
             />
