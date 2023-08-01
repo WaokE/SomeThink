@@ -6,6 +6,8 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Slide from "@mui/material/Slide";
 import ImageSearchIcon from "@mui/icons-material/ImageSearch";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import IconButton from "@mui/material/IconButton";
 
 const styles = {
     ImageSearch: {
@@ -75,9 +77,16 @@ const ImageSearch = ({ style, ...props }) => {
         }
     };
 
+    const handleHideImageSearch = () => {
+        props.setIsImageSearchVisible(false);
+    };
+
     return (
         <Slide direction="right" in={props.isImageSearchVisible} mountOnEnter unmountOnExit>
             <Box sx={{ ...styles.ImageSearch, ...style }}>
+                <IconButton onClick={handleHideImageSearch}>
+                    <ArrowBackRoundedIcon />
+                </IconButton>
                 <Box sx={styles.inputBox}>
                     <TextField
                         sx={{ width: "80%" }}

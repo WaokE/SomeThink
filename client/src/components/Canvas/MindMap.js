@@ -1155,6 +1155,7 @@ const MindMap = ({
                 style={{ height: isTimerVisible ? "calc(80% - 13%)" : "80%" }}
                 createImage={handleCreateImage}
                 isImageSearchVisible={isImageSearchVisible}
+                setIsImageSearchVisible={setIsImageSearchVisible}
             />
             <AlertToast
                 message={alertMessage}
