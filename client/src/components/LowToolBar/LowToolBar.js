@@ -1,4 +1,5 @@
 import * as React from "react";
+import { handleUndo, handleRedo } from "../Canvas/EventHandler";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
@@ -8,6 +9,8 @@ import EditNoteRoundedIcon from "@mui/icons-material/EditNoteRounded";
 import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
 import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
 import AccessAlarmRoundedIcon from "@mui/icons-material/AccessAlarmRounded";
+import UndoRoundedIcon from "@mui/icons-material/UndoRounded";
+import RedoRoundedIcon from "@mui/icons-material/RedoRounded";
 import Tooltip from "@mui/material/Tooltip";
 
 import Box from "@mui/material/Box";
@@ -20,7 +23,7 @@ import FormatListBulletedSharpIcon from "@mui/icons-material/FormatListBulletedS
 
 const styles = {
     bottomNav: {
-        width: "400px", // 너비 조정
+        width: "520px", // 너비 조정
         height: "50px", // 높이 조정
         borderRadius: "100px", // 라운드를 위한 값
         border: "2px solid #d9d9d9", // 테두리 설정
@@ -82,6 +85,33 @@ export default function LowToolBar(props) {
         console.log("openMarkdown", props.isMarkdownVisible);
     };
 
+    const undoAction = () => {
+        handleUndo(
+            props.setAlertMessage,
+            props.setIsAlertMessageVisible,
+            props.userActionStack,
+            props.setUserActionStack,
+            props.userActionStackPointer,
+            props.setUserActionStackPointer,
+            props.setMindMap,
+            props.setMemo,
+            props.setMouseCoordinates,
+            props.ymapRef
+        );
+    };
+
+    const redoAction = () => {
+        handleRedo(
+            props.setAlertMessage,
+            props.setIsAlertMessageVisible,
+            props.userActionStack,
+            props.setUserActionStack,
+            props.userActionStackPointer,
+            props.setUserActionStackPointer,
+            props.ymapRef
+        );
+    };
+
     const actions = [
         { icon: <CameraAltIcon />, name: "Capture Canvas", onclick: hendleExportClick },
         { icon: <SaveIcon />, name: "Save Markdown", onclick: makeMarkdown },
@@ -91,6 +121,22 @@ export default function LowToolBar(props) {
     return (
         <div>
             <BottomNavigation sx={styles.bottomNav}>
+                <Tooltip title="실행 취소" placement="top" sx={styles.tooltip}>
+                    <BottomNavigationAction
+                        value="undo"
+                        icon={<UndoRoundedIcon sx={styles.icon} />}
+                        sx={styles.action}
+                        onClick={undoAction}
+                    />
+                </Tooltip>
+                <Tooltip title="다시 실행" placement="top" sx={styles.tooltip}>
+                    <BottomNavigationAction
+                        value="redo"
+                        icon={<RedoRoundedIcon sx={styles.icon} />}
+                        sx={styles.action}
+                        onClick={redoAction}
+                    />
+                </Tooltip>
                 <Tooltip title="노드 생성" placement="top" sx={styles.tooltip}>
                     <BottomNavigationAction
                         value="recents"
