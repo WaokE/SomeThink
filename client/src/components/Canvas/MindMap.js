@@ -104,7 +104,7 @@ const MindMap = ({
             mass: 1,
             color: "#FBD85D",
             widthConstraint: {
-                maximum: 60,
+                maximum: 100,
             },
             font: {
                 face: "MainFont",
