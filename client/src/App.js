@@ -121,7 +121,7 @@ class App extends Component {
         this.OV.setAdvancedConfiguration({
             publisherSpeakingEventsOptions: {
                 interval: 20,
-                threshold: -25,
+                threshold: -35,
             },
         });
 
@@ -189,7 +189,7 @@ class App extends Component {
                             let publisher = await this.OV.initPublisherAsync(undefined, {
                                 audioSource: undefined, // The source of audio. If undefined default microphone
                                 videoSource: false, // The source of video. If undefined default webcam
-                                publishAudio: false, // Whether you want to start publishing with your audio unmuted or not
+                                publishAudio: true, // Whether you want to start publishing with your audio unmuted or not
                                 publishVideo: false, // Whether you want to start publishing with your video enabled or not
                             });
 
