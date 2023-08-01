@@ -60,13 +60,21 @@ const fetchNewNodeLabels = async (connectedNodeLabels, allNodeLabels) => {
     }
 };
 const addNewNodesAndEdges = (clickedNode, newNodeLabels, clickedNodeId, ymapRef) => {
+    const numNodes = newNodeLabels.length;
+    const angleStep = (2 * Math.PI) / numNodes;
+
     return newNodeLabels.map((label, index) => {
+        const angle = index * angleStep;
+        const distanceFromCenter = 100;
+        const x = clickedNode.x + distanceFromCenter * Math.cos(angle);
+        const y = clickedNode.y + distanceFromCenter * Math.sin(angle);
+
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
         const newNode = {
             id: nodeId,
             label: label.trim(),
-            x: clickedNode.x + 100 * (1 - index),
-            y: clickedNode.y + 100 * index,
+            x: x,
+            y: y,
             physics: false,
             color: "#FBD85D",
             size: 30,
@@ -85,4 +93,5 @@ const addNewNodesAndEdges = (clickedNode, newNodeLabels, clickedNodeId, ymapRef)
         return { newNode, edge };
     });
 };
+
 export { getConnectedNodeLabels, getAllNodeLabels, fetchNewNodeLabels, addNewNodesAndEdges };
