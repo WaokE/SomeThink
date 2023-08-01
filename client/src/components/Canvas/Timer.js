@@ -41,8 +41,7 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
     useEffect(() => {
         ydocRef.current = new Y.Doc();
         const provider = new WebsocketProvider(
-            // "wss://somethink.online/timer",
-            "ws://localhost:2345",
+            "wss://somethink.online/timer",
             sessionId,
             ydocRef.current
         );
