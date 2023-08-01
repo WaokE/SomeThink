@@ -480,12 +480,14 @@ const MindMap = ({
         }
         // 엣지 선택시
         else if (event.edges.length > 0) {
+            setSelectedNode(null);
             setSelectedEdge(event.edges[0]);
         }
         // 선택 해제시
         else {
             setSelectedNode(null);
-            checkPrevSelected(event.edges[0]);
+            setSelectedEdge(null);
+            checkPrevSelected(tempUserId);
         }
     };
 
