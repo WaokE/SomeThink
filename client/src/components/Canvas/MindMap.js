@@ -223,6 +223,8 @@ const MindMap = ({
     const [showPopup, setShowPopup] = useState(false);
     const [newNodeLabels, setNewNodeLabels] = useState([]);
     const [clickedNodeId, setClickedNodeId] = useState("");
+    const [connectedNodeLabels, setConnectedNodeLabels] = useState([]);
+    const [allNodeLabels, setAllNodeLabels] = useState([]);
 
     const memoizedHandleClickOutside = useCallback(
         handleClickOutside(
@@ -961,8 +963,8 @@ const MindMap = ({
             return;
         }
 
-        const connectedNodeLabels = getConnectedNodeLabels(clickedNodeId, ymapRef);
-        const allNodeLabels = getAllNodeLabels(ymapRef);
+        setConnectedNodeLabels(getConnectedNodeLabels(clickedNodeId, ymapRef));
+        setAllNodeLabels(getAllNodeLabels(ymapRef));
         const newNodeLabels = await fetchNewNodeLabels(connectedNodeLabels, allNodeLabels);
 
         if (newNodeLabels.length === 0) {
@@ -971,6 +973,18 @@ const MindMap = ({
         }
         setShowPopup(true);
         setNewNodeLabels(newNodeLabels);
+    };
+
+    const handleClosePopup = () => {
+        setShowPopup(false);
+    };
+
+    const handleRestart = async () => {
+        setAllNodeLabels(allNodeLabels.concat(newNodeLabels));
+        console.log("allNodeLabels:", allNodeLabels);
+        const addedLabels = await fetchNewNodeLabels(connectedNodeLabels, allNodeLabels);
+
+        setNewNodeLabels(newNodeLabels.concat(addedLabels));
     };
 
     const handleDeleteLabel = (labelToDelete) => {
@@ -1200,6 +1214,8 @@ const MindMap = ({
                     newNodeLabels={newNodeLabels}
                     onDelete={handleDeleteLabel}
                     onCreate={handleCreate}
+                    onClose={handleClosePopup}
+                    onRestart={handleRestart}
                 />
             )}
         </div>
