@@ -269,8 +269,8 @@ const MindMap = ({
         );
         // const provider = new WebsocketProvider("ws://localhost:1234", sessionId, ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
-        ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
-        ymapRef.current.set("RootQuadrant", 0);
+        // ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
+        // ymapRef.current.set("RootQuadrant", 0);
 
         ymapRef.current.observe((event) => {
             const updatedGraph = {
