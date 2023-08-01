@@ -963,8 +963,8 @@ const MindMap = ({
             return;
         }
 
-        setConnectedNodeLabels(getConnectedNodeLabels(clickedNodeId, ymapRef));
-        setAllNodeLabels(getAllNodeLabels(ymapRef));
+        const connectedNodeLabels = getConnectedNodeLabels(clickedNodeId, ymapRef);
+        const allNodeLabels = getAllNodeLabels(ymapRef);
         const newNodeLabels = await fetchNewNodeLabels(connectedNodeLabels, allNodeLabels);
 
         if (newNodeLabels.length === 0) {
@@ -973,6 +973,8 @@ const MindMap = ({
         }
         setShowPopup(true);
         setNewNodeLabels(newNodeLabels);
+        setConnectedNodeLabels(connectedNodeLabels);
+        setAllNodeLabels(allNodeLabels);
     };
 
     const handleClosePopup = () => {
@@ -980,11 +982,11 @@ const MindMap = ({
     };
 
     const handleRestart = async () => {
-        setAllNodeLabels(allNodeLabels.concat(newNodeLabels));
-        console.log("allNodeLabels:", allNodeLabels);
+        const mergedLabels = Array.from(new Set(allNodeLabels.concat(newNodeLabels)));
+        setAllNodeLabels(mergedLabels);
         const addedLabels = await fetchNewNodeLabels(connectedNodeLabels, allNodeLabels);
-
-        setNewNodeLabels(newNodeLabels.concat(addedLabels));
+        const mergedNewLabels = Array.from(new Set(newNodeLabels.concat(addedLabels)));
+        setNewNodeLabels(mergedNewLabels);
     };
 
     const handleDeleteLabel = (labelToDelete) => {
