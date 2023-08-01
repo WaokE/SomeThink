@@ -476,10 +476,14 @@ const MindMap = ({
             selectedNode.owner = tempUserId;
             ymapRef.current.set(`Node ${event.nodes[0]}`, JSON.stringify(selectedNode));
         }
+        // 엣지 선택시
+        else if (event.edges.length > 0) {
+            setSelectedEdge(event.edges[0]);
+        }
         // 선택 해제시
         else {
             setSelectedNode(null);
-            checkPrevSelected(tempUserId);
+            checkPrevSelected(event.edges[0]);
         }
     };
 
@@ -509,7 +513,7 @@ const MindMap = ({
             if (selectedNode) {
                 deleteNodes(selectedNode);
             } else if (selectedEdge) {
-                deleteEdge([`${selectedEdge}`]);
+                deleteEdge();
             }
         }
         if (
