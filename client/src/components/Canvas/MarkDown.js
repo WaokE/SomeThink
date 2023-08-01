@@ -20,7 +20,7 @@ const styles = {
 
 const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef }) => {
     const [markdownForDisplay, setMarkdownForDisplay] = useState([]);
-    const [markdownForFile, setMarkdownForFile] = useState([]);
+    const [markdownForFile, setMarkdownForDisFile] = useState([]);
 
     useEffect(() => {
         let nodeHierarchy = {};
@@ -95,7 +95,7 @@ const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef })
         }
 
         setMarkdownForDisplay(markdownLinesForDisplay);
-        setMarkdownForFile(markdownLinesForFile);
+        setMarkdownForDisFile(markdownLinesForFile);
     }, [nodes, edges]);
 
     const handleFocusButtonClick = (x, y) => {
@@ -114,59 +114,10 @@ const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef })
         const markdownString = markdownForFile
             .map((lineObj) => (lineObj.line ? lineObj.line : ""))
             .join("");
-
-        console.log("markdownString", markdownString);
-
         const element = document.createElement("a");
         const file = new Blob([markdownString], { type: "text/plain" });
         element.href = URL.createObjectURL(file);
         element.download = `${nodes[0].label}.md`;
-        document.body.appendChild(element);
-        element.click();
-    };
-
-    const makeNodeSnapshot = (node, snapShotForFile) => {
-        const nodeInfo = {
-            id: node.id,
-            label: node.label,
-            x: node.x,
-            y: node.y,
-            shape: node.shape,
-            URL: node.URL,
-            size: node.size,
-        };
-        snapShotForFile.push(nodeInfo);
-    };
-
-    const makeEdgeSnapshot = (edge, snapShotForFile) => {
-        const edgeInfo = {
-            from: edge.from,
-            to: edge.to,
-        };
-        snapShotForFile.push(edgeInfo);
-    };
-
-    const handleDownloadSnapshot = () => {
-        let snapshotForFile = [];
-
-        snapshotForFile.push("nodes");
-        nodes.forEach((node) => {
-            makeNodeSnapshot(node, snapshotForFile);
-        });
-
-        snapshotForFile.push("edges");
-        edges.forEach((edge) => {
-            makeEdgeSnapshot(edge, snapshotForFile);
-        });
-
-        const snapshotString = snapshotForFile //TODO: change this to Mindmap snap shot
-            .map((object) => (object ? JSON.stringify(object) : ""))
-            .join("\n");
-
-        const element = document.createElement("a");
-        const file = new Blob([snapshotString], { type: "text/plain" });
-        element.href = URL.createObjectURL(file);
-        element.download = `${nodes[0].label}_snapshot.md`;
         document.body.appendChild(element);
         element.click();
     };
@@ -199,11 +150,9 @@ const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef })
     };
 
     useEffect(() => {
-        // window.addEventListener("makeMarkdown", handleDownload);
-        window.addEventListener("makeMarkdown", handleDownloadSnapshot);
+        window.addEventListener("makeMarkdown", handleDownload);
         return () => {
-            // window.removeEventListener("makeMarkdown", handleDownload);
-            window.removeEventListener("makeMarkdown", handleDownloadSnapshot);
+            window.removeEventListener("makeMarkdown", handleDownload);
         };
     }, [markdownForFile]);
 
