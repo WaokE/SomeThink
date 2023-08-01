@@ -1,7 +1,6 @@
 import "./ContextMenu.css";
 
 const NodeContextMenu = ({
-    selectedNodeId,
     selectedNode,
     onClose,
     deleteNode,
@@ -11,16 +10,16 @@ const NodeContextMenu = ({
     handleNodeSelect,
 }) => {
     const handleDeleteNode = () => {
-        deleteNode(selectedNodeId);
+        deleteNode(selectedNode);
         onClose();
     };
     const handleAddChildNode = () => {
-        createNode(selectedNodeId);
+        createNode(selectedNode);
         onClose();
     };
 
     const handleairecommend = () => {
-        handleNodeSelect({ nodes: [selectedNodeId] });
+        handleNodeSelect({ nodes: [selectedNode] });
         onClose();
     };
 

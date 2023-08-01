@@ -308,39 +308,6 @@ export const handleAddImageNode =
         ymapRef.current.set("Counter", nodeCount + 1);
     };
 
-export const handleNodeContextMenu = ({
-    setContextMenuPos,
-    setIsNodeContextMenuVisible,
-    setIsEdgeContextMenuVisible,
-    setIsTextContextMenuVisible,
-    ymapRef,
-}) => {
-    return ({ event, nodes, edges }) => {
-        event.preventDefault();
-        if (nodes.length > 0) {
-            const xPos = event.clientX;
-            const yPos = event.clientY;
-            const selectedNodeId = nodes[0];
-            const selectedNodeShape = JSON.parse(
-                ymapRef.current.get(`Node ${selectedNodeId}`)
-            ).shape;
-            if (selectedNodeShape === "text") {
-                setContextMenuPos({ xPos, yPos, selectedNodeId });
-                setIsTextContextMenuVisible(true);
-            } else {
-                setContextMenuPos({ xPos, yPos, selectedNodeId });
-                setIsNodeContextMenuVisible(true);
-            }
-        } else if (nodes.length === 0 && edges.length > 0) {
-            const xPos = event.clientX;
-            const yPos = event.clientY;
-            const selectedEdge = edges;
-            setContextMenuPos({ xPos, yPos, selectedEdge });
-            setIsEdgeContextMenuVisible(true);
-        }
-    };
-};
-
 export const makeHandleMemoChange = (ymapRef, setMemo) => (event) => {
     const newMemo = event.target.value;
     ymapRef.current.set("Memo", newMemo);
