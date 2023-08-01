@@ -1077,7 +1077,6 @@ const MindMap = ({
                         }}
                     >
                         <NodeContextMenu
-                            selectedNodeId={contextMenuPos.selectedNodeId}
                             selectedNode={selectedNode}
                             onClose={closeNodeContextMenu}
                             deleteNode={deleteNodes}
@@ -1116,7 +1115,7 @@ const MindMap = ({
                         }}
                     >
                         <TextContextMenu
-                            selectedText={contextMenuPos.selectedNodeId}
+                            selectedText={selectedNode}
                             onClose={closeTextContextMenu}
                             deleteNode={deleteNodes}
                         />
