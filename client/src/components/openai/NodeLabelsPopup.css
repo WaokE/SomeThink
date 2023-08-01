@@ -26,21 +26,10 @@
     font-weight: 500;
 }
 
-.transparent-layer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); 
-    z-index: 999; 
-}
-
-.Button-container {
+.create-button {
+    margin-top: 20px;
+    display: block;
     margin-left: auto;
-    border-radius: 100px;
+    border-radius: 20px;
     padding: 8px 16px;
-    display: flex;
-    justify-content: right; 
-    margin-top: 20px; 
-  }
+}
