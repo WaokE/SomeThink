@@ -1133,6 +1133,16 @@ const MindMap = ({
                 setIsMarkdownVisible={setIsMarkdownVisible}
                 selectedNode={selectedNode}
                 onExportClick={handleExportClick}
+                setAlertMessage={setAlertMessage}
+                setIsAlertMessageVisible={setIsAlertMessageVisible}
+                userActionStack={userActionStack}
+                setUserActionStack={setUserActionStack}
+                userActionStackPointer={userActionStackPointer}
+                setUserActionStackPointer={setUserActionStackPointer}
+                setMindMap={setMindMap}
+                setMemo={setMemo}
+                setMouseCoordinates={setMouseCoordinates}
+                ymapRef={ymapRef}
             />
             <GraphToMarkdown
                 style={{ height: isMemoVisible ? "calc(80% - 23%)" : "80%" }}
