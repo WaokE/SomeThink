@@ -57,6 +57,9 @@ export const handleDoubleClick = (
     }
 };
 
+let dragStartOffsetX = 0;
+let dragStartOffsetY = 0;
+
 export const handleNodeDragStart = (
     event,
     ymapRef,
@@ -67,6 +70,11 @@ export const handleNodeDragStart = (
     if (event.nodes.length === 0 || event.nodes[0] === 1) return;
     // 드래그한 노드의 이전 좌표를 저장
     const node = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
+
+    const { x: mouseX, y: mouseY } = event.pointer.canvas;
+    dragStartOffsetX = mouseX - node.x;
+    dragStartOffsetY = mouseY - node.y;
+
     setUserActionStack((prev) => {
         // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
         if (prev.length >= MAX_STACK_LENGTH) {
@@ -103,16 +111,21 @@ export const handleNodeDragEnd = (event, ymapRef, setSelectedNode, setUserAction
         return;
     }
     const nodeId = nodes[0];
-    const { x, y } = pointer.canvas;
+    const { x: mouseX, y: mouseY } = pointer.canvas;
+    const newX = mouseX - dragStartOffsetX;
+    const newY = mouseY - dragStartOffsetY;
 
     const movedNode = ymapRef.current.get(`Node ${nodeId}`);
-    ymapRef.current.set(`Node ${nodeId}`, JSON.stringify({ ...JSON.parse(movedNode), x: x, y: y }));
+    ymapRef.current.set(
+        `Node ${nodeId}`,
+        JSON.stringify({ ...JSON.parse(movedNode), x: newX, y: newY })
+    );
 
     setUserActionStack((prev) => {
         // 드래그가 완료된 좌표를 스택에 추가 저장
         let lastAction = prev[prev.length - 1];
         let prevArray = [...prev];
-        prevArray[prev.length - 1] = { ...lastAction, newX: x, newY: y };
+        prevArray[prev.length - 1] = { ...lastAction, newX: newY, newY: newY };
 
         return prevArray;
     });
@@ -137,10 +150,15 @@ export const handleNodeDragging = (event, ymapRef, userName) => {
         return;
     }
     const nodeId = nodes[0];
-    const { x, y } = pointer.canvas;
+    const { x: mouseX, y: mouseY } = pointer.canvas;
+    const newX = mouseX - dragStartOffsetX;
+    const newY = mouseY - dragStartOffsetY;
 
     const movedNode = ymapRef.current.get(`Node ${nodeId}`);
-    ymapRef.current.set(`Node ${nodeId}`, JSON.stringify({ ...JSON.parse(movedNode), x: x, y: y }));
+    ymapRef.current.set(
+        `Node ${nodeId}`,
+        JSON.stringify({ ...JSON.parse(movedNode), x: newX, y: newY })
+    );
 
     checkPrevSelected(userName, ymapRef);
     let selectedNode = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
