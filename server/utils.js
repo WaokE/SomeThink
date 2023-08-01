@@ -98,7 +98,7 @@ const generateClientId = (length) => {
 /* search the room */
 
 const searchrooms = (rooms, docName, clientid) => {
-    const room = rooms.filter((room) => (room.roomName === docName && room.clientid === clientid));
+    const room = rooms.filter((room) => room.roomName === docName && room.clientid === clientid);
     return room;
 };
 /* delete room */
@@ -107,7 +107,7 @@ const deleteroom = (room) => {
     const index = rooms.indexOf(room[0]);
     rooms.splice(index, 1);
     return rooms;
-}
+};
 /* count room */
 
 const countrooms = (rooms, docName) => {
@@ -326,12 +326,28 @@ exports.setupWSConnection = (
         console.log(`disconnected ${conn.clientId}`);
         const result = searchrooms(rooms, docName, conn.clientId);
         deleteroom(result);
-        if(countrooms(rooms, docName) === 0){
-            console.log("delete all");
-        }
         closeConn(doc, conn);
-        // clear
         clearInterval(pingInterval);
+        if (countrooms(rooms, docName) === 0 && doc.awareness) {
+            console.log("delete all");
+            // console.log(doc.share.get("MindMap")._map);
+            // const ln = Array.from(doc.awareness.meta)[0].length;
+            // let metaArr = new Array(ln);
+            // for (let i = 0; i < ln; i++) {
+            //     metaArr[i] = Array.from(doc.awareness.meta)[i][0];
+            // }
+            // // 딱히 타격없음 ....
+            // awarenessProtocol.removeAwarenessStates(doc.awareness, metaArr, null);
+            // console.log(doc.awareness);
+            // // 할당
+            // // doc.awareness = new awarenessProtocol.Awareness(doc);
+            doc.share.get("MindMap")._map.forEach((value, key) => {
+                doc.share.get("MindMap")._map.delete(key);
+            });
+            // 나머지 데이터 삭제
+            doc.awareness.meta.clear();
+            doc.store.clients.clear();
+        }
     });
     conn.on("pong", () => {
         pongReceived = true;
