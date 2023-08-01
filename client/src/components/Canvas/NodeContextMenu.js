@@ -19,6 +19,7 @@ const NodeContextMenu = ({
     };
 
     const handleairecommend = () => {
+        handleNodeSelect({ nodes: [selectedNode] });
         onClose();
     };
 

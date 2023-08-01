@@ -234,13 +234,35 @@ const MindMap = ({
         [contextMenuRef, setIsNodeContextMenuVisible]
     );
 
-    const openNodeContextMenu = handleNodeContextMenu({
-        setContextMenuPos,
-        setIsNodeContextMenuVisible,
-        setIsEdgeContextMenuVisible,
-        setIsTextContextMenuVisible,
-        ymapRef,
-    });
+    const openNodeContextMenu = (event) => {
+        const VisEvent = event;
+        const DOMEvent = event.event;
+        const selectedNode = networkRef.current.getNodeAt(VisEvent.pointer.DOM);
+        const selectedEdge = networkRef.current.getEdgeAt(VisEvent.pointer.DOM);
+        DOMEvent.preventDefault();
+
+        if (selectedNode !== undefined) {
+            networkRef.current.selectNodes([selectedNode]);
+            const xPos = DOMEvent.clientX;
+            const yPos = DOMEvent.clientY;
+            const selectedNodeShape = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`)).shape;
+            if (selectedNodeShape === "text") {
+                setContextMenuPos({ xPos, yPos });
+                setSelectedNode(selectedNode);
+                setIsTextContextMenuVisible(true);
+            } else {
+                setContextMenuPos({ xPos, yPos });
+                setSelectedNode(selectedNode);
+                setIsNodeContextMenuVisible(true);
+            }
+        } else if (selectedNode === undefined && selectedEdge !== undefined) {
+            const xPos = DOMEvent.clientX;
+            const yPos = DOMEvent.clientY;
+            setContextMenuPos({ xPos, yPos });
+            setSelectedEdge(selectedEdge);
+            setIsEdgeContextMenuVisible(true);
+        }
+    };
 
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [windowHeight, setWindowHeight] = useState(window.innerHeight);
@@ -645,8 +667,11 @@ const MindMap = ({
         });
     };
 
-    const deleteEdge = (selectedEdge) => {
-        selectedEdge.forEach((edge) => {
+    const deleteEdge = () => {
+        const selectedEdgeArray = [selectedEdge];
+        selectedEdgeArray.forEach((edge) => {
+            console.log(edge);
+            console.log(typeof edge);
             const splitedEdge = edge.split(" ");
             const from = splitedEdge[0];
             const to = splitedEdge[2];
