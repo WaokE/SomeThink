@@ -62,8 +62,6 @@ function TopBar({
     useEffect(() => {
         if (userList.length >= prevUserListLength) {
             if (!isLoading && userList.length === 1) {
-                console.log(userList.length, prevUserListLength);
-                const currentUserData = userList;
                 ymapRef.current.clear();
                 ymapRef.current.set(
                     `Node 1`,
@@ -78,10 +76,7 @@ function TopBar({
                     })
                 );
                 ymapRef.current.set("RootQuadrant", 0);
-                currentUserData.forEach((user) => {
-                    console.log(user);
-                    ymapRef.current.set(user, true);
-                });
+                ymapRef.current.set(userName, true);
             }
         }
         if (userList.length > prevUserListLength) {
