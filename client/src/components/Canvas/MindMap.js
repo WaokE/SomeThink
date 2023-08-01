@@ -239,30 +239,64 @@ const MindMap = ({
     const openNodeContextMenu = (event) => {
         const VisEvent = event;
         const DOMEvent = event.event;
+        const tempUserId = userName;
+        const indexOfUser = getUserListFromYMap().indexOf(tempUserId);
         const selectedNode = networkRef.current.getNodeAt(VisEvent.pointer.DOM);
         const selectedEdge = networkRef.current.getEdgeAt(VisEvent.pointer.DOM);
         DOMEvent.preventDefault();
 
+        // 노드 위에서 우클릭 시
         if (selectedNode !== undefined) {
             networkRef.current.selectNodes([selectedNode]);
             const xPos = DOMEvent.clientX;
             const yPos = DOMEvent.clientY;
-            const selectedNodeShape = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`)).shape;
+            const selectedNodeObject = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
+            const selectedNodeShape = selectedNodeObject.shape;
             if (selectedNodeShape === "text") {
                 setContextMenuPos({ xPos, yPos });
                 setSelectedNode(selectedNode);
                 setIsTextContextMenuVisible(true);
+                closeNodeContextMenu();
+                closeEdgeContextMenu();
             } else {
                 setContextMenuPos({ xPos, yPos });
                 setSelectedNode(selectedNode);
                 setIsNodeContextMenuVisible(true);
+                closeEdgeContextMenu();
+                closeTextContextMenu();
             }
-        } else if (selectedNode === undefined && selectedEdge !== undefined) {
+            checkPrevSelected(tempUserId);
+            ymapRef.current.set(`User ${tempUserId} selected`, `Node ${selectedNode}`);
+            selectedNodeObject.borderWidth = 2;
+
+            if (selectedNode === 1) {
+                selectedNodeObject.color = {
+                    border: colors[indexOfUser],
+                };
+            } else {
+                selectedNodeObject.color = {
+                    border: colors[indexOfUser],
+                    background: "#FBD85D",
+                };
+            }
+            selectedNodeObject.owner = tempUserId;
+            ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
+        }
+        // 엣지 위에서 우클릭 시
+        else if (selectedNode === undefined && selectedEdge !== undefined) {
             const xPos = DOMEvent.clientX;
             const yPos = DOMEvent.clientY;
             setContextMenuPos({ xPos, yPos });
             setSelectedEdge(selectedEdge);
             setIsEdgeContextMenuVisible(true);
+            closeNodeContextMenu();
+            closeTextContextMenu();
+            setSelectedNode(null);
+            checkPrevSelected(tempUserId);
+        } else {
+            setSelectedNode(null);
+            setSelectedEdge(null);
+            checkPrevSelected(tempUserId);
         }
     };
 
