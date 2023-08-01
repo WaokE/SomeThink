@@ -256,10 +256,14 @@ const MindMap = ({
                 setContextMenuPos({ xPos, yPos });
                 setSelectedNode(selectedNode);
                 setIsTextContextMenuVisible(true);
+                closeNodeContextMenu();
+                closeEdgeContextMenu();
             } else {
                 setContextMenuPos({ xPos, yPos });
                 setSelectedNode(selectedNode);
                 setIsNodeContextMenuVisible(true);
+                closeEdgeContextMenu();
+                closeTextContextMenu();
             }
             checkPrevSelected(tempUserId);
             ymapRef.current.set(`User ${tempUserId} selected`, `Node ${selectedNode}`);
@@ -285,6 +289,8 @@ const MindMap = ({
             setContextMenuPos({ xPos, yPos });
             setSelectedEdge(selectedEdge);
             setIsEdgeContextMenuVisible(true);
+            closeNodeContextMenu();
+            closeTextContextMenu();
             setSelectedNode(null);
             checkPrevSelected(tempUserId);
         } else {
