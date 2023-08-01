@@ -236,35 +236,13 @@ const MindMap = ({
         [contextMenuRef, setIsNodeContextMenuVisible]
     );
 
-    const openNodeContextMenu = (event) => {
-        const VisEvent = event;
-        const DOMEvent = event.event;
-        const selectedNode = networkRef.current.getNodeAt(VisEvent.pointer.DOM);
-        const selectedEdge = networkRef.current.getEdgeAt(VisEvent.pointer.DOM);
-        DOMEvent.preventDefault();
-
-        if (selectedNode !== undefined) {
-            networkRef.current.selectNodes([selectedNode]);
-            const xPos = DOMEvent.clientX;
-            const yPos = DOMEvent.clientY;
-            const selectedNodeShape = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`)).shape;
-            if (selectedNodeShape === "text") {
-                setContextMenuPos({ xPos, yPos });
-                setSelectedNode(selectedNode);
-                setIsTextContextMenuVisible(true);
-            } else {
-                setContextMenuPos({ xPos, yPos });
-                setSelectedNode(selectedNode);
-                setIsNodeContextMenuVisible(true);
-            }
-        } else if (selectedNode === undefined && selectedEdge !== undefined) {
-            const xPos = DOMEvent.clientX;
-            const yPos = DOMEvent.clientY;
-            setContextMenuPos({ xPos, yPos });
-            setSelectedEdge(selectedEdge);
-            setIsEdgeContextMenuVisible(true);
-        }
-    };
+    const openNodeContextMenu = handleNodeContextMenu({
+        setContextMenuPos,
+        setIsNodeContextMenuVisible,
+        setIsEdgeContextMenuVisible,
+        setIsTextContextMenuVisible,
+        ymapRef,
+    });
 
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [windowHeight, setWindowHeight] = useState(window.innerHeight);
@@ -478,14 +456,10 @@ const MindMap = ({
             selectedNode.owner = tempUserId;
             ymapRef.current.set(`Node ${event.nodes[0]}`, JSON.stringify(selectedNode));
         }
-        // 엣지 선택시
-        else if (event.edges.length > 0) {
-            setSelectedEdge(event.edges[0]);
-        }
         // 선택 해제시
         else {
             setSelectedNode(null);
-            checkPrevSelected(event.edges[0]);
+            checkPrevSelected(tempUserId);
         }
     };
 
@@ -515,7 +489,7 @@ const MindMap = ({
             if (selectedNode) {
                 deleteNodes(selectedNode);
             } else if (selectedEdge) {
-                deleteEdge();
+                deleteEdge([`${selectedEdge}`]);
             }
         }
         if (
@@ -673,11 +647,8 @@ const MindMap = ({
         });
     };
 
-    const deleteEdge = () => {
-        const selectedEdgeArray = [selectedEdge];
-        selectedEdgeArray.forEach((edge) => {
-            console.log(edge);
-            console.log(typeof edge);
+    const deleteEdge = (selectedEdge) => {
+        selectedEdge.forEach((edge) => {
             const splitedEdge = edge.split(" ");
             const from = splitedEdge[0];
             const to = splitedEdge[2];
@@ -1120,6 +1091,7 @@ const MindMap = ({
                         }}
                     >
                         <NodeContextMenu
+                            selectedNodeId={contextMenuPos.selectedNodeId}
                             selectedNode={selectedNode}
                             onClose={closeNodeContextMenu}
                             deleteNode={deleteNodes}
@@ -1158,7 +1130,7 @@ const MindMap = ({
                         }}
                     >
                         <TextContextMenu
-                            selectedText={selectedNode}
+                            selectedText={contextMenuPos.selectedNodeId}
                             onClose={closeTextContextMenu}
                             deleteNode={deleteNodes}
                         />

@@ -82,6 +82,7 @@ export default function LowToolBar(props) {
     const openMarkdown = () => {
         if (!props.isMarkdownVisible) props.setIsMarkdownVisible(true);
         else props.setIsMarkdownVisible(false);
+        console.log("openMarkdown", props.isMarkdownVisible);
     };
 
     const undoAction = () => {
@@ -113,7 +114,7 @@ export default function LowToolBar(props) {
 
     const actions = [
         { icon: <CameraAltIcon />, name: "Capture Canvas", onclick: hendleExportClick },
-        { icon: <SaveIcon />, name: "Save Graph Snapshot", onclick: makeMarkdown },
+        { icon: <SaveIcon />, name: "Save Markdown", onclick: makeMarkdown },
         { icon: <FormatListBulletedSharpIcon />, name: "Open Markdown", onclick: openMarkdown },
     ];
 
