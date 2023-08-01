@@ -41,12 +41,13 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
     useEffect(() => {
         ydocRef.current = new Y.Doc();
         const provider = new WebsocketProvider(
-            "wss://somethink.online/timer",
+            // "wss://somethink.online/timer",
+            "ws://localhost:2345",
             sessionId,
             ydocRef.current
         );
 
-        ymapRef.current = ydocRef.current.getMap("MindMap");
+        ymapRef.current = ydocRef.current.getMap("TimerData");
 
         ymapRef.current.observe((event) => {
             let newStartTime, newDuration, newIsTimerRunning;
@@ -104,55 +105,74 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
         handleDurationChange(remainingTime);
     };
 
+    const handleReset = () => {
+        setIsTimerRunning(false);
+        ymapRef.current.set("TimerRunning", false);
+        handleDurationChange(0);
+    };
+
     const remainingMinutes = Math.floor(remainingTime / (60 * 1000)) || 0;
     const remainingSeconds = Math.ceil((remainingTime / 1000) % 60) || 0;
 
     return (
         <div className={`timer ${isTimerRunning && remainingTime <= 10000 ? "red" : ""}`}>
-            {!isTimerRunning && (
-                <div>
-                    <input
-                        className="timer-input"
-                        type="number"
-                        min="0"
-                        max="59"
-                        value={remainingMinutes}
-                        onChange={(e) =>
-                            handleDurationChange(
-                                e.target.value * 60 * 1000 + remainingSeconds * 1000
-                            )
-                        }
-                    />
-                    <span> : </span>
-                    <input
-                        className="timer-input"
-                        type="number"
-                        min="0"
-                        max="59"
-                        value={remainingSeconds}
-                        onChange={(e) =>
-                            handleDurationChange(
-                                remainingMinutes * 60 * 1000 + e.target.value * 1000
-                            )
-                        }
-                    />
-                </div>
-            )}
-            {isTimerRunning && (
-                <div>
-                    <span>{remainingSeconds === 60 ? remainingMinutes + 1 : remainingMinutes}</span>
-                    <span> : </span>
-                    <span>
-                        {remainingSeconds === 60
-                            ? "00"
-                            : remainingSeconds < 10
-                            ? "0" + remainingSeconds
-                            : remainingSeconds}
-                    </span>
-                </div>
-            )}
-            {!isTimerRunning && <button onClick={handleStart}>시작</button>}
-            {isTimerRunning && <button onClick={handleStop}>중지</button>}
+            <div className="timer-controls">
+                {!isTimerRunning && (
+                    <div>
+                        <input
+                            className="timer-input"
+                            type="number"
+                            min="0"
+                            max="99"
+                            value={
+                                remainingMinutes < 10 ? "0" + remainingMinutes : remainingMinutes
+                            }
+                            onChange={(e) =>
+                                handleDurationChange(
+                                    e.target.value * 60 * 1000 + remainingSeconds * 1000
+                                )
+                            }
+                        />
+                        <span> : </span>
+                        <input
+                            className="timer-input"
+                            type="number"
+                            min="0"
+                            max="59"
+                            value={
+                                remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds
+                            }
+                            onChange={(e) =>
+                                handleDurationChange(
+                                    remainingMinutes * 60 * 1000 + e.target.value * 1000
+                                )
+                            }
+                        />
+                    </div>
+                )}
+                {isTimerRunning && (
+                    <div>
+                        <span>
+                            {remainingSeconds === 60 ? 1 + remainingMinutes : remainingMinutes}
+                        </span>
+                        <span> : </span>
+                        <span>
+                            {remainingSeconds === 60
+                                ? "00"
+                                : remainingSeconds < 10
+                                ? "0" + remainingSeconds
+                                : remainingSeconds}
+                        </span>
+                    </div>
+                )}
+            </div>
+            <div className="buttons">
+                <button onClick={handleReset} style={{ marginRight: "10px" }}>
+                    초기화
+                </button>
+                {!isTimerRunning && <button onClick={handleStart}>시작</button>}
+                {isTimerRunning && <button onClick={handleStop}>멈춤</button>}
+            </div>
         </div>
     );
 };
