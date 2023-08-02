@@ -840,6 +840,8 @@ const MindMap = ({
 
     const handleCreateImage = (url, searchWord) => {
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
+        const proxyUrl = "https://cors-anywhere.herokuapp.com/" + url;
+
         const image = new Image();
         image.crossOrigin = "Anonymous";
         image.onload = function () {
@@ -863,7 +865,9 @@ const MindMap = ({
 
             ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
         };
-        image.src = url;
+
+        // 이미지를 프록시를 통해 가져옴
+        image.src = proxyUrl;
     };
 
     const closeNodeContextMenu = () => {
