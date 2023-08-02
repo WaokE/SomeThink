@@ -301,7 +301,7 @@ exports.setupWSConnection = (
     const clientId = generateClientId(8);
     conn.clientId = clientId;
     rooms.push({ clientid: clientId, roomName: docName });
-    console.log(`Client ${conn.clientId} connected to room ${docName}`);
+    // console.log(`Client ${conn.clientId} connected to room ${docName}`);
 
     // Check if connection is still alive
     let pongReceived = true;
@@ -330,21 +330,9 @@ exports.setupWSConnection = (
         clearInterval(pingInterval);
         if (countrooms(rooms, docName) === 0 && doc.awareness) {
             console.log("delete all");
-            // console.log(doc.share.get("MindMap")._map);
-            // const ln = Array.from(doc.awareness.meta)[0].length;
-            // let metaArr = new Array(ln);
-            // for (let i = 0; i < ln; i++) {
-            //     metaArr[i] = Array.from(doc.awareness.meta)[i][0];
-            // }
-            // // 딱히 타격없음 ....
-            // awarenessProtocol.removeAwarenessStates(doc.awareness, metaArr, null);
-            // console.log(doc.awareness);
-            // // 할당
-            // // doc.awareness = new awarenessProtocol.Awareness(doc);
             doc.share.get("MindMap")._map.forEach((value, key) => {
                 doc.share.get("MindMap")._map.delete(key);
             });
-            // 나머지 데이터 삭제
             doc.awareness.meta.clear();
             doc.store.clients.clear();
         }
