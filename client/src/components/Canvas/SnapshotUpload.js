@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 
-function FileUploader({ onUploadDone }) {
+function FileUploader({ onUploadDone, onUploadCancelled }) {
     const inputRef = useRef();
 
     useEffect(() => {
@@ -9,7 +9,10 @@ function FileUploader({ onUploadDone }) {
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
-        if (!file) return;
+        if (!file) {
+            onUploadCancelled();
+            return;
+        }
         const reader = new FileReader();
 
         reader.onload = (e) => {
@@ -18,7 +21,6 @@ function FileUploader({ onUploadDone }) {
         };
 
         reader.readAsText(file);
-        event.target.value = null; // 입력값 초기화
     };
 
     return (
