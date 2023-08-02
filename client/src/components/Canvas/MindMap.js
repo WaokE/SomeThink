@@ -1063,7 +1063,34 @@ const MindMap = ({
 
     const handleExportClick = () => {
         if (captureRef.current) {
-            html2canvas(captureRef.current).then((canvas) => {
+            html2canvas(captureRef.current, {
+                onclone: (clonedDocument) => {
+                    Array.from(clonedDocument.querySelectorAll("textarea")).forEach((textArea) => {
+                        if (!textArea.value) return;
+
+                        const div = clonedDocument.createElement("div");
+                        div.innerText = textArea.value;
+                        div.style.position = "fixed";
+                        div.style.top = "10vh";
+                        div.style.right = "2vh";
+                        div.style.width = "250px";
+                        div.style.height = "15%";
+                        div.style.backgroundColor = "#fbeeac";
+                        div.style.border = "2px solid #e8c55b";
+                        div.style.borderRadius = "5px";
+                        div.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)";
+                        div.style.padding = "15px";
+                        div.style.fontFamily = '"Noto Sans KR", sans-serif';
+                        div.style.fontSize = "16px";
+                        div.style.lineHeight = "1.6";
+                        div.style.color = "#333";
+                        div.style.zIndex = "1";
+                        div.style.overflow = "hidden";
+                        div.style.whiteSpace = "pre-wrap";
+                        textArea.parentElement.replaceChild(div, textArea);
+                    });
+                },
+            }).then((canvas) => {
                 canvas.toBlob((blob) => {
                     fileDownload(blob, `${sessionId}.png`);
                 });
