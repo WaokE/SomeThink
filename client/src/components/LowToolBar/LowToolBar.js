@@ -114,9 +114,17 @@ export default function LowToolBar(props) {
     };
 
     const [isUploading, setIsUploading] = useState(false);
+    let timerId = null;
 
     const handleUploadSnapshotClick = () => {
-        setIsUploading(true);
+        setIsUploading(false);
+        setTimeout(() => setIsUploading(true), 0);
+
+        timerId = setTimeout(() => {
+            if (isUploading) {
+                setIsUploading(false);
+            }
+        }, 50);
     };
 
     const uploadNdoes = (content) => {
@@ -193,11 +201,16 @@ export default function LowToolBar(props) {
         setIsUploading(false);
     };
 
+    const handleUploadCancelled = () => {
+        console.log("upload cancelled");
+        setIsUploading(false);
+    };
+
     const actions = [
         { icon: <CameraAltIcon />, name: "화면 캡처", onclick: hendleExportClick },
         { icon: <SaveIcon />, name: "마인드맵 저장", onclick: makeMarkdown },
-        { icon: <FormatListBulletedSharpIcon />, name: "마크다운 열기", onclick: openMarkdown },
         { icon: <Upload />, name: "마인드맵 불러오기", onclick: handleUploadSnapshotClick },
+        { icon: <FormatListBulletedSharpIcon />, name: "마크다운 열기", onclick: openMarkdown },
     ];
 
     return (
@@ -290,7 +303,13 @@ export default function LowToolBar(props) {
                     />
                 ))}
             </SpeedDial>
-            {isUploading && <FileUploader onUploadDone={handleUploadDone} />}
+            {isUploading && (
+                <FileUploader
+                    onUploadDone={handleUploadDone}
+                    onUploadCancelled={handleUploadCancelled}
+                    timerId={timerId}
+                />
+            )}
         </div>
     );
 }
