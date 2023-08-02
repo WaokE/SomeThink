@@ -8,6 +8,8 @@ const NodeContextMenu = ({
     setIsCreatingEdge,
     setFromNode,
     handleNodeSelect,
+    setInfoMessage,
+    setIsInfoMessageVisible,
 }) => {
     const handleDeleteNode = () => {
         deleteNode(selectedNode);
@@ -26,6 +28,8 @@ const NodeContextMenu = ({
     const handleAddEdge = () => {
         setIsCreatingEdge(true);
         setFromNode(selectedNode);
+        setInfoMessage("원하는 노드를 클릭하여 엣지를 연결하세요!");
+        setIsInfoMessageVisible(true);
         onClose();
     };
 

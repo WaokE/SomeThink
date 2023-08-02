@@ -1178,6 +1178,8 @@ const MindMap = ({
                             setIsCreatingEdge={setIsCreatingEdge}
                             setFromNode={setFromNode}
                             handleNodeSelect={handleNodeSelect}
+                            setInfoMessage={setInfoMessage}
+                            setIsInfoMessageVisible={setIsInfoMessageVisible}
                         />
                     </div>
                 )}
