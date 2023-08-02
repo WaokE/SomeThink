@@ -818,10 +818,16 @@ const MindMap = ({
             }
         };
 
-        const textField = CreateTextInput(``, createNodeCallback, () => {
-            setSelectedNode(null);
-            removeTextInput();
-        });
+        const textField = CreateTextInput(
+            ``,
+            createNodeCallback,
+            () => {
+                setSelectedNode(null);
+                removeTextInput();
+            },
+            selectedNode.x,
+            selectedNode.y
+        );
 
         textField.id = "createNodeTextField";
 

@@ -44,7 +44,9 @@ export const handleDoubleClick = (
                     },
                     () => {
                         document.body.removeChild(textField);
-                    }
+                    },
+                    node.x,
+                    node.y
                 );
 
                 document.body.appendChild(textField);
@@ -275,7 +277,7 @@ export const handleAddTextNode = (
             handleTextInputBlur(); // Call the handleTextInputBlur function when the text box is canceled
             document.body.removeChild(textField);
             document.removeEventListener("mousedown", handleOutside); // Remove the event listener when text creation is canceled
-        }
+        },pointer.canvas.x,pointer.canvas.y
     );
 
     const handleOutside = (e) => {
