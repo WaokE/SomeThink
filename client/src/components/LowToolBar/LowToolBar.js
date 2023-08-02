@@ -13,7 +13,6 @@ import UndoRoundedIcon from "@mui/icons-material/UndoRounded";
 import RedoRoundedIcon from "@mui/icons-material/RedoRounded";
 import Tooltip from "@mui/material/Tooltip";
 
-import Box from "@mui/material/Box";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
@@ -195,10 +194,10 @@ export default function LowToolBar(props) {
     };
 
     const actions = [
-        { icon: <CameraAltIcon />, name: "Capture Canvas", onclick: hendleExportClick },
-        { icon: <SaveIcon />, name: "Save Graph Snapshot", onclick: makeMarkdown },
-        { icon: <FormatListBulletedSharpIcon />, name: "Open Markdown", onclick: openMarkdown },
-        { icon: <Upload />, name: "Upload Snapshot", onclick: handleUploadSnapshotClick },
+        { icon: <CameraAltIcon />, name: "화면 캡처", onclick: hendleExportClick },
+        { icon: <SaveIcon />, name: "마인드맵 저장", onclick: makeMarkdown },
+        { icon: <FormatListBulletedSharpIcon />, name: "마크다운 열기", onclick: openMarkdown },
+        { icon: <Upload />, name: "마인드맵 불러오기", onclick: handleUploadSnapshotClick },
     ];
 
     return (
