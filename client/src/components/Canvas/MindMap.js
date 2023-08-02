@@ -76,6 +76,7 @@ const MindMap = ({
     const ydocRef = useRef(null);
     const ymapRef = useRef(null);
     const networkRef = useRef(null);
+    const mindMapRef = useRef(null);
 
     const [selectedImage, setSelectedImage] = useState(false);
 
@@ -806,6 +807,7 @@ const MindMap = ({
                         id: `${selectedNodeId} to ${nodeId}`,
                     })
                 );
+                mindMapRef.current.focus();
 
                 removeTextInput();
             }
@@ -1078,6 +1080,8 @@ const MindMap = ({
                 height: "100vh",
                 zIndex: 0,
             }}
+            tabIndex={0}
+            ref={mindMapRef}
         >
             <UserMouseMove
                 userMouseData={mouseCoordinates}
