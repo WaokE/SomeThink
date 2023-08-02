@@ -127,7 +127,7 @@ export default function LowToolBar(props) {
                 id: content.id,
                 label: content.label,
                 x: content.x,
-                y: content.x,
+                y: content.y,
                 shape: content.shape,
                 image: content.image,
                 size: content.size,
@@ -137,7 +137,7 @@ export default function LowToolBar(props) {
                 id: content.id,
                 label: content.label,
                 x: content.x,
-                y: content.x,
+                y: content.y,
                 shape: content.shape,
             };
         } else {
@@ -145,28 +145,35 @@ export default function LowToolBar(props) {
                 id: content.id,
                 label: content.label,
                 x: content.x,
-                y: content.x,
+                y: content.y,
                 color: "#FBD85D",
             };
         }
 
-        console.log("node : ", node);
         if (content.id === 1) {
-            console.log("root node");
-        } else {
-            props.ymapRef.current.set(`Node ${content.id}`, JSON.stringify(node));
-            console.log("node upload done");
+            node = {
+                id: content.id,
+                label: content.label,
+                x: content.x,
+                y: content.y,
+                color: "#f5b252",
+            };
         }
+        props.ymapRef.current.set(`Node ${content.id}`, JSON.stringify(node));
     };
 
     const uploadEdges = (content) => {
-        console.log("aaa");
+        props.ymapRef.current.set(
+            `Edge ${content.from} to ${content.to}`,
+            JSON.stringify({
+                from: content.from,
+                to: content.to,
+                id: `${content.from} to ${content.to}`,
+            })
+        );
     };
 
     const handleUploadDone = (content, ymapRef) => {
-        console.log(content);
-        // uploadNdoes(content);
-
         const dataArray = content.split("\n");
         let isNodeUploading = true;
 

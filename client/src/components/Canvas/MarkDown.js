@@ -132,7 +132,7 @@ const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef })
             x: node.x,
             y: node.y,
             shape: node.shape,
-            URL: node.URL,
+            image: node.image,
             size: node.size,
         };
         snapShotForFile.push(nodeInfo);
