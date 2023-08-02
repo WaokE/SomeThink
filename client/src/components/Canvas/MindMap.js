@@ -852,14 +852,17 @@ const MindMap = ({
             const ctx = canvas.getContext("2d");
             ctx.drawImage(image, 0, 0);
             const dataURL = canvas.toDataURL();
-
+            const coord = networkRef.current.DOMtoCanvas({
+                x: window.innerWidth / 2,
+                y: window.innerHeight / 2,
+            });
             const newNode = {
                 id: nodeId,
                 label: searchWord,
                 shape: "image",
                 image: dataURL,
-                x: 0,
-                y: 0,
+                x: coord.x,
+                y: coord.y,
                 physics: false,
                 size: 20,
             };
