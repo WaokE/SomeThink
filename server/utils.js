@@ -289,7 +289,6 @@ exports.ServersetupWSConnection = (
     conn.binaryType = "arraybuffer";
     // get doc, initialize if it does not exist yet
     const doc = getYDoc(docName, gc);
-    console.log(doc);
     doc.conns.set(conn, new Set());
     // listen and reply to events
     conn.on(
@@ -301,7 +300,7 @@ exports.ServersetupWSConnection = (
     const clientId = generateClientId(8);
     conn.clientId = clientId;
     rooms.push({ clientid: clientId, roomName: docName });
-    // console.log(`Client ${conn.clientId} connected to room ${docName}`);
+    console.log(`Client ${conn.clientId} connected to room ${docName}`);
 
     // Check if connection is still alive
     let pongReceived = true;
