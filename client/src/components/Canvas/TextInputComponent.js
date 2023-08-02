@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import "./TextInputComponent.css";
 
-const TextInputComponent = ({ initialValue, onEnter, onCancel, x, y }) => {
+const TextInputComponent = ({ initialValue, onEnter, onCancel, networkRef, x, y }) => {
     const textFieldRef = useRef(null);
 
     useEffect(() => {
@@ -35,9 +35,11 @@ const TextInputComponent = ({ initialValue, onEnter, onCancel, x, y }) => {
         textField.addEventListener("click", (e) => e.stopPropagation());
         document.addEventListener("mousedown", handleOutside);
 
+        const coord = networkRef.current.canvasToDOM({ x: x, y: y });
+
         textField.style.position = "absolute";
-        textField.style.left = x + "px";
-        textField.style.top = y + "px";
+        textField.style.left = coord.x + "px";
+        textField.style.top = coord.y + "px";
         textFieldRef.current.focus();
 
         return () => {
@@ -45,20 +47,17 @@ const TextInputComponent = ({ initialValue, onEnter, onCancel, x, y }) => {
         };
     }, [x, y, onEnter, onCancel]);
 
-    return (
-        <div className="text-input-container">
-            <input ref={textFieldRef} defaultValue={initialValue} className="text-input" />
-        </div>
-    );
+    return <input ref={textFieldRef} defaultValue={initialValue} className="text-input" />;
 };
 
-export const CreateTextInput = (initialValue, onEnter, onCancel, x, y) => {
+export const CreateTextInput = (initialValue, onEnter, onCancel, networkRef, x, y) => {
     const textFieldContainer = document.createElement("div");
     const textField = (
         <TextInputComponent
             initialValue={initialValue}
             onEnter={onEnter}
             onCancel={onCancel}
+            networkRef={networkRef}
             x={x}
             y={y}
         />

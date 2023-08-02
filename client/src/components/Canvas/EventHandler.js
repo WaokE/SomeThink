@@ -20,7 +20,8 @@ export const handleDoubleClick = (
     ymapRef,
     modifyNode,
     setAlertMessage,
-    setIsAlertMessageVisible
+    setIsAlertMessageVisible,
+    networkRef
 ) => {
     if (event.nodes.length > 0) {
         const selectedNodeId = event.nodes[0];
@@ -45,6 +46,7 @@ export const handleDoubleClick = (
                     () => {
                         document.body.removeChild(textField);
                     },
+                    networkRef,
                     node.x,
                     node.y
                 );
@@ -226,7 +228,8 @@ export const handleAddTextNode = (
     ymapRef,
     setSelectedNode,
     setSelectedEdge,
-    setIsCreatingText
+    setIsCreatingText,
+    networkRef
 ) => {
     if (event.nodes.length === 0) setSelectedNode(null);
     if (event.edges.length === 0) setSelectedEdge(null);
@@ -277,7 +280,10 @@ export const handleAddTextNode = (
             handleTextInputBlur(); // Call the handleTextInputBlur function when the text box is canceled
             document.body.removeChild(textField);
             document.removeEventListener("mousedown", handleOutside); // Remove the event listener when text creation is canceled
-        },pointer.canvas.x,pointer.canvas.y
+        },
+        networkRef,
+        pointer.canvas.x,
+        pointer.canvas.y
     );
 
     const handleOutside = (e) => {

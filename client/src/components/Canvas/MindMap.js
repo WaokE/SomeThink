@@ -825,6 +825,7 @@ const MindMap = ({
                 setSelectedNode(null);
                 removeTextInput();
             },
+            networkRef,
             selectedNode.x,
             selectedNode.y
         );
@@ -1132,7 +1133,8 @@ const MindMap = ({
                                 ymapRef,
                                 setSelectedNode,
                                 setSelectedEdge,
-                                setIsCreatingText
+                                setIsCreatingText,
+                                networkRef
                             );
                         },
                         select: handleUserSelect,
@@ -1143,7 +1145,8 @@ const MindMap = ({
                                 ymapRef,
                                 modifyNode,
                                 setAlertMessage,
-                                setIsAlertMessageVisible
+                                setIsAlertMessageVisible,
+                                networkRef
                             ),
                     }}
                     style={{ height: "100%", width: "100%" }}
