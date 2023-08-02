@@ -159,11 +159,16 @@ export default function LowToolBar(props) {
 
         if (content.id === 1) {
             node = {
-                id: content.id,
+                id: 1,
                 label: content.label,
-                x: content.x,
-                y: content.y,
+                x: 0,
+                y: 0,
+                physics: false,
+                fixed: true,
                 color: "#f5b252",
+                widthConstraint: { minimum: 100, maximum: 200 }, 
+                heightConstraint: { minimum: 100, maximum: 200 },
+                font: { size: 30 },
             };
         }
         props.ymapRef.current.set(`Node ${content.id}`, JSON.stringify(node));
