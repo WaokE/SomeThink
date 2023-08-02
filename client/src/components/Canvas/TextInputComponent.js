@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import "./TextInputComponent.css";
 
-const TextInputComponent = ({ initialValue, onEnter, onCancel }) => {
+const TextInputComponent = ({ initialValue, onEnter, onCancel, x, y }) => {
     const textFieldRef = useRef(null);
 
     useEffect(() => {
@@ -35,12 +35,15 @@ const TextInputComponent = ({ initialValue, onEnter, onCancel }) => {
         textField.addEventListener("click", (e) => e.stopPropagation());
         document.addEventListener("mousedown", handleOutside);
 
+        textField.style.position = "absolute";
+        textField.style.left = x + "px";
+        textField.style.top = y + "px";
         textFieldRef.current.focus();
 
         return () => {
             removeTextFieldEventListeners();
         };
-    }, [onEnter, onCancel]);
+    }, [x, y, onEnter, onCancel]);
 
     return (
         <div className="text-input-container">
@@ -49,10 +52,16 @@ const TextInputComponent = ({ initialValue, onEnter, onCancel }) => {
     );
 };
 
-export const CreateTextInput = (initialValue, onEnter, onCancel) => {
+export const CreateTextInput = (initialValue, onEnter, onCancel, x, y) => {
     const textFieldContainer = document.createElement("div");
     const textField = (
-        <TextInputComponent initialValue={initialValue} onEnter={onEnter} onCancel={onCancel} />
+        <TextInputComponent
+            initialValue={initialValue}
+            onEnter={onEnter}
+            onCancel={onCancel}
+            x={x}
+            y={y}
+        />
     );
 
     ReactDOM.render(textField, textFieldContainer);
