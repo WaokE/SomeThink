@@ -281,7 +281,7 @@ const pingTimeout = 30000;
  * @param {any} req
  * @param {any} opts
  */
-exports.setupWSConnection = (
+exports.ServersetupWSConnection = (
     conn,
     req,
     { docName = req.url.slice(1).split("?")[0], gc = true } = {}
@@ -301,7 +301,7 @@ exports.setupWSConnection = (
     const clientId = generateClientId(8);
     conn.clientId = clientId;
     rooms.push({ clientid: clientId, roomName: docName });
-    console.log(`Client ${conn.clientId} connected to room ${docName}`);
+    // console.log(`Client ${conn.clientId} connected to room ${docName}`);
 
     // Check if connection is still alive
     let pongReceived = true;
@@ -330,24 +330,81 @@ exports.setupWSConnection = (
         clearInterval(pingInterval);
         if (countrooms(rooms, docName) === 0 && doc.awareness) {
             console.log("delete all");
-            // console.log(doc.share.get("MindMap")._map);
-            // const ln = Array.from(doc.awareness.meta)[0].length;
-            // let metaArr = new Array(ln);
-            // for (let i = 0; i < ln; i++) {
-            //     metaArr[i] = Array.from(doc.awareness.meta)[i][0];
-            // }
-            // // 딱히 타격없음 ....
-            // awarenessProtocol.removeAwarenessStates(doc.awareness, metaArr, null);
-            // console.log(doc.awareness);
-            // // 할당
-            // // doc.awareness = new awarenessProtocol.Awareness(doc);
             doc.share.get("MindMap")._map.forEach((value, key) => {
                 doc.share.get("MindMap")._map.delete(key);
             });
-            // 나머지 데이터 삭제
             doc.awareness.meta.clear();
             doc.store.clients.clear();
         }
+    });
+    conn.on("pong", () => {
+        pongReceived = true;
+    });
+    // put the following in a variables in a block so the interval handlers don't keep in in
+    // scope
+    {
+        // send sync step 1
+        const encoder = encoding.createEncoder();
+        encoding.writeVarUint(encoder, messageSync);
+        syncProtocol.writeSyncStep1(encoder, doc);
+        send(doc, conn, encoding.toUint8Array(encoder));
+        const awarenessStates = doc.awareness.getStates();
+        if (awarenessStates.size > 0) {
+            const encoder = encoding.createEncoder();
+            encoding.writeVarUint(encoder, messageAwareness);
+            encoding.writeVarUint8Array(
+                encoder,
+                awarenessProtocol.encodeAwarenessUpdate(
+                    doc.awareness,
+                    Array.from(awarenessStates.keys())
+                )
+            );
+            send(doc, conn, encoding.toUint8Array(encoder));
+        }
+    }
+};
+/**
+ * @param {any} conn
+ * @param {any} req
+ * @param {any} opts
+ */
+exports.TimersetupWSConnection = (
+    conn,
+    req,
+    { docName = req.url.slice(1).split("?")[0], gc = true } = {}
+) => {
+    conn.binaryType = "arraybuffer";
+    // get doc, initialize if it does not exist yet
+    let doc = getYDoc(docName, gc);
+    doc.conns.set(conn, new Set());
+    // listen and reply to events
+    conn.on(
+        "message",
+        /** @param {ArrayBuffer} message */ (message) =>
+            messageListener(conn, doc, new Uint8Array(message))
+    );
+    // Check if connection is still alive
+    let pongReceived = true;
+
+    const pingInterval = setInterval(() => {
+        if (!pongReceived) {
+            if (doc.conns.has(conn)) {
+                closeConn(doc, conn);
+            }
+            clearInterval(pingInterval);
+        } else if (doc.conns.has(conn)) {
+            pongReceived = false;
+            try {
+                conn.ping();
+            } catch (e) {
+                closeConn(doc, conn);
+                clearInterval(pingInterval);
+            }
+        }
+    }, pingTimeout);
+    conn.on("close", () => {
+        closeConn(doc, conn);
+        clearInterval(pingInterval);
     });
     conn.on("pong", () => {
         pongReceived = true;

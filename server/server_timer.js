@@ -7,7 +7,7 @@
 const WebSocket = require("ws");
 const http = require("http");
 const wss = new WebSocket.Server({ noServer: true });
-const setupWSConnection = require("./utils.js").setupWSConnection;
+const setupWSConnection = require("./utils.js").TimersetupWSConnection;
 const host = process.env.TIMER_HOST || "localhost";
 const SYNCPORT = process.env.TIMER_PORT || 2345;
 const server = http.createServer((request, response) => {

@@ -13,7 +13,7 @@ const server = http.createServer((request, response) => {
     response.end("okay");
 });
 const wss = new WebSocket.Server({ noServer: true });
-const setupWSConnection = require("./utils.js").setupWSConnection;
+const setupWSConnection = require("./utils.js").ServersetupWSConnection;
 const host = process.env.HOST || "localhost";
 const SYNCPORT = process.env.PORT || 1234;
 
