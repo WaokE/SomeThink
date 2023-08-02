@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState, key, useEffect } from "react";
 import { handleUndo, handleRedo } from "../Canvas/EventHandler";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
@@ -20,6 +20,9 @@ import SpeedDialAction from "@mui/material/SpeedDialAction";
 import SaveIcon from "@mui/icons-material/Save";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import FormatListBulletedSharpIcon from "@mui/icons-material/FormatListBulletedSharp";
+import { Upload } from "@mui/icons-material";
+
+import FileUploader from "../Canvas/SnapshotUpload";
 
 const styles = {
     bottomNav: {
@@ -111,10 +114,91 @@ export default function LowToolBar(props) {
         );
     };
 
+    const [isUploading, setIsUploading] = useState(false);
+
+    const handleUploadSnapshotClick = () => {
+        setIsUploading(true);
+    };
+
+    const uploadNdoes = (content) => {
+        let node;
+        if (content.shape === "image") {
+            node = {
+                id: content.id,
+                label: content.label,
+                x: content.x,
+                y: content.y,
+                shape: content.shape,
+                image: content.image,
+                size: content.size,
+            };
+        } else if (content.shape === "text") {
+            node = {
+                id: content.id,
+                label: content.label,
+                x: content.x,
+                y: content.y,
+                shape: content.shape,
+            };
+        } else {
+            node = {
+                id: content.id,
+                label: content.label,
+                x: content.x,
+                y: content.y,
+                color: "#FBD85D",
+            };
+        }
+
+        if (content.id === 1) {
+            node = {
+                id: content.id,
+                label: content.label,
+                x: content.x,
+                y: content.y,
+                color: "#f5b252",
+            };
+        }
+        props.ymapRef.current.set(`Node ${content.id}`, JSON.stringify(node));
+    };
+
+    const uploadEdges = (content) => {
+        props.ymapRef.current.set(
+            `Edge ${content.from} to ${content.to}`,
+            JSON.stringify({
+                from: content.from,
+                to: content.to,
+                id: `${content.from} to ${content.to}`,
+            })
+        );
+    };
+
+    const handleUploadDone = (content, ymapRef) => {
+        const dataArray = content.split("\n");
+        let isNodeUploading = true;
+
+        dataArray.forEach((line) => {
+            if (line.includes('"nodes"')) {
+                isNodeUploading = true;
+            } else if (line.includes('"edges"')) {
+                isNodeUploading = false;
+            } else {
+                const data = JSON.parse(line);
+                if (isNodeUploading) {
+                    uploadNdoes(data);
+                } else {
+                    uploadEdges(data);
+                }
+            }
+        });
+        setIsUploading(false);
+    };
+
     const actions = [
         { icon: <CameraAltIcon />, name: "Capture Canvas", onclick: hendleExportClick },
         { icon: <SaveIcon />, name: "Save Graph Snapshot", onclick: makeMarkdown },
         { icon: <FormatListBulletedSharpIcon />, name: "Open Markdown", onclick: openMarkdown },
+        { icon: <Upload />, name: "Upload Snapshot", onclick: handleUploadSnapshotClick },
     ];
 
     return (
@@ -207,6 +291,7 @@ export default function LowToolBar(props) {
                     />
                 ))}
             </SpeedDial>
+            {isUploading && <FileUploader onUploadDone={handleUploadDone} />}
         </div>
     );
 }
