@@ -62,7 +62,6 @@ function TopBar({
     useEffect(() => {
         if (userList.length >= prevUserListLength) {
             if (!isLoading && userList.length === 1) {
-                ymapRef.current.clear();
                 ymapRef.current.set(
                     `Node 1`,
                     JSON.stringify({
@@ -73,6 +72,9 @@ function TopBar({
                         physics: false,
                         fixed: true,
                         color: "#f5b252",
+                        widthConstraint: { minimum: 100, maximum: 200 }, // 너비를 100으로 고정
+                        heightConstraint: { minimum: 100, maximum: 200 }, // 높이를 100으로 고정
+                        font: { size: 30 },
                     })
                 );
                 ymapRef.current.set("RootQuadrant", 0);
