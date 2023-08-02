@@ -281,7 +281,7 @@ const pingTimeout = 30000;
  * @param {any} req
  * @param {any} opts
  */
-exports.setupWSConnection = (
+exports.ServersetupWSConnection = (
     conn,
     req,
     { docName = req.url.slice(1).split("?")[0], gc = true } = {}
@@ -336,6 +336,75 @@ exports.setupWSConnection = (
             doc.awareness.meta.clear();
             doc.store.clients.clear();
         }
+    });
+    conn.on("pong", () => {
+        pongReceived = true;
+    });
+    // put the following in a variables in a block so the interval handlers don't keep in in
+    // scope
+    {
+        // send sync step 1
+        const encoder = encoding.createEncoder();
+        encoding.writeVarUint(encoder, messageSync);
+        syncProtocol.writeSyncStep1(encoder, doc);
+        send(doc, conn, encoding.toUint8Array(encoder));
+        const awarenessStates = doc.awareness.getStates();
+        if (awarenessStates.size > 0) {
+            const encoder = encoding.createEncoder();
+            encoding.writeVarUint(encoder, messageAwareness);
+            encoding.writeVarUint8Array(
+                encoder,
+                awarenessProtocol.encodeAwarenessUpdate(
+                    doc.awareness,
+                    Array.from(awarenessStates.keys())
+                )
+            );
+            send(doc, conn, encoding.toUint8Array(encoder));
+        }
+    }
+};
+/**
+ * @param {any} conn
+ * @param {any} req
+ * @param {any} opts
+ */
+exports.TimersetupWSConnection = (
+    conn,
+    req,
+    { docName = req.url.slice(1).split("?")[0], gc = true } = {}
+) => {
+    conn.binaryType = "arraybuffer";
+    // get doc, initialize if it does not exist yet
+    let doc = getYDoc(docName, gc);
+    doc.conns.set(conn, new Set());
+    // listen and reply to events
+    conn.on(
+        "message",
+        /** @param {ArrayBuffer} message */ (message) =>
+            messageListener(conn, doc, new Uint8Array(message))
+    );
+    // Check if connection is still alive
+    let pongReceived = true;
+
+    const pingInterval = setInterval(() => {
+        if (!pongReceived) {
+            if (doc.conns.has(conn)) {
+                closeConn(doc, conn);
+            }
+            clearInterval(pingInterval);
+        } else if (doc.conns.has(conn)) {
+            pongReceived = false;
+            try {
+                conn.ping();
+            } catch (e) {
+                closeConn(doc, conn);
+                clearInterval(pingInterval);
+            }
+        }
+    }, pingTimeout);
+    conn.on("close", () => {
+        closeConn(doc, conn);
+        clearInterval(pingInterval);
     });
     conn.on("pong", () => {
         pongReceived = true;
