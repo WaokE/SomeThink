@@ -159,14 +159,14 @@ const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef })
             makeEdgeSnapshot(edge, snapshotForFile);
         });
 
-        const snapshotString = snapshotForFile
+        const snapshotString = snapshotForFile //TODO: change this to Mindmap snap shot
             .map((object) => (object ? JSON.stringify(object) : ""))
             .join("\n");
 
         const element = document.createElement("a");
         const file = new Blob([snapshotString], { type: "text/plain" });
         element.href = URL.createObjectURL(file);
-        element.download = `${nodes[0].label}_snapshot.txt`;
+        element.download = `${nodes[0].label}_snapshot.md`;
         document.body.appendChild(element);
         element.click();
     };
