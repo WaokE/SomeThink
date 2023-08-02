@@ -41,7 +41,6 @@ import Timer from "./Timer";
 import AlertToast from "../ToastMessage/Alert";
 import InformationToast from "../ToastMessage/Information";
 import GraphToMarkdown from "./MarkDown";
-import { SnackbarProvider, useSnackbar } from "notistack";
 
 import "./MindMap.css";
 
@@ -1284,18 +1283,16 @@ const MindMap = ({
                 isImageSearchVisible={isImageSearchVisible}
                 setIsImageSearchVisible={setIsImageSearchVisible}
             />
-            <SnackbarProvider maxSnack={3}>
-                <AlertToast
-                    message={alertMessage}
-                    open={isAlertMessageVisible}
-                    visible={setIsAlertMessageVisible}
-                />
-                <InformationToast
-                    message={infoMessage}
-                    open={isInfoMessageVisible}
-                    visible={setIsInfoMessageVisible}
-                />
-            </SnackbarProvider>
+            <AlertToast
+                message={alertMessage}
+                open={isAlertMessageVisible}
+                visible={setIsAlertMessageVisible}
+            />
+            <InformationToast
+                message={infoMessage}
+                open={isInfoMessageVisible}
+                visible={setIsInfoMessageVisible}
+            />
             {showPopup && (
                 <NodeLabelsPopup
                     newNodeLabels={newNodeLabels}
