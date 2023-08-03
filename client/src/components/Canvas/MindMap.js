@@ -31,9 +31,9 @@ import {
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
 
-import NodeContextMenu from "./NodeContextMenu";
-import EdgeContextMenu from "./EdgeContextMenu";
-import TextContextMenu from "./TextContextMenu";
+import NodeContextMenu from "../ContextMenu/NodeContextMenu";
+import EdgeContextMenu from "../ContextMenu/EdgeContextMenu";
+import TextContextMenu from "../ContextMenu/TextContextMenu";
 import LowToolBar from "../LowToolBar/LowToolBar";
 import UserMouseMove from "./UserMouseMove";
 import Memo from "./MemoNode";
