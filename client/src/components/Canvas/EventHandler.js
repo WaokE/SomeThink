@@ -13,6 +13,9 @@ const colors = [
     "#9AFF33", // 연두색
 ];
 
+export const BOOKMARK_SIZE = 40;
+export const BOOKMARK_OFFSET = 50;
+
 const MAX_STACK_LENGTH = 10;
 
 export const handleDoubleClick = (
@@ -70,6 +73,10 @@ export const handleNodeDragStart = (
     setUserActionStack,
     setUserActionStackPointer
 ) => {
+    if (ymapRef.current.get(`BookMark ${event.nodes[0]}`) !== undefined) {
+        return;
+    }
+
     // 캔버스를 드래그하거나, 루트 노드를 드래그했을 경우는 무시
     if (event.nodes.length === 0 || event.nodes[0] === 1) return;
     // 드래그한 노드의 이전 좌표를 저장
@@ -114,6 +121,10 @@ export const handleNodeDragEnd = (event, ymapRef, setSelectedNode, setUserAction
     if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
         return;
     }
+    if (ymapRef.current.get(`BookMark ${event.nodes[0]}`) !== undefined) {
+        return;
+    }
+
     const nodeId = nodes[0];
     const { x: mouseX, y: mouseY } = pointer.canvas;
     const newX = mouseX - dragStartOffsetX;
@@ -138,6 +149,10 @@ export const handleNodeDragEnd = (event, ymapRef, setSelectedNode, setUserAction
 };
 
 export const handleNodeDragging = (event, ymapRef, userName) => {
+    if (ymapRef.current.get(`BookMark ${event.nodes[0]}`) !== undefined) {
+        return;
+    }
+
     const userList = [];
     ymapRef.current.forEach((value, key) => {
         if (typeof value === "boolean" && value === true && key !== "TimerRunning") {
@@ -158,11 +173,16 @@ export const handleNodeDragging = (event, ymapRef, userName) => {
     const newX = mouseX - dragStartOffsetX;
     const newY = mouseY - dragStartOffsetY;
 
-    const movedNode = ymapRef.current.get(`Node ${nodeId}`);
-    ymapRef.current.set(
-        `Node ${nodeId}`,
-        JSON.stringify({ ...JSON.parse(movedNode), x: newX, y: newY })
-    );
+    const movedNode = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));
+    ymapRef.current.set(`Node ${nodeId}`, JSON.stringify({ ...movedNode, x: newX, y: newY }));
+
+    if (movedNode.bookMarked) {
+        const movedBookMark = JSON.parse(ymapRef.current.get(`BookMark ${movedNode.bookMarked}`));
+        ymapRef.current.set(
+            `BookMark ${movedNode.bookMarked}`,
+            JSON.stringify({ ...movedBookMark, x: newX, y: newY - BOOKMARK_OFFSET })
+        );
+    }
 
     checkPrevSelected(userName, ymapRef);
     let selectedNode = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
