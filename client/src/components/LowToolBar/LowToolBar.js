@@ -215,7 +215,7 @@ export default function LowToolBar(props) {
         { icon: <CameraAltIcon />, name: "화면 캡처", onclick: hendleExportClick },
         { icon: <SaveIcon />, name: "마인드맵 저장", onclick: makeMarkdown },
         { icon: <Upload />, name: "마인드맵 불러오기", onclick: handleUploadSnapshotClick },
-        { icon: <FormatListBulletedSharpIcon />, name: "마크다운 열기", onclick: openMarkdown },
+        { icon: <FormatListBulletedSharpIcon />, name: "바로가기 열기", onclick: openMarkdown },
     ];
 
     return (
