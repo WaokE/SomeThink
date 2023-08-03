@@ -19,6 +19,8 @@ const wsReadyStateOpen = 1;
 const wsReadyStateClosing = 2; // eslint-disable-line
 const wsReadyStateClosed = 3; // eslint-disable-line
 
+const rooms = new Array();
+
 // disable gc when using snapshots!
 const gcEnabled = process.env.GC !== "false" && process.env.GC !== "0";
 const persistenceDir = process.env.YPERSISTENCE;
@@ -83,7 +85,35 @@ const updateHandler = (update, origin, doc) => {
     const message = encoding.toUint8Array(encoder);
     doc.conns.forEach((_, conn) => send(doc, conn, message));
 };
+const generateClientId = (length) => {
+    let result = "";
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charactersLength = characters.length;
 
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+};
+/* search the room */
+
+const searchrooms = (rooms, docName, clientid) => {
+    const room = rooms.filter((room) => room.roomName === docName && room.clientid === clientid);
+    return room;
+};
+/* delete room */
+
+const deleteroom = (room) => {
+    const index = rooms.indexOf(room[0]);
+    rooms.splice(index, 1);
+    return rooms;
+};
+/* count room */
+
+const countrooms = (rooms, docName) => {
+    const room = rooms.filter((room) => room.roomName === docName);
+    return room.length;
+};
 class WSSharedDoc extends Y.Doc {
     /**
      * @param {string} name
@@ -142,7 +172,6 @@ class WSSharedDoc extends Y.Doc {
         }
     }
 }
-
 /**
  * Gets a Y.Doc by name, whether in memory or on disk
  *
@@ -252,7 +281,7 @@ const pingTimeout = 30000;
  * @param {any} req
  * @param {any} opts
  */
-exports.setupWSConnection = (
+exports.ServersetupWSConnection = (
     conn,
     req,
     { docName = req.url.slice(1).split("?")[0], gc = true } = {}
@@ -268,8 +297,94 @@ exports.setupWSConnection = (
             messageListener(conn, doc, new Uint8Array(message))
     );
 
+    const clientId = generateClientId(8);
+    conn.clientId = clientId;
+    rooms.push({ clientid: clientId, roomName: docName });
+    console.log(`Client ${conn.clientId} connected to room ${docName}`);
+
     // Check if connection is still alive
     let pongReceived = true;
+
+    const pingInterval = setInterval(() => {
+        if (!pongReceived) {
+            if (doc.conns.has(conn)) {
+                closeConn(doc, conn);
+            }
+            clearInterval(pingInterval);
+        } else if (doc.conns.has(conn)) {
+            pongReceived = false;
+            try {
+                conn.ping();
+            } catch (e) {
+                closeConn(doc, conn);
+                clearInterval(pingInterval);
+            }
+        }
+    }, pingTimeout);
+    conn.on("close", () => {
+        console.log(`disconnected ${conn.clientId}`);
+        const result = searchrooms(rooms, docName, conn.clientId);
+        deleteroom(result);
+        closeConn(doc, conn);
+        clearInterval(pingInterval);
+        if (countrooms(rooms, docName) === 0 && doc.awareness) {
+            console.log("delete all");
+            doc.share.get("MindMap")._map.forEach((value, key) => {
+                doc.share.get("MindMap")._map.delete(key);
+            });
+            doc.awareness.meta.clear();
+            doc.store.clients.clear();
+        }
+    });
+    conn.on("pong", () => {
+        pongReceived = true;
+    });
+    // put the following in a variables in a block so the interval handlers don't keep in in
+    // scope
+    {
+        // send sync step 1
+        const encoder = encoding.createEncoder();
+        encoding.writeVarUint(encoder, messageSync);
+        syncProtocol.writeSyncStep1(encoder, doc);
+        send(doc, conn, encoding.toUint8Array(encoder));
+        const awarenessStates = doc.awareness.getStates();
+        if (awarenessStates.size > 0) {
+            const encoder = encoding.createEncoder();
+            encoding.writeVarUint(encoder, messageAwareness);
+            encoding.writeVarUint8Array(
+                encoder,
+                awarenessProtocol.encodeAwarenessUpdate(
+                    doc.awareness,
+                    Array.from(awarenessStates.keys())
+                )
+            );
+            send(doc, conn, encoding.toUint8Array(encoder));
+        }
+    }
+};
+/**
+ * @param {any} conn
+ * @param {any} req
+ * @param {any} opts
+ */
+exports.TimersetupWSConnection = (
+    conn,
+    req,
+    { docName = req.url.slice(1).split("?")[0], gc = true } = {}
+) => {
+    conn.binaryType = "arraybuffer";
+    // get doc, initialize if it does not exist yet
+    let doc = getYDoc(docName, gc);
+    doc.conns.set(conn, new Set());
+    // listen and reply to events
+    conn.on(
+        "message",
+        /** @param {ArrayBuffer} message */ (message) =>
+            messageListener(conn, doc, new Uint8Array(message))
+    );
+    // Check if connection is still alive
+    let pongReceived = true;
+
     const pingInterval = setInterval(() => {
         if (!pongReceived) {
             if (doc.conns.has(conn)) {

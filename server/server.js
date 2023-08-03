@@ -7,14 +7,15 @@
 require("dotenv").config(!!process.env.CONFIG ? { path: process.env.CONFIG } : {});
 const WebSocket = require("ws");
 const http = require("http");
-const wss = new WebSocket.Server({ noServer: true });
-const setupWSConnection = require("./utils.js").setupWSConnection;
-const host = process.env.HOST || "localhost";
-const SYNCPORT = process.env.PORT || 1234;
+const Y = require("yjs");
 const server = http.createServer((request, response) => {
     response.writeHead(200, { "Content-Type": "text/plain" });
     response.end("okay");
 });
+const wss = new WebSocket.Server({ noServer: true });
+const setupWSConnection = require("./utils.js").ServersetupWSConnection;
+const host = process.env.HOST || "localhost";
+const SYNCPORT = process.env.PORT || 1234;
 
 const express = require("express");
 const cors = require("cors"); // Add this line to import CORS
@@ -32,6 +33,8 @@ let OPENVIDU_SECRET = process.env.OPENVIDU_SECRET;
 
 const openvidu = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
 const bodyParser = require("body-parser");
+/* generate Client id */
+
 app.use(
     cors({
         origin: "*",
@@ -39,12 +42,10 @@ app.use(
 );
 app.use(express.json()); // for parsing application/json
 wss.on("connection", setupWSConnection);
-
 // Allow application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 // Allow application/json
 app.use(bodyParser.json());
-
 server.on("upgrade", (request, socket, head) => {
     // You may check auth of request here..
     // See https://github.com/websockets/ws#client-authentication
@@ -60,12 +61,16 @@ server.on("upgrade", (request, socket, head) => {
 server.listen(SYNCPORT, host, () => {
     console.log(`running at '${host}' on port ${SYNCPORT}`);
 });
-
+app.post("/api/leavesession", (req, res) => {
+    const { roomNum } = req.body;
+    return res.status(201).json({ wsinfo: roomNum });
+});
 app.post("/api/generate", generatorHandler);
 
 app.post("/api/sessions", async (req, res) => {
     var session = await openvidu.createSession(req.body);
     res.send(session.sessionId);
+    wss.createConnection();
 });
 
 app.post("/api/sessions/:sessionId/connections", async (req, res) => {

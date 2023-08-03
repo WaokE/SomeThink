@@ -5,6 +5,14 @@ import TopBar from "../TopBar/TopBar";
 import html2canvas from "html2canvas";
 import fileDownload from "js-file-download";
 import ImageSearch from "./ImageSearch";
+import { CreateTextInput } from "./TextInputComponent";
+import {
+    getConnectedNodeLabels,
+    getAllNodeLabels,
+    fetchNewNodeLabels,
+    addNewNodesAndEdges,
+} from "../openai/api";
+import NodeLabelsPopup from "../openai/NodeLabelsPopup";
 
 import {
     handleDoubleClick,
@@ -14,19 +22,19 @@ import {
     handleAddTextNode,
     handleNodeContextMenu,
     handleNodeDragging,
-    createTextInput,
     makeHandleMemoChange,
     handleMouseWheel,
-    makeHandleStartTimeChange,
-    makeHandleDurationChange,
-    makeHandleTimerRunning,
+    handleNodeDragStart,
+    handleUndo,
+    handleRedo,
 } from "./EventHandler";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
+import { BOOKMARK_OFFSET, BOOKMARK_SIZE } from "./EventHandler";
 
-import NodeContextMenu from "./NodeContextMenu";
-import EdgeContextMenu from "./EdgeContextMenu";
-import TextContextMenu from "./TextContextMenu";
+import NodeContextMenu from "../ContextMenu/NodeContextMenu";
+import EdgeContextMenu from "../ContextMenu/EdgeContextMenu";
+import TextContextMenu from "../ContextMenu/TextContextMenu";
 import LowToolBar from "../LowToolBar/LowToolBar";
 import UserMouseMove from "./UserMouseMove";
 import Memo from "./MemoNode";
@@ -34,31 +42,9 @@ import Timer from "./Timer";
 import AlertToast from "../ToastMessage/Alert";
 import InformationToast from "../ToastMessage/Information";
 import GraphToMarkdown from "./MarkDown";
+import { SnackbarProvider } from "notistack";
 
 import "./MindMap.css";
-const PreventRefresh = () => {
-    useEffect(() => {
-        const handleBeforeUnload = (event) => {
-            event.preventDefault();
-            event.returnValue = ""; // 이 줄은 최신 버전의 Chrome에서 필요합니다.
-        };
-
-        const handleUnload = () => {
-            // 페이지를 떠날 때 처리할 작업을 여기에 추가합니다.
-            // 예를 들어, 변경된 데이터를 저장하거나 서버에 업데이트를 요청하는 등의 작업을 수행할 수 있습니다.
-        };
-
-        window.addEventListener("beforeunload", handleBeforeUnload);
-        window.addEventListener("unload", handleUnload);
-
-        return () => {
-            window.removeEventListener("beforeunload", handleBeforeUnload);
-            window.removeEventListener("unload", handleUnload);
-        };
-    }, []);
-
-    return <></>;
-};
 
 const isCyclic = (graph, fromNode, toNode) => {
     const insertEdge = `Edge ${fromNode} to ${toNode}`;
@@ -80,11 +66,19 @@ const isCyclic = (graph, fromNode, toNode) => {
     return true;
 };
 
-// const MindMap = (sessionId, leaveSession, toggleAudio, audioEnabled) => {
-const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName }) => {
+const MindMap = ({
+    sessionId,
+    leaveSession,
+    toggleAudio,
+    audioEnabled,
+    userName,
+    speakingUserName,
+    isLoading,
+}) => {
     const ydocRef = useRef(null);
     const ymapRef = useRef(null);
     const networkRef = useRef(null);
+    const mindMapRef = useRef(null);
 
     const [selectedImage, setSelectedImage] = useState(false);
 
@@ -101,6 +95,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         "#9AFF33", // 연두색
     ];
 
+    const MAX_STACK_LENGTH = 10;
+
     let options = {
         layout: {
             hierarchical: false,
@@ -111,7 +107,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             mass: 1,
             color: "#FBD85D",
             widthConstraint: {
-                maximum: 60,
+                maximum: 100,
             },
             font: {
                 face: "MainFont",
@@ -123,6 +119,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                     enabled: false,
                 },
             },
+            width: 2,
             color: "#000000",
         },
         physics: {
@@ -140,12 +137,15 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const templateNodes = [
         {
             id: 1,
-            label: "Root",
+            label: "start",
             x: 0,
             y: 0,
             physics: false,
             fixed: true,
             color: "#f5b252",
+            widthConstraint: { minimum: 100, maximum: 200 }, // 너비를 100으로 고정
+            heightConstraint: { minimum: 100, maximum: 200 }, // 높이를 100으로 고정
+            font: { size: 30 },
         },
         {
             id: 2,
@@ -193,29 +193,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         },
     ];
 
-    const templateEdges = [
-        {
-            from: 1,
-            to: 2,
-            id: "1 to 2",
-        },
-        {
-            from: 1,
-            to: 3,
-            id: "1 to 3",
-        },
-        {
-            from: 1,
-            to: 4,
-            id: "1 to 4",
-        },
-        {
-            from: 1,
-            to: 5,
-            id: "1 to 5",
-        },
-    ];
-
     if (!selectedImage) {
         options = {
             ...options,
@@ -226,6 +203,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         };
     }
 
+    const [userActionStack, setUserActionStack] = useState([]);
+    const [userActionStackPointer, setUserActionStackPointer] = useState(-1);
     const [isInfoMessageVisible, setIsInfoMessageVisible] = useState(false);
     const [infoMessage, setInfoMessage] = useState("");
     const [isAlertMessageVisible, setIsAlertMessageVisible] = useState(false);
@@ -233,22 +212,26 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const [isImageSearchVisible, setIsImageSearchVisible] = useState(false);
     const [fromNode, setFromNode] = useState(null);
     const [isCreatingEdge, setIsCreatingEdge] = useState(false);
-    const [inputId, setInputId] = useState("");
     const [mouseCoordinates, setMouseCoordinates] = useState([]);
     const [contextMenuPos, setContextMenuPos] = useState({ xPos: 0, yPos: 0 });
     const [isNodeContextMenuVisible, setIsNodeContextMenuVisible] = useState(false);
     const [isEdgeContextMenuVisible, setIsEdgeContextMenuVisible] = useState(false);
     const [isTextContextMenuVisible, setIsTextContextMenuVisible] = useState(false);
+    const [isMarkdownVisible, setIsMarkdownVisible] = useState(false);
     const contextMenuRef = useRef(null);
     const [isCreatingText, setIsCreatingText] = useState(false);
     const [memo, setMemo] = useState("");
     const [isTimerVisible, setIsTimerVisible] = useState(false);
-    const [startTime, setStartTime] = useState(Date.now());
-    const [duration, setDuration] = useState(0);
-    const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [isMemoVisible, setIsMemoVisible] = useState(false);
     const [selectedNode, setSelectedNode] = useState(null);
     const [selectedEdge, setSelectedEdge] = useState(null);
+    const [isTimerRunning, setIsTimerRunning] = useState(false);
+    const [showPopup, setShowPopup] = useState(false);
+    const [newNodeLabels, setNewNodeLabels] = useState([]);
+    const [clickedNodeId, setClickedNodeId] = useState("");
+    const [connectedNodeLabels, setConnectedNodeLabels] = useState([]);
+    const [allNodeLabels, setAllNodeLabels] = useState([]);
+
     const memoizedHandleClickOutside = useCallback(
         handleClickOutside(
             contextMenuRef,
@@ -259,13 +242,74 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         [contextMenuRef, setIsNodeContextMenuVisible]
     );
 
-    const openNodeContextMenu = handleNodeContextMenu({
-        setContextMenuPos,
-        setIsNodeContextMenuVisible,
-        setIsEdgeContextMenuVisible,
-        setIsTextContextMenuVisible,
-        ymapRef,
-    });
+    const openNodeContextMenu = (event) => {
+        const VisEvent = event;
+        const DOMEvent = event.event;
+        const tempUserId = userName;
+        const indexOfUser = getUserListFromYMap().indexOf(tempUserId);
+        const selectedNode = networkRef.current.getNodeAt(VisEvent.pointer.DOM);
+        const selectedEdge = networkRef.current.getEdgeAt(VisEvent.pointer.DOM);
+        DOMEvent.preventDefault();
+
+        // 북마크 위에서 우클릭 시
+        if (ymapRef.current.get(`BookMark ${selectedNode}`) !== undefined) {
+            return;
+        }
+
+        // 노드 위에서 우클릭 시
+        if (selectedNode !== undefined) {
+            networkRef.current.selectNodes([selectedNode]);
+            const xPos = DOMEvent.clientX;
+            const yPos = DOMEvent.clientY;
+            const selectedNodeObject = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
+            const selectedNodeShape = selectedNodeObject.shape;
+            if (selectedNodeShape === "text") {
+                setContextMenuPos({ xPos, yPos });
+                setSelectedNode(selectedNode);
+                setIsTextContextMenuVisible(true);
+                closeNodeContextMenu();
+                closeEdgeContextMenu();
+            } else {
+                setContextMenuPos({ xPos, yPos });
+                setSelectedNode(selectedNode);
+                setIsNodeContextMenuVisible(true);
+                closeEdgeContextMenu();
+                closeTextContextMenu();
+            }
+            checkPrevSelected(tempUserId);
+            ymapRef.current.set(`User ${tempUserId} selected`, `Node ${selectedNode}`);
+            selectedNodeObject.borderWidth = 2;
+
+            if (selectedNode === 1) {
+                selectedNodeObject.color = {
+                    border: colors[indexOfUser],
+                };
+            } else {
+                selectedNodeObject.color = {
+                    border: colors[indexOfUser],
+                    background: "#FBD85D",
+                };
+            }
+            selectedNodeObject.owner = tempUserId;
+            ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
+        }
+        // 엣지 위에서 우클릭 시
+        else if (selectedNode === undefined && selectedEdge !== undefined) {
+            const xPos = DOMEvent.clientX;
+            const yPos = DOMEvent.clientY;
+            setContextMenuPos({ xPos, yPos });
+            setSelectedEdge(selectedEdge);
+            setIsEdgeContextMenuVisible(true);
+            closeNodeContextMenu();
+            closeTextContextMenu();
+            setSelectedNode(null);
+            checkPrevSelected(tempUserId);
+        } else {
+            setSelectedNode(null);
+            setSelectedEdge(null);
+            checkPrevSelected(tempUserId);
+        }
+    };
 
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [windowHeight, setWindowHeight] = useState(window.innerHeight);
@@ -292,16 +336,10 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             sessionId,
             ydocRef.current
         );
-
+        // const provider = new WebsocketProvider("ws://localhost:1234", sessionId, ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
-        ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
-
-        // templateNodes.forEach((node) => {
-        //     ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
-        // });
-        // templateEdges.forEach((edge) => {
-        //     ymapRef.current.set(`Edge ${edge.from} to ${edge.to}`, JSON.stringify(edge));
-        // });
+        // ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
+        // ymapRef.current.set("RootQuadrant", 0);
 
         ymapRef.current.observe((event) => {
             const updatedGraph = {
@@ -314,7 +352,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             };
 
             const Mouses = [];
-            let newStartTime, newDuration, newIsTimerRunning;
 
             ymapRef.current.forEach((value, key) => {
                 if (key.startsWith("Node")) {
@@ -323,17 +360,14 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 } else if (key.startsWith("Edge")) {
                     const edge = JSON.parse(value);
                     updatedGraph.edges.push(edge);
+                } else if (key.startsWith("BookMark")) {
+                    const bookMark = JSON.parse(value);
+                    updatedGraph.nodes.push(bookMark);
                 } else if (key === "Memo") {
                     updatedMemo.memo = value;
                 } else if (key.startsWith("Mouse")) {
                     const coordinate = JSON.parse(value);
                     Mouses.push([coordinate.id, coordinate.x, coordinate.y]);
-                } else if (key === "StartTime") {
-                    newStartTime = Number(value);
-                } else if (key === "Duration") {
-                    newDuration = Number(value);
-                } else if (key === "TimerRunning") {
-                    newIsTimerRunning = Boolean(value);
                 }
             });
 
@@ -343,17 +377,6 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             }));
             setMemo(updatedMemo.memo);
             setMouseCoordinates(Mouses);
-
-            // update startTime, duration, and isTimerRunning
-            if (newStartTime !== undefined) {
-                setStartTime(newStartTime);
-            }
-            if (newDuration !== undefined) {
-                setDuration(newDuration);
-            }
-            if (newIsTimerRunning !== undefined) {
-                setIsTimerRunning(newIsTimerRunning);
-            }
         });
 
         const handleResetNode = () => {
@@ -371,12 +394,14 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         if (userName && ymapRef.current && !ymapRef.current.has(userName)) {
             ymapRef.current.set(userName, true);
         }
+        console.log("handleSessionJoin");
     }, [userName]);
 
     const handleSessionLeave = useCallback(() => {
         if (userName && ymapRef.current && ymapRef.current.has(userName)) {
             ymapRef.current.delete(userName);
         }
+        console.log("handleSessionLeave");
     }, [userName]);
 
     useEffect(() => {
@@ -406,7 +431,20 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         return userList;
     }, []);
 
-    const handleMouseMove = (e) => {
+    const throttle = (callback, delay) => {
+        let previousCall = new Date().getTime();
+        return function () {
+            const time = new Date().getTime();
+
+            if (time - previousCall >= delay) {
+                previousCall = time;
+                callback.apply(null, arguments);
+            }
+        };
+    };
+
+    const handleMouseMove = throttle((e) => {
+        console.log("event!!!");
         if (networkRef.current !== null) {
             const coord = networkRef.current.DOMtoCanvas({
                 x: e.clientX,
@@ -419,13 +457,18 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 JSON.stringify({ x: nx, y: ny, id: userName })
             );
         }
-    };
+    }, 10);
 
     const handleUserSelect = (event) => {
         const tempUserId = userName;
         const indexOfUser = getUserListFromYMap().indexOf(tempUserId);
 
+        if (ymapRef.current.get(`BookMark ${event.nodes[0]}`) !== undefined) {
+            checkPrevSelected(tempUserId);
+            return;
+        }
         if (isCreatingEdge) {
+            checkPrevSelected(tempUserId);
             if (event.nodes.length > 0) {
                 const toNode = event.nodes[0];
                 if (toNode === fromNode) {
@@ -501,18 +544,26 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             selectedNode.owner = tempUserId;
             ymapRef.current.set(`Node ${event.nodes[0]}`, JSON.stringify(selectedNode));
         }
+        // 엣지 선택시
+        else if (event.edges.length > 0) {
+            checkPrevSelected(tempUserId);
+            setSelectedNode(null);
+            setSelectedEdge(event.edges[0]);
+        }
         // 선택 해제시
         else {
             setSelectedNode(null);
+            setSelectedEdge(null);
             checkPrevSelected(tempUserId);
         }
     };
 
-    // 유저가 선택한 값이 있는지 검사
+    // 유저가 기존에 선택했던 값이 있는지 검사
     const checkPrevSelected = (userId) => {
         const tempValue = ymapRef.current.get(`User ${userId} selected`);
         // 있다면 해당 값 원래대로 돌려놓음
         if (tempValue) {
+            if (ymapRef.current.get(tempValue) === undefined) return;
             let userData = JSON.parse(ymapRef.current.get(tempValue));
             if (userData) {
                 if (userData.label) {
@@ -533,8 +584,40 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             if (selectedNode) {
                 deleteNodes(selectedNode);
             } else if (selectedEdge) {
-                deleteEdge([`${selectedEdge}`]);
+                deleteEdge();
             }
+        }
+        if (
+            ((e.key === "z" || e.key === "Z") && e.ctrlKey && e.shiftKey) ||
+            ((e.key === "z" || e.key === "Z") && e.metaKey && e.shiftKey)
+        ) {
+            console.log("redo");
+            handleRedo(
+                setAlertMessage,
+                setIsAlertMessageVisible,
+                userActionStack,
+                setUserActionStack,
+                userActionStackPointer,
+                setUserActionStackPointer,
+                ymapRef
+            );
+        } else if (
+            ((e.key === "z" || e.key === "Z") && e.ctrlKey) ||
+            (e.key === "z" && e.metaKey)
+        ) {
+            console.log("undo");
+            handleUndo(
+                setAlertMessage,
+                setIsAlertMessageVisible,
+                userActionStack,
+                setUserActionStack,
+                userActionStackPointer,
+                setUserActionStackPointer,
+                setMindMap,
+                setMemo,
+                setMouseCoordinates,
+                ymapRef
+            );
         }
     };
 
@@ -543,6 +626,10 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             position: { x: 0, y: 0 },
             scale: 1.0,
             offset: { x: 0, y: 0 },
+            animation: {
+                duration: 1000,
+                easingFunction: "easeInOutQuad",
+            },
         });
     };
 
@@ -558,11 +645,36 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             // Create a copy of currentUserData to preserve the original data
             const currentUserData = getUserListFromYMap();
 
+            setUserActionStack((prev) => {
+                // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
+                if (prev.length >= MAX_STACK_LENGTH) {
+                    setUserActionStackPointer(prev.length - 1);
+                    return [
+                        ...prev.slice(1),
+                        {
+                            action: "reset",
+                            prevYmap: ymapRef.current.toJSON(),
+                        },
+                    ];
+                }
+                // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+                else {
+                    setUserActionStackPointer(prev.length);
+                    return [
+                        ...prev,
+                        {
+                            action: "reset",
+                            prevYmap: ymapRef.current.toJSON(),
+                        },
+                    ];
+                }
+            });
+
             ymapRef.current.clear();
             ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
+            ymapRef.current.set("RootQuadrant", 0);
 
             currentUserData.forEach((user) => {
-                console.log(user);
                 ymapRef.current.set(user, true);
             });
         }
@@ -596,7 +708,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     };
 
     const sortEdgesCorrectly = (edges, createdEdge) => {
-        let edgeList = edges.filter((edge) => edge != createdEdge);
+        let edgeList = edges.filter((edge) => edge !== createdEdge);
         let newEdgeList = [];
         let bfsq = [`${createdEdge.split(" ")[3]}`];
         while (bfsq.length > 0) {
@@ -605,14 +717,12 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 if (edge.startsWith(`Edge ${current} to `)) {
                     newEdgeList.push(edge);
                     ymapRef.current.delete(edge);
-                    // FIXME: 반복을 인덱싱을 통해 하도록 해서 삭제 성능개선을 할 수 있을듯?
-                    edgeList = edgeList.filter((e) => e != edge);
+                    edgeList = edgeList.filter((e) => e !== edge);
                     bfsq.push(edge.split(" ")[3]);
                 } else if (edge.endsWith(` to ${current}`)) {
                     newEdgeList.push(`Edge ${current} to ${edge.split(" ")[1]}`);
                     ymapRef.current.delete(edge);
-                    // FIXME: 반복을 인덱싱을 통해 하도록 해서 삭제 성능개선을 할 수 있을듯?
-                    edgeList = edgeList.filter((e) => e != edge);
+                    edgeList = edgeList.filter((e) => e !== edge);
                     bfsq.push(edge.split(" ")[1]);
                 }
             });
@@ -632,8 +742,11 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         });
     };
 
-    const deleteEdge = (selectedEdge) => {
-        selectedEdge.forEach((edge) => {
+    const deleteEdge = () => {
+        const selectedEdgeArray = [selectedEdge];
+        selectedEdgeArray.forEach((edge) => {
+            console.log(edge);
+            console.log(typeof edge);
             const splitedEdge = edge.split(" ");
             const from = splitedEdge[0];
             const to = splitedEdge[2];
@@ -659,7 +772,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
 
     const createNode = (selectedNodeId) => {
         if (!selectedNodeId) {
-            setInfoMessage("노드를 선택한 후에 버튼을 눌러 노드를 추가하세요!");
+            setInfoMessage("노드를 선택한 후에 버튼을 눌러 자식 노드를 추가하세요!");
             setIsInfoMessageVisible(true);
             return;
         }
@@ -676,8 +789,13 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 setIsAlertMessageVisible(true);
                 removeTextInput();
             } else {
-                const quadrant = checkquadrant(selectedNode.x, selectedNode.y);
-                console.log(quadrant);
+                let quadrant = "";
+                if (selectedNode.id === 1) {
+                    quadrant = (ymapRef.current.get("RootQuadrant") % 4) + 1;
+                    ymapRef.current.set("RootQuadrant", ymapRef.current.get("RootQuadrant") + 1);
+                } else {
+                    quadrant = checkquadrant(selectedNode.x, selectedNode.y);
+                }
                 const newNode = {
                     id: nodeId,
                     label: label,
@@ -685,6 +803,32 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                     y: selectedNode.y + ny[quadrant - 1],
                     color: "#FBD85D",
                 };
+                setUserActionStack((prev) => {
+                    // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
+                    if (prev.length >= MAX_STACK_LENGTH) {
+                        setUserActionStackPointer(prev.length - 1);
+                        return [
+                            ...prev.slice(1),
+                            {
+                                action: "create",
+                                nodeId: newNode.id,
+                                newNode: newNode,
+                            },
+                        ];
+                    }
+                    // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+                    else {
+                        setUserActionStackPointer(prev.length);
+                        return [
+                            ...prev,
+                            {
+                                action: "create",
+                                nodeId: newNode.id,
+                                newNode: newNode,
+                            },
+                        ];
+                    }
+                });
 
                 ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
                 ymapRef.current.set(
@@ -695,6 +839,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                         id: `${selectedNodeId} to ${nodeId}`,
                     })
                 );
+                mindMapRef.current.focus();
 
                 removeTextInput();
             }
@@ -707,10 +852,17 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             }
         };
 
-        const textField = createTextInput(``, createNodeCallback, () => {
-            setSelectedNode(null);
-            removeTextInput();
-        });
+        const textField = CreateTextInput(
+            ``,
+            createNodeCallback,
+            () => {
+                setSelectedNode(null);
+                removeTextInput();
+            },
+            networkRef,
+            selectedNode.x,
+            selectedNode.y
+        );
 
         textField.id = "createNodeTextField";
 
@@ -720,18 +872,39 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
 
     const handleCreateImage = (url, searchWord) => {
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
-        const newNode = {
-            id: nodeId,
-            label: searchWord,
-            shape: "image",
-            image: url,
-            x: 0,
-            y: 0,
-            physics: false,
-            size: 20,
-        };
 
-        ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
+        const image = new Image();
+        image.crossOrigin = "Anonymous";
+        image.onload = function () {
+            const aspectRatio = image.width / image.height;
+            const newWidth = 250;
+            const newHeight = newWidth / aspectRatio;
+            const canvas = document.createElement("canvas");
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+            const ctx = canvas.getContext("2d");
+
+            ctx.drawImage(image, 0, 0, newWidth, newHeight);
+
+            const dataURL = canvas.toDataURL();
+            const coord = networkRef.current.DOMtoCanvas({
+                x: window.innerWidth / 2,
+                y: window.innerHeight / 2,
+            });
+            const newNode = {
+                id: nodeId,
+                label: searchWord,
+                shape: "image",
+                image: dataURL,
+                x: coord.x,
+                y: coord.y,
+                physics: false,
+                size: 20,
+            };
+
+            ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
+        };
+        image.src = url;
     };
 
     const closeNodeContextMenu = () => {
@@ -749,8 +922,66 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
     const modifyNode = (nodeId, newLabel) => {
         const node = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));
         if (node) {
+            setUserActionStack((prev) => {
+                // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
+                if (prev.length >= MAX_STACK_LENGTH) {
+                    setUserActionStackPointer(prev.length - 1);
+                    return [
+                        ...prev.slice(1),
+                        {
+                            action: "modify",
+                            nodeId: nodeId,
+                            prevLabel: node.label,
+                            newLabel: newLabel,
+                        },
+                    ];
+                }
+                // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+                else {
+                    setUserActionStackPointer(prev.length);
+                    return [
+                        ...prev,
+                        {
+                            action: "modify",
+                            nodeId: nodeId,
+                            prevLabel: node.label,
+                            newLabel: newLabel,
+                        },
+                    ];
+                }
+            });
             node.label = newLabel;
             ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(node));
+        }
+    };
+
+    const bookMarkNode = () => {
+        let selectedNodeObject = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
+        // 북마크가 되어있지 않다면 북마크 추가
+        if (!selectedNodeObject.bookMarked) {
+            const bookMarkId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
+            const BookMarkNode = {
+                id: bookMarkId,
+                shape: "icon",
+                icon: {
+                    face: "'FontAwesome'",
+                    code: "\uf08d",
+                    size: BOOKMARK_SIZE,
+                    color: "#EF6262",
+                },
+                x: selectedNodeObject.x,
+                y: selectedNodeObject.y - BOOKMARK_OFFSET,
+                fixed: true,
+            };
+            selectedNodeObject.bookMarked = bookMarkId;
+            ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
+            ymapRef.current.set(`BookMark ${bookMarkId}`, JSON.stringify(BookMarkNode));
+        }
+        // 북마크가 되어있다면
+        else {
+            ymapRef.current.delete(`BookMark ${selectedNodeObject.bookMarked}`);
+            selectedNodeObject.bookMarked = false;
+            ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
         }
     };
 
@@ -794,9 +1025,37 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         };
     }, [selectedNode, memoizedHandleClickOutside, selectedImage]);
 
+    const deleteRecursion = (nodeId) => {
+        const childNodes = Array.from(ymapRef.current.keys())
+            .filter((key) => key.startsWith(`Edge ${nodeId} to `))
+            .map((key) => key.split(" ")[3]);
+
+        childNodes.forEach((childNodeId) => {
+            deleteSingleNode(childNodeId);
+            deleteRecursion(childNodeId);
+        });
+
+        deleteSingleNode(nodeId);
+        setSelectedNode(null);
+    };
+
     const deleteSingleNode = (nodeId) => {
-        // NOTE: 임시 유저 ID
         const tempUserId = userName;
+        const willDeleteNode = ymapRef.current.get(`Node ${nodeId}`);
+
+        setUserActionStack((prev) => {
+            if (willDeleteNode) {
+                let lastAction = prev[prev.length - 1];
+                lastAction.deletedNodes.push(JSON.parse(willDeleteNode));
+                prev[prev.length - 1] = lastAction;
+                return [...prev];
+            } else {
+                return [...prev];
+            }
+        });
+
+        const willDeleteNodeObject = JSON.parse(willDeleteNode);
+        ymapRef.current.delete(`BookMark ${willDeleteNodeObject.bookMarked}`);
         ymapRef.current.delete(`Node ${nodeId}`);
         ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` &&
             ymapRef.current.delete(`User ${tempUserId} selected`);
@@ -808,17 +1067,33 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
             setIsAlertMessageVisible(true);
             return;
         }
-        const childNodes = Array.from(ymapRef.current.keys())
-            .filter((key) => key.startsWith(`Edge ${nodeId} to `))
-            .map((key) => key.split(" ")[3]);
 
-        childNodes.forEach((childNodeId) => {
-            deleteSingleNode(childNodeId);
-            deleteNodes(childNodeId);
+        setUserActionStack((prev) => {
+            // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
+            if (prev.length >= MAX_STACK_LENGTH) {
+                setUserActionStackPointer(prev.length - 1);
+                return [
+                    ...prev.slice(1),
+                    {
+                        action: "delete",
+                        deletedNodes: [],
+                    },
+                ];
+            }
+            // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+            else {
+                setUserActionStackPointer(prev.length);
+                return [
+                    ...prev,
+                    {
+                        action: "delete",
+                        deletedNodes: [],
+                    },
+                ];
+            }
         });
 
-        deleteSingleNode(nodeId);
-        setSelectedNode(null);
+        deleteRecursion(nodeId);
     };
 
     const handleNodeSelect = async ({ nodes }) => {
@@ -827,95 +1102,48 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
         }
 
         const clickedNodeId = nodes[0];
+        setClickedNodeId(clickedNodeId);
+        console.log("clickedNodeId:", clickedNodeId);
         const clickedNode = JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`));
-
+        console.log("x:", clickedNode.x, "y:", clickedNode.y);
         if (!clickedNode) {
             return;
         }
 
-        const connectedNodeIds = [clickedNodeId];
-        let currentNodeId = clickedNodeId;
+        const connectedNodeLabels = getConnectedNodeLabels(clickedNodeId, ymapRef);
+        const allNodeLabels = getAllNodeLabels(ymapRef);
+        const newNodeLabels = await fetchNewNodeLabels(connectedNodeLabels, allNodeLabels);
 
-        while (currentNodeId !== 1) {
-            const parentNodeId = Array.from(ymapRef.current.keys())
-                .find((key) => key.startsWith("Edge ") && key.endsWith(` to ${currentNodeId}`))
-                ?.split(" ")[1];
-
-            if (!parentNodeId) {
-                break;
-            }
-
-            connectedNodeIds.push(parentNodeId);
-            currentNodeId = parentNodeId;
+        if (newNodeLabels.length === 0) {
+            alert("No new node labels fetched.");
+            return;
         }
+        setShowPopup(true);
+        setNewNodeLabels(newNodeLabels);
+        setConnectedNodeLabels(connectedNodeLabels);
+        setAllNodeLabels(allNodeLabels);
+    };
 
-        const rootLabel = ymapRef.current.get("Node 1")
-            ? JSON.parse(ymapRef.current.get("Node 1"))?.label
-            : null;
+    const handleClosePopup = () => {
+        setShowPopup(false);
+    };
 
-        const connectedNodeLabels = connectedNodeIds.map((nodeId) => {
-            const node = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));
-            return node ? node.label : null;
-        });
+    const handleRestart = async () => {
+        const mergedLabels = Array.from(new Set(allNodeLabels.concat(newNodeLabels)));
+        setAllNodeLabels(mergedLabels);
+        const addedLabels = await fetchNewNodeLabels(connectedNodeLabels, allNodeLabels);
+        const mergedNewLabels = Array.from(new Set(newNodeLabels.concat(addedLabels)));
+        setNewNodeLabels(mergedNewLabels);
+    };
 
-        const allNodeLabels = Array.from(ymapRef.current.keys())
-            .filter((key) => key.startsWith("Node "))
-            .map((key) => {
-                const node = JSON.parse(ymapRef.current.get(key));
-                return node ? node.label : null;
-            });
+    const handleDeleteLabel = (labelToDelete) => {
+        setNewNodeLabels((prevLabels) => prevLabels.filter((label) => label !== labelToDelete));
+    };
 
-        try {
-            const response = await fetch("/api/generate", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    connectedKeywords: connectedNodeLabels.join(", "),
-                    allKeywords: allNodeLabels.join(", "),
-                }),
-            });
-
-            const data = await response.json();
-            if (response.status !== 200) {
-                throw data.error || new Error(`Request failed with status ${response.status}`);
-            }
-
-            const newNodeLabels = data.result.split(",");
-
-            const newNodes = newNodeLabels.map((label, index) => {
-                const quadrant = checkquadrant(clickedNode.x, clickedNode.y);
-                const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
-                const newNode = {
-                    id: nodeId,
-                    label: label.trim(),
-                    x: clickedNode.x + nx[quadrant - 1] * (1 - index),
-                    y: clickedNode.y + ny[quadrant - 1] * index,
-                    physics: false,
-                    color: "#FBD85D",
-                    size: 30,
-                };
-
-                ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
-                return newNode;
-            });
-
-            const newEdges = newNodes.map((node) => {
-                const edge = {
-                    from: clickedNodeId,
-                    to: node.id,
-                    id: `${clickedNodeId} to ${node.id}`,
-                };
-                const edgeKey = `Edge ${clickedNodeId} to ${node.id}`;
-                ymapRef.current.set(edgeKey, JSON.stringify(edge));
-
-                return edge;
-            });
-        } catch (error) {
-            console.error(error);
-            alert(error.message);
-        }
+    const handleCreate = () => {
+        const clickedNode = JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`));
+        addNewNodesAndEdges(clickedNode, newNodeLabels, clickedNodeId, ymapRef);
+        setShowPopup(false);
     };
 
     const handleMemoChange = makeHandleMemoChange(ymapRef, setMemo);
@@ -933,7 +1161,34 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
 
     const handleExportClick = () => {
         if (captureRef.current) {
-            html2canvas(captureRef.current).then((canvas) => {
+            html2canvas(captureRef.current, {
+                onclone: (clonedDocument) => {
+                    Array.from(clonedDocument.querySelectorAll("textarea")).forEach((textArea) => {
+                        if (!textArea.value) return;
+
+                        const div = clonedDocument.createElement("div");
+                        div.innerText = textArea.value;
+                        div.style.position = "fixed";
+                        div.style.top = "10vh";
+                        div.style.right = "2vh";
+                        div.style.width = "250px";
+                        div.style.height = "15%";
+                        div.style.backgroundColor = "#fbeeac";
+                        div.style.border = "2px solid #e8c55b";
+                        div.style.borderRadius = "5px";
+                        div.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)";
+                        div.style.padding = "15px";
+                        div.style.fontFamily = '"Noto Sans KR", sans-serif';
+                        div.style.fontSize = "16px";
+                        div.style.lineHeight = "1.6";
+                        div.style.color = "#333";
+                        div.style.zIndex = "1";
+                        div.style.overflow = "hidden";
+                        div.style.whiteSpace = "pre-wrap";
+                        textArea.parentElement.replaceChild(div, textArea);
+                    });
+                },
+            }).then((canvas) => {
                 canvas.toBlob((blob) => {
                     fileDownload(blob, `${sessionId}.png`);
                 });
@@ -954,6 +1209,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 height: "100vh",
                 zIndex: 0,
             }}
+            tabIndex={0}
+            ref={mindMapRef}
         >
             <UserMouseMove
                 userMouseData={mouseCoordinates}
@@ -969,27 +1226,38 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 audioEnabled={audioEnabled}
                 userList={getUserListFromYMap()}
                 userName={userName}
+                speakingUserName={speakingUserName}
+                ymapRef={ymapRef}
+                isLoading={isLoading}
             />
-            <GraphToMarkdown nodes={nodes} edges={edges} sessionId={sessionId} />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
                 <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
-                <PreventRefresh />
-                {isTimerVisible && (
+                <div
+                    className={`
+                ${isTimerVisible ? "visible" : "hidden"}`}
+                >
                     <Timer
-                        ymapRef={ymapRef}
-                        handleStartTimeChange={makeHandleStartTimeChange(ymapRef)}
-                        handleDurationChange={makeHandleDurationChange(ymapRef)}
-                        setIsTimerRunning={makeHandleTimerRunning(ymapRef)}
+                        sessionId={sessionId}
+                        isTimerRunning={isTimerRunning}
+                        setIsTimerRunning={setIsTimerRunning}
                     />
-                )}
+                </div>
                 {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
                 <Graph
                     graph={MindMap.graph}
                     options={options}
                     events={{
                         ...MindMap.events,
+                        dragStart: (events) =>
+                            handleNodeDragStart(
+                                events,
+                                ymapRef,
+                                setUserActionStack,
+                                setUserActionStackPointer
+                            ),
                         dragging: (events) => handleNodeDragging(events, ymapRef, userName),
-                        dragEnd: (events) => handleNodeDragEnd(events, ymapRef, setSelectedNode),
+                        dragEnd: (events) =>
+                            handleNodeDragEnd(events, ymapRef, setSelectedNode, setUserActionStack),
                         drag: handleCanvasDrag,
                         click: (events) => {
                             handleAddTextNode(
@@ -998,7 +1266,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                                 ymapRef,
                                 setSelectedNode,
                                 setSelectedEdge,
-                                setIsCreatingText
+                                setIsCreatingText,
+                                networkRef
                             );
                         },
                         select: handleUserSelect,
@@ -1009,7 +1278,8 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                                 ymapRef,
                                 modifyNode,
                                 setAlertMessage,
-                                setIsAlertMessageVisible
+                                setIsAlertMessageVisible,
+                                networkRef
                             ),
                     }}
                     style={{ height: "100%", width: "100%" }}
@@ -1030,14 +1300,16 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                         }}
                     >
                         <NodeContextMenu
-                            selectedNodeId={contextMenuPos.selectedNodeId}
                             selectedNode={selectedNode}
                             onClose={closeNodeContextMenu}
                             deleteNode={deleteNodes}
                             createNode={createNode}
+                            bookMarkNode={bookMarkNode}
                             setIsCreatingEdge={setIsCreatingEdge}
                             setFromNode={setFromNode}
                             handleNodeSelect={handleNodeSelect}
+                            setInfoMessage={setInfoMessage}
+                            setIsInfoMessageVisible={setIsInfoMessageVisible}
                         />
                     </div>
                 )}
@@ -1069,7 +1341,7 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                         }}
                     >
                         <TextContextMenu
-                            selectedText={contextMenuPos.selectedNodeId}
+                            selectedText={selectedNode}
                             onClose={closeTextContextMenu}
                             deleteNode={deleteNodes}
                         />
@@ -1080,25 +1352,58 @@ const MindMap = ({ sessionId, leaveSession, toggleAudio, audioEnabled, userName 
                 FocusButton={handleFocusButtonClick}
                 NodeButton={createNode}
                 TextButton={handleTextButton}
-                ImageButton={setIsImageSearchVisible}
-                ImageMenuState={isImageSearchVisible}
+                isImageSearchVisible={isImageSearchVisible}
+                setIsImageSearchVisible={setIsImageSearchVisible}
+                isMarkdownVisible={isMarkdownVisible}
+                setIsMarkdownVisible={setIsMarkdownVisible}
                 selectedNode={selectedNode}
                 onExportClick={handleExportClick}
+                setAlertMessage={setAlertMessage}
+                setIsAlertMessageVisible={setIsAlertMessageVisible}
+                userActionStack={userActionStack}
+                setUserActionStack={setUserActionStack}
+                userActionStackPointer={userActionStackPointer}
+                setUserActionStackPointer={setUserActionStackPointer}
+                setMindMap={setMindMap}
+                setMemo={setMemo}
+                setMouseCoordinates={setMouseCoordinates}
+                ymapRef={ymapRef}
+            />
+            <GraphToMarkdown
+                style={{ height: isMemoVisible ? "calc(80% - 23%)" : "80%" }}
+                nodes={nodes}
+                edges={edges}
+                isMarkdownVisible={isMarkdownVisible}
+                setIsMarkdownVisible={setIsMarkdownVisible}
+                networkRef={networkRef}
             />
             <ImageSearch
+                style={{ height: isTimerVisible ? "calc(80% - 13%)" : "80%" }}
                 createImage={handleCreateImage}
                 isImageSearchVisible={isImageSearchVisible}
+                setIsImageSearchVisible={setIsImageSearchVisible}
             />
-            <AlertToast
-                message={alertMessage}
-                open={isAlertMessageVisible}
-                visible={setIsAlertMessageVisible}
-            />
-            <InformationToast
-                message={infoMessage}
-                open={isInfoMessageVisible}
-                visible={setIsInfoMessageVisible}
-            />
+            <SnackbarProvider maxSnack={3}>
+                <AlertToast
+                    message={alertMessage}
+                    open={isAlertMessageVisible}
+                    visible={setIsAlertMessageVisible}
+                />
+                <InformationToast
+                    message={infoMessage}
+                    open={isInfoMessageVisible}
+                    visible={setIsInfoMessageVisible}
+                />
+            </SnackbarProvider>
+            {showPopup && (
+                <NodeLabelsPopup
+                    newNodeLabels={newNodeLabels}
+                    onDelete={handleDeleteLabel}
+                    onCreate={handleCreate}
+                    onClose={handleClosePopup}
+                    onRestart={handleRestart}
+                />
+            )}
         </div>
     );
 };

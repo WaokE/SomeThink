@@ -1,14 +1,26 @@
 .memo {
     position: fixed;
-    top: 12vh;
+    top: 10vh;
     right: 2vh;
-    width: 200px;
-    height: 100px;
+    width: 250px;
+    height: 15%;
     background-color: #fbeeac;
-    border: 1px solid black;
-    padding: 10px;
-    overflow: auto;
+    border: 2px solid #e8c55b;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
     z-index: 1;
+    overflow: auto;
     white-space: pre-wrap;
     resize: none;
+}
+
+.memo:focus {
+    outline: none;
+    border-color: #ffc107;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }

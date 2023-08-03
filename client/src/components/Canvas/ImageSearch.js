@@ -6,16 +6,20 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Slide from "@mui/material/Slide";
 import ImageSearchIcon from "@mui/icons-material/ImageSearch";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import IconButton from "@mui/material/IconButton";
 
 const styles = {
     ImageSearch: {
-        width: "20%",
+        width: "25%",
         height: "80%",
         position: "fixed",
-        bottom: "5%",
+        bottom: "10%",
         border: "2px solid #d9d9d9",
         overflow: "auto",
         backgroundColor: "#f8f8f8",
+        borderRadius: "10px",
+        left: "2vh",
     },
 
     ImageList: {
@@ -30,7 +34,7 @@ const styles = {
     },
 };
 
-const ImageSearch = (props) => {
+const ImageSearch = ({ style, ...props }) => {
     const [img, setImg] = useState("");
     const [res, setRes] = useState([]);
     const searchWordRef = useRef(null);
@@ -39,7 +43,7 @@ const ImageSearch = (props) => {
     let searchWord = "";
 
     useEffect(() => {
-        fetchRequest();
+        // fetchRequest();
     }, []);
 
     const fetchRequest = async () => {
@@ -51,7 +55,12 @@ const ImageSearch = (props) => {
 
     const submit = () => {
         searchWordRef.current = img;
-        fetchRequest();
+
+        if (img.includes("http")) {
+            props.createImage(img, "");
+        } else {
+            fetchRequest();
+        }
         setImg("");
     };
 
@@ -59,29 +68,40 @@ const ImageSearch = (props) => {
         props.createImage(url, searchWord);
     };
 
-    const handleEnterKeyEvent = (key) => {
-        if (key === "Enter") {
+    const handleEnterKeyEvent = (e) => {
+        if (e.keyCode === 229 || e.isComposing) {
+            return;
+        }
+        if (e.key === "Enter") {
             submit();
         }
     };
 
+    const handleHideImageSearch = () => {
+        props.setIsImageSearchVisible(false);
+    };
+
     return (
         <Slide direction="right" in={props.isImageSearchVisible} mountOnEnter unmountOnExit>
-            <Box sx={styles.ImageSearch}>
+            <Box sx={{ ...styles.ImageSearch, ...style }}>
+                <IconButton onClick={handleHideImageSearch}>
+                    <ArrowBackRoundedIcon />
+                </IconButton>
                 <Box sx={styles.inputBox}>
                     <TextField
                         sx={{ width: "80%" }}
                         id="outlined-basic"
-                        label="원하는 이미지를 검색하세요."
+                        label="Search Image with Keyword or URL"
                         variant="outlined"
                         onChange={(e) => setImg(e.target.value)}
-                        onKeyDown={(e) => handleEnterKeyEvent(e.key)}
+                        onKeyDown={(e) => handleEnterKeyEvent(e)}
+                        value={img}
                     />
                     <Button variant="contained" type="submit" onClick={submit}>
                         <ImageSearchIcon />
                     </Button>
                 </Box>
-                <ImageList sx={styles.ImageList} variant="masonry" cols={2} rowHeight={121}>
+                <ImageList sx={styles.ImageList} variant="masonry" cols={3} rowHeight={121}>
                     {res.map((val) => {
                         return (
                             <ImageListItem key={val.id}>

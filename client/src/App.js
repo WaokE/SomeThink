@@ -1,8 +1,10 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import MindMap from "./components/Canvas/MindMap";
 import { OpenVidu } from "openvidu-browser";
 import axios from "axios";
 import UserVideoComponent from "./components/Audio/UserVideoComponent";
+
+import LoadingBox from "./components/LoadingScreen/LoadingBox";
 
 import "./App.css";
 import "./Fonts/Font.css";
@@ -14,6 +16,10 @@ class App extends Component {
     constructor(props) {
         super(props);
 
+        this.state = {
+            isLoading: false,
+        };
+
         // These properties are in the state's component in order to re-render the HTML whenever their values change
         this.state = {
             mySessionId: "RoomA",
@@ -23,6 +29,7 @@ class App extends Component {
             publisher: undefined,
             subscribers: [],
             audioEnabled: false,
+            speakingUserName: [],
         };
 
         this.joinSession = this.joinSession.bind(this);
@@ -81,12 +88,42 @@ class App extends Component {
         this.setState({
             sessionJoined: true,
         });
+
+        this.setState({
+            isLoading: false,
+        });
+    }
+
+    handleSpeakingUser(userName) {
+        const speakingUserName = this.state.speakingUserName;
+        speakingUserName.push(userName);
+        this.setState({
+            speakingUserName: speakingUserName,
+        });
+    }
+
+    handleDeleteSpeakingUser(userName) {
+        const speakingUserName = this.state.speakingUserName;
+        const index = speakingUserName.indexOf(userName);
+        if (index > -1) {
+            speakingUserName.splice(index, 1);
+            this.setState({
+                speakingUserName: speakingUserName,
+            });
+        }
     }
 
     joinSession() {
         // --- 1) Get an OpenVidu object ---
 
         this.OV = new OpenVidu();
+
+        this.OV.setAdvancedConfiguration({
+            publisherSpeakingEventsOptions: {
+                interval: 20,
+                threshold: -50,
+            },
+        });
 
         // --- 2) Init a session ---
         document.body.style.backgroundColor = "white";
@@ -124,6 +161,18 @@ class App extends Component {
                     console.warn(exception);
                 });
 
+                mySession.on("publisherStartSpeaking", (event) => {
+                    // console.log(event.connection.connectionId + " start speaking");
+                    const userName = JSON.parse(event.connection.data).clientData;
+                    this.handleSpeakingUser(userName);
+                });
+
+                mySession.on("publisherStopSpeaking", (event) => {
+                    // console.log(event.connection.connectionId + " stop speaking");
+                    const userName = JSON.parse(event.connection.data).clientData;
+                    this.handleDeleteSpeakingUser(userName);
+                });
+
                 // --- 4) Connect to the session with a valid user token ---
 
                 // Get a token from the OpenVidu deployment
@@ -140,7 +189,7 @@ class App extends Component {
                             let publisher = await this.OV.initPublisherAsync(undefined, {
                                 audioSource: undefined, // The source of audio. If undefined default microphone
                                 videoSource: false, // The source of video. If undefined default webcam
-                                publishAudio: true, // Whether you want to start publishing with your audio unmuted or not
+                                publishAudio: false, // Whether you want to start publishing with your audio unmuted or not
                                 publishVideo: false, // Whether you want to start publishing with your video enabled or not
                             });
 
@@ -176,6 +225,21 @@ class App extends Component {
             mySession.disconnect();
         }
 
+        const { myUserName, mySessionId } = this.state;
+        axios
+            .post(APPLICATION_SERVER_URL + "api/leavesession", {
+                userName: myUserName,
+                sessionId: mySessionId,
+            })
+            .then(() => {
+                console.log("User left the session on the server.");
+            })
+            .catch((error) => {
+                console.error("Error leaving the session on the server:", error);
+            });
+
+        window.location.reload();
+
         // Empty all properties...
         this.OV = null;
         this.setState({
@@ -192,7 +256,7 @@ class App extends Component {
         const { publisher, audioEnabled } = this.state;
 
         if (publisher) {
-            publisher.publishAudio(audioEnabled);
+            publisher.publishAudio(!audioEnabled);
 
             this.setState({
                 audioEnabled: !audioEnabled,
@@ -201,6 +265,7 @@ class App extends Component {
     }
 
     render() {
+        const { isLoading } = this.state;
         const mySessionId = this.state.mySessionId;
         const myUserName = this.state.myUserName;
         const audioEnabled = this.state.audioEnabled;
@@ -253,6 +318,16 @@ class App extends Component {
                                         </p>
                                         <p className="text-center">
                                             <input
+                                                onClick={() => {
+                                                    this.setState(
+                                                        {
+                                                            isLoading: true,
+                                                        },
+                                                        () => {
+                                                            this.forceUpdate();
+                                                        }
+                                                    );
+                                                }}
                                                 className="btn btn-lg btn-success"
                                                 name="commit"
                                                 type="submit"
@@ -276,6 +351,8 @@ class App extends Component {
                                 audioEnabled={audioEnabled}
                                 userName={myUserName}
                                 onSessionJoin={this.handleSessionJoin}
+                                speakingUserName={this.state.speakingUserName}
+                                isLoading={isLoading}
                             />
                         </div>
 
@@ -291,6 +368,7 @@ class App extends Component {
                                 </div>
                             ))}
                         </div>
+                        {isLoading && <LoadingBox roomNumb={mySessionId} />}
                     </div>
                 ) : null}
             </div>

@@ -24,13 +24,15 @@ const colors = [
 ];
 
 function TopBar({
-    onExportClick,
     sessionId,
     leaveSession,
     toggleAudio,
     audioEnabled,
     userList,
     userName,
+    speakingUserName,
+    ymapRef,
+    isLoading,
 }) {
     // userName과 일치하는 아바타를 찾아서 따로 저장합니다.
     const userAvatar = userList.find((user) => user === userName);
@@ -48,6 +50,7 @@ function TopBar({
     };
 
     const [currentTime, setCurrentTime] = useState(getCurrentTime());
+    const [prevUserListLength, setPrevUserListLength] = useState(userList.length);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -55,6 +58,39 @@ function TopBar({
         }, 1000);
         return () => clearInterval(timer);
     }, []);
+
+    useEffect(() => {
+        if (userList.length >= prevUserListLength) {
+            if (!isLoading && userList.length === 1) {
+                ymapRef.current.set(
+                    `Node 1`,
+                    JSON.stringify({
+                        id: 1,
+                        label: "start",
+                        x: 0,
+                        y: 0,
+                        physics: false,
+                        fixed: true,
+                        color: "#f5b252",
+                        widthConstraint: { minimum: 100, maximum: 200 }, // 너비를 100으로 고정
+                        heightConstraint: { minimum: 100, maximum: 200 }, // 높이를 100으로 고정
+                        font: { size: 30 },
+                    })
+                );
+                ymapRef.current.set("RootQuadrant", 0);
+                ymapRef.current.set(userName, true);
+            }
+        }
+        if (userList.length > prevUserListLength) {
+            const audio = new Audio("enter.mp3");
+            audio.play();
+        } else if (userList.length < prevUserListLength) {
+            const audio = new Audio("leave.mp3");
+            audio.volume = 0.5;
+            audio.play();
+        }
+        setPrevUserListLength(userList.length);
+    }, [userList.length, isLoading]);
 
     return (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1 }}>
@@ -80,7 +116,9 @@ function TopBar({
                                 }
                                 label={userAvatar}
                                 sx={{
-                                    border: `1px solid white`, // Add orange border to the entire Chip
+                                    boxShadow: speakingUserName.includes(userName)
+                                        ? `inset 0px 0px 0px 2px #76e465`
+                                        : `inset 0px 0px 0px 1px white`,
                                     borderRadius: "15px", // Rounded border for the entire Chip
                                 }}
                             />
@@ -99,6 +137,17 @@ function TopBar({
                                             />
                                         }
                                         label={user}
+                                        sx={{
+                                            boxShadow:
+                                                // if user in speakingUserName list
+
+                                                speakingUserName.includes(user)
+                                                    ? `inset 0px 0px 0px 2px #76e465`
+                                                    : ``,
+                                            borderRadius: speakingUserName.includes(user)
+                                                ? "15px"
+                                                : "", // Rounded border for the entire Chip
+                                        }}
                                     />
                                 )
                         )}
@@ -108,12 +157,12 @@ function TopBar({
                             <p>{currentTime}</p>
                         </div>
                         {audioEnabled ? (
-                            <MicOffSharpIcon sx={{ color: "gray" }} />
-                        ) : (
                             <MicSharpIcon sx={{ color: "gray" }} />
+                        ) : (
+                            <MicOffSharpIcon sx={{ color: "gray" }} />
                         )}
                         <Switch
-                            checked={!audioEnabled}
+                            checked={audioEnabled}
                             onChange={toggleAudio}
                             inputProps={{ "aria-label": "controlled" }}
                         />

@@ -51,18 +51,21 @@ module.exports = async function (req, res) {
 };
 
 function generatePrompt(keyword, allKeywords) {
-    console.log(allKeywords);
-    return `I am looking to receive appropriate creative recommendations for the sub-concepts in a mind map. 
-    Please analyze the provided keywords (it from the sub-concepts to the higher-level concepts) and suggest two more specific and closely related creative keywords. 
-    The recommended creative keywords must be nouns, and I only want two creative keyword recommendations, even if there is limited information about the main topic. 
-    The recommended creative keywords must be in Korean. 
+    console.log(keyword);
+    return `I'd like to get a recommendation for a word that is a subnode of this ${
+        keyword.split(", ")[0]
+    } on the mind map. 
+    Please analyze the keywords provided (keywords appear in order from the lower node to the upper node) to identify the association between the keywords and present subtopics related to the upper node.
+    Please present only two related keywords.
+    Recommendation keywords must be nouns, and you must specify 2 keyword recommendations even if you give insufficient information.
+    The recommended keyword must be Korean.
     If any of the keywords I provide are already in the [${allKeywords}] list, please suggest different keywords instead.
 
-    Question: Felidae, Mammal, Animal, Biology
-    Answer: 호랑이, 고양이"
-  
-    Question: Programming Language, Software, Computer
-    Answer: 자바, 파이썬"
+    Question: Food, Japan, Travel
+    Answer: 스시, 소바, 돈까스, 오코노미야키, 타코야키, 돈부리, 에비동
+
+    Question: Tourist attractions, Japan, travel
+    Answer: 신주쿠(도쿄), 긴자(도쿄)
   
     Question: ${keyword}
     Answer:`;
