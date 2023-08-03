@@ -146,6 +146,7 @@ export default function LowToolBar(props) {
                 x: content.x,
                 y: content.y,
                 shape: content.shape,
+                widthConstraint: false,
             };
         } else {
             node = {
@@ -166,7 +167,7 @@ export default function LowToolBar(props) {
                 physics: false,
                 fixed: true,
                 color: "#f5b252",
-                widthConstraint: { minimum: 100, maximum: 200 }, 
+                widthConstraint: { minimum: 100, maximum: 200 },
                 heightConstraint: { minimum: 100, maximum: 200 },
                 font: { size: 30 },
             };
