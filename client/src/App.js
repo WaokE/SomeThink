@@ -256,7 +256,7 @@ class App extends Component {
         const { publisher, audioEnabled } = this.state;
 
         if (publisher) {
-            publisher.publishAudio(audioEnabled);
+            publisher.publishAudio(!audioEnabled);
 
             this.setState({
                 audioEnabled: !audioEnabled,

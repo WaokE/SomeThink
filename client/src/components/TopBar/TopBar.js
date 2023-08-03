@@ -157,12 +157,12 @@ function TopBar({
                             <p>{currentTime}</p>
                         </div>
                         {audioEnabled ? (
-                            <MicOffSharpIcon sx={{ color: "gray" }} />
-                        ) : (
                             <MicSharpIcon sx={{ color: "gray" }} />
+                        ) : (
+                            <MicOffSharpIcon sx={{ color: "gray" }} />
                         )}
                         <Switch
-                            checked={!audioEnabled}
+                            checked={audioEnabled}
                             onChange={toggleAudio}
                             inputProps={{ "aria-label": "controlled" }}
                         />
