@@ -519,6 +519,7 @@ const MindMap = ({
         }
         // 엣지 선택시
         else if (event.edges.length > 0) {
+            checkPrevSelected(tempUserId);
             setSelectedNode(null);
             setSelectedEdge(event.edges[0]);
         }
