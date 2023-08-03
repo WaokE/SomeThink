@@ -4,6 +4,9 @@ import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Typography from "@mui/material/Typography";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import IconButton from "@mui/material/IconButton";
+
 const styles = {
     markdown: {
         width: "22%",
@@ -18,7 +21,14 @@ const styles = {
     },
 };
 
-const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef }) => {
+const GraphToMarkdown = ({
+    style,
+    nodes,
+    edges,
+    isMarkdownVisible,
+    setIsMarkdownVisible,
+    networkRef,
+}) => {
     const [markdownForDisplay, setMarkdownForDisplay] = useState([]);
     const [markdownForFile, setMarkdownForFile] = useState([]);
 
@@ -198,6 +208,10 @@ const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef })
         ));
     };
 
+    const handleMarkdownVisible = () => {
+        setIsMarkdownVisible(false);
+    };
+
     useEffect(() => {
         // window.addEventListener("makeMarkdown", handleDownload);
         window.addEventListener("makeMarkdown", handleDownloadSnapshot);
@@ -210,6 +224,9 @@ const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef })
     return (
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
             <Box sx={{ ...styles.markdown, ...style }}>
+                <IconButton onClick={handleMarkdownVisible}>
+                    <ArrowBackRoundedIcon />
+                </IconButton>
                 <List>{displayMarkdown()}</List>
             </Box>
         </Slide>
