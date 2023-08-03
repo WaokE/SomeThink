@@ -431,7 +431,20 @@ const MindMap = ({
         return userList;
     }, []);
 
-    const handleMouseMove = (e) => {
+    const throttle = (callback, delay) => {
+        let previousCall = new Date().getTime();
+        return function () {
+            const time = new Date().getTime();
+
+            if (time - previousCall >= delay) {
+                previousCall = time;
+                callback.apply(null, arguments);
+            }
+        };
+    };
+
+    const handleMouseMove = throttle((e) => {
+        console.log("event!!!");
         if (networkRef.current !== null) {
             const coord = networkRef.current.DOMtoCanvas({
                 x: e.clientX,
@@ -444,7 +457,7 @@ const MindMap = ({
                 JSON.stringify({ x: nx, y: ny, id: userName })
             );
         }
-    };
+    }, 10);
 
     const handleUserSelect = (event) => {
         const tempUserId = userName;
