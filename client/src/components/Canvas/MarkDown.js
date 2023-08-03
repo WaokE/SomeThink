@@ -101,7 +101,7 @@ const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef })
     const handleFocusButtonClick = (x, y) => {
         networkRef.current.moveTo({
             position: { x: x, y: y },
-            scale: 1.0,
+            scale: 1.3,
             offset: { x: 0, y: 0 },
             animation: {
                 duration: 500,

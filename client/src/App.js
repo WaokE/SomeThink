@@ -121,7 +121,7 @@ class App extends Component {
         this.OV.setAdvancedConfiguration({
             publisherSpeakingEventsOptions: {
                 interval: 20,
-                threshold: -25,
+                threshold: -50,
             },
         });
 
@@ -256,7 +256,7 @@ class App extends Component {
         const { publisher, audioEnabled } = this.state;
 
         if (publisher) {
-            publisher.publishAudio(audioEnabled);
+            publisher.publishAudio(!audioEnabled);
 
             this.setState({
                 audioEnabled: !audioEnabled,
