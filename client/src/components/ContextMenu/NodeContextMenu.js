@@ -79,7 +79,7 @@ const NodeContextMenu = ({
                     <ListItemIcon>
                         <PushPinRoundedIcon fontSize="small" />
                     </ListItemIcon>
-                    <ListItemText>노드 북마크</ListItemText>
+                    <ListItemText>북마크 토글</ListItemText>
                     <Typography variant="body2" color="text.secondary"></Typography>
                 </MenuItem>
                 <Divider />

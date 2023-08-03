@@ -900,13 +900,23 @@ const MindMap = ({
 
     const bookMarkNode = () => {
         let selectedNodeObject = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
-        selectedNodeObject.shape = "icon";
-        selectedNodeObject.icon = {
-            face: "'FontAwesome'",
-            code: "\uf08d",
-            size: 50,
-            color: "#EF6262",
-        };
+        // 북마크가 되어있지 않다면 북마크 추가
+        console.log(typeof selectedNodeObject.shape);
+        if (selectedNodeObject.shape !== "icon") {
+            selectedNodeObject.shape = "icon";
+            selectedNodeObject.icon = {
+                face: "'FontAwesome'",
+                code: "\uf08d",
+                size: 50,
+                color: "#EF6262",
+            };
+        }
+        // 북마크가 되어있다면
+        else {
+            selectedNodeObject.shape = "circle";
+            delete selectedNodeObject.icon;
+        }
+        // 변경사항 반영
         ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
     };
 
