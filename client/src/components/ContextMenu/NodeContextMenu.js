@@ -10,12 +10,14 @@ import PsychologyAltOutlinedIcon from "@mui/icons-material/PsychologyAltOutlined
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ShapeLineTwoToneIcon from "@mui/icons-material/ShapeLineTwoTone";
+import PushPinRoundedIcon from "@mui/icons-material/PushPinRounded";
 
 const NodeContextMenu = ({
     selectedNode,
     onClose,
     deleteNode,
     createNode,
+    bookMarkNode,
     setIsCreatingEdge,
     setFromNode,
     handleNodeSelect,
@@ -44,6 +46,11 @@ const NodeContextMenu = ({
         onClose();
     };
 
+    const handleBookMarkNode = () => {
+        bookMarkNode();
+        onClose();
+    };
+
     return (
         <Paper sx={{ width: 150, maxWidth: "100%" }}>
             <MenuList>
@@ -66,6 +73,13 @@ const NodeContextMenu = ({
                         <ShapeLineTwoToneIcon fontSize="small" />
                     </ListItemIcon>
                     <ListItemText>엣지 추가</ListItemText>
+                    <Typography variant="body2" color="text.secondary"></Typography>
+                </MenuItem>
+                <MenuItem onClick={handleBookMarkNode}>
+                    <ListItemIcon>
+                        <PushPinRoundedIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>북마크 토글</ListItemText>
                     <Typography variant="body2" color="text.secondary"></Typography>
                 </MenuItem>
                 <Divider />

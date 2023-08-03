@@ -31,9 +31,9 @@ import {
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
 
-import NodeContextMenu from "./NodeContextMenu";
-import EdgeContextMenu from "./EdgeContextMenu";
-import TextContextMenu from "./TextContextMenu";
+import NodeContextMenu from "../ContextMenu/NodeContextMenu";
+import EdgeContextMenu from "../ContextMenu/EdgeContextMenu";
+import TextContextMenu from "../ContextMenu/TextContextMenu";
 import LowToolBar from "../LowToolBar/LowToolBar";
 import UserMouseMove from "./UserMouseMove";
 import Memo from "./MemoNode";
@@ -898,6 +898,27 @@ const MindMap = ({
         }
     };
 
+    const bookMarkNode = () => {
+        let selectedNodeObject = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
+        // 북마크가 되어있지 않다면 북마크 추가
+        if (selectedNodeObject.shape !== "icon") {
+            selectedNodeObject.shape = "icon";
+            selectedNodeObject.icon = {
+                face: "'FontAwesome'",
+                code: "\uf08d",
+                size: 70,
+                color: "#EF6262",
+            };
+        }
+        // 북마크가 되어있다면
+        else {
+            selectedNodeObject.shape = "circle";
+            delete selectedNodeObject.icon;
+        }
+        // 변경사항 반영
+        ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
+    };
+
     useEffect(() => {
         if (selectedNode !== null) {
             const node = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
@@ -1214,6 +1235,7 @@ const MindMap = ({
                             onClose={closeNodeContextMenu}
                             deleteNode={deleteNodes}
                             createNode={createNode}
+                            bookMarkNode={bookMarkNode}
                             setIsCreatingEdge={setIsCreatingEdge}
                             setFromNode={setFromNode}
                             handleNodeSelect={handleNodeSelect}
