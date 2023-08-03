@@ -55,10 +55,6 @@ jobs:
             - name: file check
               run: ls -al
 
-            - name: tar test
-              run: cat ./${{secrets.TARNAME}}.tgz
-              shell: bash
-
             - name: configure aws
               uses: aws-actions/configure-aws-credentials@v1
               with:
@@ -72,7 +68,7 @@ jobs:
               run: |
                   aws s3 cp \
                     --region ap-northeast-2 \
-                    ./${{ secrets.TARNAME}}.tgz s3://$BUCKET_NAME/build/${{ secrets.TARNAME}}.tgz
+                    ./${{ secrets.TARNAME}} s3://$BUCKET_NAME/build/${{ secrets.TARNAME}}.tgz
 
             - name: Code Deploy
               env:
