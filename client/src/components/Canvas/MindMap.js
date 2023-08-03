@@ -1305,6 +1305,7 @@ const MindMap = ({
                 nodes={nodes}
                 edges={edges}
                 isMarkdownVisible={isMarkdownVisible}
+                setIsMarkdownVisible={setIsMarkdownVisible}
                 networkRef={networkRef}
             />
             <ImageSearch
