@@ -2,6 +2,6 @@
 REPOSITORY=/home/ubuntu/SomeThink/server
 cd $REPOSITORY
 
-rm -rf .env
+pm2 stop all
 
 pm2 delete all
