@@ -49,11 +49,8 @@ jobs:
                   ${{secrets.SERVER.ENV}}
 
             - name: Make Tar File
-              run: tar -cpvzf ./${{ secrets.TARNAME}} *
+              run: tar -cpvzf ./${{ secrets.TARNAME}}.tgz *
               shell: bash
-
-            - name: file check
-              run: ls -al
 
             - name: configure aws
               uses: aws-actions/configure-aws-credentials@v1
@@ -68,7 +65,7 @@ jobs:
               run: |
                   aws s3 cp \
                     --region ap-northeast-2 \
-                    ./${{ secrets.TARNAME}} s3://$BUCKET_NAME/build/${{ secrets.TARNAME}}.tgz
+                    ./${{ secrets.TARNAME}}.tgz s3://$BUCKET_NAME/build/${{ secrets.TARNAME}}.tgz
 
             - name: Code Deploy
               env:
