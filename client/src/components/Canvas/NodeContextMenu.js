@@ -10,6 +10,7 @@ import PsychologyAltOutlinedIcon from "@mui/icons-material/PsychologyAltOutlined
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ShapeLineTwoToneIcon from "@mui/icons-material/ShapeLineTwoTone";
+import PushPinRoundedIcon from "@mui/icons-material/PushPinRounded";
 
 const NodeContextMenu = ({
     selectedNode,
@@ -76,7 +77,7 @@ const NodeContextMenu = ({
                 </MenuItem>
                 <MenuItem onClick={handleBookMarkNode}>
                     <ListItemIcon>
-                        <ShapeLineTwoToneIcon fontSize="small" />
+                        <PushPinRoundedIcon fontSize="small" />
                     </ListItemIcon>
                     <ListItemText>노드 북마크</ListItemText>
                     <Typography variant="body2" color="text.secondary"></Typography>
