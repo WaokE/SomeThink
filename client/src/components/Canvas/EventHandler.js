@@ -464,6 +464,17 @@ export const handleUndo = (
         });
         setUserActionStackPointer((prev) => prev - 1);
     }
+    if (action === "modify") {
+        const node = JSON.parse(
+            ymapRef.current.get(`Node ${userActionStack[userActionStackPointer].nodeId}`)
+        );
+        node.label = userActionStack[userActionStackPointer].prevLabel;
+        ymapRef.current.set(
+            `Node ${userActionStack[userActionStackPointer].nodeId}`,
+            JSON.stringify(node)
+        );
+        setUserActionStackPointer((prev) => prev - 1);
+    }
 };
 
 export const handleRedo = (
@@ -570,6 +581,12 @@ export const handleRedo = (
         deletedNodes.forEach((node) => {
             ymapRef.current.delete(`Node ${node.id}`);
         });
+        setUserActionStackPointer((prev) => prev + 1);
+    }
+    if (action === "modify") {
+        const node = JSON.parse(ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`));
+        node.label = userActionStack[prevPointer].newLabel;
+        ymapRef.current.set(`Node ${userActionStack[prevPointer].nodeId}`, JSON.stringify(node));
         setUserActionStackPointer((prev) => prev + 1);
     }
 };

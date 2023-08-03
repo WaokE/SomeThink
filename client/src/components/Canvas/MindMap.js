@@ -906,6 +906,34 @@ const MindMap = ({
     const modifyNode = (nodeId, newLabel) => {
         const node = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));
         if (node) {
+            setUserActionStack((prev) => {
+                // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
+                if (prev.length >= MAX_STACK_LENGTH) {
+                    setUserActionStackPointer(prev.length - 1);
+                    return [
+                        ...prev.slice(1),
+                        {
+                            action: "modify",
+                            nodeId: nodeId,
+                            prevLabel: node.label,
+                            newLabel: newLabel,
+                        },
+                    ];
+                }
+                // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+                else {
+                    setUserActionStackPointer(prev.length);
+                    return [
+                        ...prev,
+                        {
+                            action: "modify",
+                            nodeId: nodeId,
+                            prevLabel: node.label,
+                            newLabel: newLabel,
+                        },
+                    ];
+                }
+            });
             node.label = newLabel;
             ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(node));
         }
