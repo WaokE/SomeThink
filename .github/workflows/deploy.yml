@@ -52,12 +52,12 @@ jobs:
               run: tar -cpvzf ./${{ secrets.TARNAME}} *
               shell: bash
 
+            - name: file check
+              run: ls -al
+
             - name: tar test
               run: cat ./${{secrets.TARNAME}}.tgz
               shell: bash
-
-            - name: file check
-              run: ls -al
 
             - name: configure aws
               uses: aws-actions/configure-aws-credentials@v1
