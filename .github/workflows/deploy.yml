@@ -1,4 +1,4 @@
-name: deploy react
+name: CI/CD deploy
 
 on:
     push:
@@ -49,7 +49,7 @@ jobs:
                   ${{secrets.SERVER.ENV}}
 
             - name: Make Tar File
-              run: tar -cpvzf ./$GITHUB_SHA.tgz *
+              run: tar -cpvzf ./${{ secrets.TARNAME}} *
               shell: bash
 
             - name: configure aws s3
@@ -65,7 +65,7 @@ jobs:
               run: |
                   aws s3 cp \
                     --region ap-northeast-2 \
-                    ./$GITHUB_SHA.tgz s3://$BUCKET_NAME/build/$GITHUB_SHA.tgz
+                    ./$GITHUB_SHA.tgz s3://$BUCKET_NAME/build/${{ secrets.TARNAME}}.tgz
 
             - name: Code Deploy
               env:
