@@ -65,9 +65,9 @@ jobs:
               run: |
                   aws s3 cp \
                     --region ap-northeast-2 \
-                    ./$GITHUB_SHA.tgz s3://$BUCKET_NAME/build/${{ secrets.TARNAME}}.tgz
+                    ./${{ secrets.TARNAME}}.tgz s3://$BUCKET_NAME/build/${{ secrets.TARNAME}}.tgz
 
             - name: Code Deploy
               env:
                   BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME}}
-              run: aws deploy create-deployment --application-name SomeThink --file-exists-behavior OVERWRITE --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name somethink-codedeploy --s3-location bucket=$BUCKET_NAME,bundleType=tgz,key=build/$GITHUB_SHA.tgz
+              run: aws deploy create-deployment --application-name SomeThink --file-exists-behavior OVERWRITE --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name somethink-codedeploy --s3-location bucket=$BUCKET_NAME,bundleType=tgz,key=build/${{ secrets.TARNAME}}.tgz
