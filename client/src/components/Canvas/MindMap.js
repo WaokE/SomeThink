@@ -901,13 +901,12 @@ const MindMap = ({
     const bookMarkNode = () => {
         let selectedNodeObject = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
         // 북마크가 되어있지 않다면 북마크 추가
-        console.log(typeof selectedNodeObject.shape);
         if (selectedNodeObject.shape !== "icon") {
             selectedNodeObject.shape = "icon";
             selectedNodeObject.icon = {
                 face: "'FontAwesome'",
                 code: "\uf08d",
-                size: 50,
+                size: 70,
                 color: "#EF6262",
             };
         }
