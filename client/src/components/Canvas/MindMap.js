@@ -863,11 +863,16 @@ const MindMap = ({
         const image = new Image();
         image.crossOrigin = "Anonymous";
         image.onload = function () {
+            const aspectRatio = image.width / image.height;
+            const newWidth = 250;
+            const newHeight = newWidth / aspectRatio;
             const canvas = document.createElement("canvas");
-            canvas.width = image.width;
-            canvas.height = image.height;
+            canvas.width = newWidth;
+            canvas.height = newHeight;
             const ctx = canvas.getContext("2d");
-            ctx.drawImage(image, 0, 0);
+
+            ctx.drawImage(image, 0, 0, newWidth, newHeight);
+
             const dataURL = canvas.toDataURL();
             const coord = networkRef.current.DOMtoCanvas({
                 x: window.innerWidth / 2,
@@ -886,8 +891,6 @@ const MindMap = ({
 
             ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
         };
-
-        // 이미지를 프록시를 통해 가져옴
         image.src = url;
     };
 
