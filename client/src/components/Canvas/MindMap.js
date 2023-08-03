@@ -899,6 +899,18 @@ const MindMap = ({
         }
     };
 
+    const bookMarkNode = () => {
+        let selectedNodeObject = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
+        selectedNodeObject.shape = "icon";
+        selectedNodeObject.icon = {
+            face: "'FontAwesome'",
+            code: "\uf08d",
+            size: 50,
+            color: "#EF6262",
+        };
+        ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
+    };
+
     useEffect(() => {
         if (selectedNode !== null) {
             const node = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
@@ -1215,6 +1227,7 @@ const MindMap = ({
                             onClose={closeNodeContextMenu}
                             deleteNode={deleteNodes}
                             createNode={createNode}
+                            bookMarkNode={bookMarkNode}
                             setIsCreatingEdge={setIsCreatingEdge}
                             setFromNode={setFromNode}
                             handleNodeSelect={handleNodeSelect}

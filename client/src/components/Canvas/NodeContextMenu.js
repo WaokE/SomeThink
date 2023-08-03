@@ -16,6 +16,7 @@ const NodeContextMenu = ({
     onClose,
     deleteNode,
     createNode,
+    bookMarkNode,
     setIsCreatingEdge,
     setFromNode,
     handleNodeSelect,
@@ -44,6 +45,11 @@ const NodeContextMenu = ({
         onClose();
     };
 
+    const handleBookMarkNode = () => {
+        bookMarkNode();
+        onClose();
+    };
+
     return (
         <Paper sx={{ width: 150, maxWidth: "100%" }}>
             <MenuList>
@@ -66,6 +72,13 @@ const NodeContextMenu = ({
                         <ShapeLineTwoToneIcon fontSize="small" />
                     </ListItemIcon>
                     <ListItemText>엣지 추가</ListItemText>
+                    <Typography variant="body2" color="text.secondary"></Typography>
+                </MenuItem>
+                <MenuItem onClick={handleBookMarkNode}>
+                    <ListItemIcon>
+                        <ShapeLineTwoToneIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>노드 북마크</ListItemText>
                     <Typography variant="body2" color="text.secondary"></Typography>
                 </MenuItem>
                 <Divider />
