@@ -121,7 +121,7 @@ class App extends Component {
         this.OV.setAdvancedConfiguration({
             publisherSpeakingEventsOptions: {
                 interval: 20,
-                threshold: -25,
+                threshold: -50,
             },
         });
 
