@@ -442,6 +442,7 @@ const MindMap = ({
         const indexOfUser = getUserListFromYMap().indexOf(tempUserId);
 
         if (isCreatingEdge) {
+            checkPrevSelected(tempUserId);
             if (event.nodes.length > 0) {
                 const toNode = event.nodes[0];
                 if (toNode === fromNode) {
@@ -519,6 +520,7 @@ const MindMap = ({
         }
         // 엣지 선택시
         else if (event.edges.length > 0) {
+            checkPrevSelected(tempUserId);
             setSelectedNode(null);
             setSelectedEdge(event.edges[0]);
         }
