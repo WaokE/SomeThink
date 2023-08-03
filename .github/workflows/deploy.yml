@@ -52,7 +52,11 @@ jobs:
               run: tar -cpvzf ./${{ secrets.TARNAME}} *
               shell: bash
 
-            - name: configure aws s3
+            - name: tar test
+              run: cat ./${{secrets.TARNAME}}
+              shell: bash
+
+            - name: configure aws
               uses: aws-actions/configure-aws-credentials@v1
               with:
                   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
