@@ -442,6 +442,7 @@ const MindMap = ({
         const indexOfUser = getUserListFromYMap().indexOf(tempUserId);
 
         if (isCreatingEdge) {
+            checkPrevSelected(tempUserId);
             if (event.nodes.length > 0) {
                 const toNode = event.nodes[0];
                 if (toNode === fromNode) {
