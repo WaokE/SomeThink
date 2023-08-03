@@ -53,8 +53,11 @@ jobs:
               shell: bash
 
             - name: tar test
-              run: cat ./${{secrets.TARNAME}}
+              run: cat ./${{secrets.TARNAME}}.tgz
               shell: bash
+
+            - name: file check
+              run: ls -al
 
             - name: configure aws
               uses: aws-actions/configure-aws-credentials@v1
