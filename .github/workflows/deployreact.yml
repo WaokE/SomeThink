@@ -70,8 +70,4 @@ jobs:
             - name: Code Deploy
               env:
                   BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME}}
-              run: aws deploy create-deployment --application-name SomeThink \
-                  --file-exists-behavior OVERWRITE \
-                  --deployment-config-name CodeDeployDefault.OneAtATime \
-                  --deployment-group-name somethink-codedeploy \
-                  --s3-location bucket=$BUCKET_NAME,bundleType=tgz,key=build/$GITHUB_SHA.tgz
+              run: aws deploy create-deployment --application-name SomeThink --file-exists-behavior OVERWRITE --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name somethink-codedeploy --s3-location bucket=$BUCKET_NAME,bundleType=tgz,key=build/$GITHUB_SHA.tgz
