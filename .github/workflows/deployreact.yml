@@ -5,18 +5,14 @@ on:
         branches:
             - main
             - develop
-        paths:
-            - client/**
 
 jobs:
     build:
         env:
             CI: false
-        name: React build
+        name: deploy
         runs-on: ubuntu-latest
-        defaults:
-            run:
-                working-directory: "./client"
+
         steps:
             - name: checkout code
               uses: actions/checkout@v3.3.0
@@ -30,11 +26,31 @@ jobs:
                       ${{runner.os}}-build-
                       ${{runner.os}}-
 
-            - name: Install Dependencies
-              run: npm install
+            - name: client Install Dependencies
+              run: |
+                  cd client/
+                  npm install
 
-            - name: Build
-              run: npm run build
+            - name: client Build
+              run: |
+                  cd client/
+                  npm run build
+
+            - name: server Install Dependencies
+              run: |
+                  cd server/
+                  npm install
+
+            - name: Create Server Env File
+              run: |
+                  cd server/
+                  touch .env
+                  cat <<EOF>> .env
+                  ${{secrets.SERVER.ENV}}
+
+            - name: Make Tar File
+              run: tar -cpvzf ./$GITHUB_SHA.tgz *
+              shell: bash
 
             - name: configure aws s3
               uses: aws-actions/configure-aws-credentials@v1
@@ -46,4 +62,16 @@ jobs:
             - name: Deploy
               env:
                   BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME}}
-              run: aws s3 sync ./build s3://$BUCKET_NAME
+              run: |
+                  aws s3 cp \
+                    --region ap-northeast-2 \
+                    ./$GITHUB_SHA.tgz s3://$BUCKET_NAME/build/$GITHUB_SHA.tgz
+
+            - name: Code Deploy
+              env:
+                  BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME}}
+              run: aws deploy create-deployment --application-name SomeThink \
+                  --file-exists-behavior OVERWRITE \
+                  --deployment-config-name CodeDeployDefault.OneAtATime \
+                  --deployment-group-name somethink-codedeploy \
+                  --s3-location bucket=$BUCKET_NAME,bundleType=tgz,key=build/$GITHUB_SHA.tgz
