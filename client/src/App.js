@@ -10,19 +10,15 @@ import "./App.css";
 import "./Fonts/Font.css";
 
 const APPLICATION_SERVER_URL =
-    process.env.NODE_ENV === "production" ? "" : "https://somethink.online/";
+    process.env.NODE_ENV === "production" ? "" : "http://localhost:5050/";
 
 class App extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {
-            isLoading: false,
-        };
-
         // These properties are in the state's component in order to re-render the HTML whenever their values change
         this.state = {
-            mySessionId: "RoomA",
+            mySessionId: "undefined",
             myUserName: "User" + Math.floor(Math.random() * 200),
             session: undefined,
             mainStreamManager: undefined,
@@ -30,6 +26,7 @@ class App extends Component {
             subscribers: [],
             audioEnabled: false,
             speakingUserName: [],
+            isLoading: false,
         };
 
         this.joinSession = this.joinSession.bind(this);
@@ -39,6 +36,8 @@ class App extends Component {
         this.handleChangeUserName = this.handleChangeUserName.bind(this);
         this.handleMainVideoStream = this.handleMainVideoStream.bind(this);
         this.onbeforeunload = this.onbeforeunload.bind(this);
+        this.handleCreateSession = this.handleCreateSession.bind(this);
+        this.handleJoinSession = this.handleJoinSession.bind(this);
     }
 
     componentDidMount() {
@@ -56,6 +55,37 @@ class App extends Component {
     handleChangeSessionId(e) {
         this.setState({
             mySessionId: e.target.value,
+        });
+    }
+
+    makeid(length) {
+        let result = "";
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        const charactersLength = characters.length;
+        let counter = 0;
+        while (counter < length) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            counter += 1;
+        }
+        return result;
+    }
+
+    handleCreateSession() {
+        this.setState({
+            mySessionId: this.makeid(8),
+        });
+        this.joinSession();
+    }
+
+    handleJoinSession() {
+        const mySessionId = this.state.mySessionId;
+        this.validateSessionId(mySessionId).then((response) => {
+            if (response === true) {
+                console.log(mySessionId);
+                this.joinSession();
+            } else {
+                alert("존재하지 않는 방입니다.");
+            }
         });
     }
 
@@ -245,7 +275,7 @@ class App extends Component {
         this.setState({
             session: undefined,
             subscribers: [],
-            mySessionId: "RoomA",
+            mySessionId: "undefined",
             myUserName: "User" + Math.floor(Math.random() * 200),
             mainStreamManager: undefined,
             publisher: undefined,
@@ -290,7 +320,10 @@ class App extends Component {
                                 </div>
                                 <div id="join-dialog" className="jumbotron vertical-center">
                                     <h1 className="logo"></h1>
-                                    <form className="form-group" onSubmit={this.joinSession}>
+                                    <form
+                                        className="form-group"
+                                        onSubmit={this.handleCreateSession}
+                                    >
                                         <p>
                                             <label>Name </label>
                                             <input
@@ -303,17 +336,38 @@ class App extends Component {
                                             />
                                         </p>
                                         <p>
-                                            <label> Room </label>
+                                            <input
+                                                onClick={() => {
+                                                    this.setState(
+                                                        {
+                                                            isLoading: true,
+                                                        }
+                                                        // () => {
+                                                        //     this.forceUpdate();
+                                                        // }
+                                                    );
+                                                }}
+                                                className="btn btn-lg btn-success"
+                                                name="commit"
+                                                type="submit"
+                                                value="CREATE"
+                                            />
+                                        </p>
+                                    </form>
+                                    <form className="form-group" onSubmit={this.handleJoinSession}>
+                                        <p>
+                                            <label> Type </label>
                                             <input
                                                 className="form-control"
                                                 type="text"
                                                 id="sessionId"
-                                                value={mySessionId}
+                                                // value={mySessionId}
                                                 onChange={this.handleChangeSessionId}
                                                 style={{ pointerEvents: "auto" }}
                                                 pattern="[0-9A-Za-z]+"
                                                 title="영어나 숫자만 입력해주세요"
-                                                required
+                                                placeholder="#INVITE CODE"
+                                                // required
                                             />
                                         </p>
                                         <p className="text-center">
@@ -322,10 +376,10 @@ class App extends Component {
                                                     this.setState(
                                                         {
                                                             isLoading: true,
-                                                        },
-                                                        () => {
-                                                            this.forceUpdate();
                                                         }
+                                                        // () => {
+                                                        //     this.forceUpdate();
+                                                        // }
                                                     );
                                                 }}
                                                 className="btn btn-lg btn-success"
@@ -392,6 +446,7 @@ class App extends Component {
      */
     async getToken() {
         const sessionId = await this.createSession(this.state.mySessionId);
+        console.log("세션 아이디 : " + sessionId);
         return await this.createToken(sessionId);
     }
 
@@ -415,6 +470,16 @@ class App extends Component {
             }
         );
         return response.data; // The token
+    }
+
+    async validateSessionId(sessionId) {
+        const response = await axios.get(
+            APPLICATION_SERVER_URL + "api/sessions/" + sessionId + "/validate",
+            {
+                headers: { "Content-Type": "application/json" },
+            }
+        );
+        return response.data;
     }
 }
 
