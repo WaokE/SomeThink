@@ -30,7 +30,6 @@ import {
 } from "./EventHandler";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
-import { BOOKMARK_OFFSET, BOOKMARK_SIZE } from "./EventHandler";
 
 import NodeContextMenu from "../ContextMenu/NodeContextMenu";
 import EdgeContextMenu from "../ContextMenu/EdgeContextMenu";
@@ -251,11 +250,6 @@ const MindMap = ({
         const selectedEdge = networkRef.current.getEdgeAt(VisEvent.pointer.DOM);
         DOMEvent.preventDefault();
 
-        // 북마크 위에서 우클릭 시
-        if (ymapRef.current.get(`BookMark ${selectedNode}`) !== undefined) {
-            return;
-        }
-
         // 노드 위에서 우클릭 시
         if (selectedNode !== undefined) {
             networkRef.current.selectNodes([selectedNode]);
@@ -360,9 +354,6 @@ const MindMap = ({
                 } else if (key.startsWith("Edge")) {
                     const edge = JSON.parse(value);
                     updatedGraph.edges.push(edge);
-                } else if (key.startsWith("BookMark")) {
-                    const bookMark = JSON.parse(value);
-                    updatedGraph.nodes.push(bookMark);
                 } else if (key === "Memo") {
                     updatedMemo.memo = value;
                 } else if (key.startsWith("Mouse")) {
@@ -463,10 +454,6 @@ const MindMap = ({
         const tempUserId = userName;
         const indexOfUser = getUserListFromYMap().indexOf(tempUserId);
 
-        if (ymapRef.current.get(`BookMark ${event.nodes[0]}`) !== undefined) {
-            checkPrevSelected(tempUserId);
-            return;
-        }
         if (isCreatingEdge) {
             checkPrevSelected(tempUserId);
             if (event.nodes.length > 0) {
@@ -960,29 +947,9 @@ const MindMap = ({
         let selectedNodeObject = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
         // 북마크가 되어있지 않다면 북마크 추가
         if (!selectedNodeObject.bookMarked) {
-            const bookMarkId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
-            const BookMarkNode = {
-                id: bookMarkId,
-                shape: "icon",
-                icon: {
-                    face: "'FontAwesome'",
-                    code: "\uf08d",
-                    size: BOOKMARK_SIZE,
-                    color: "#EF6262",
-                },
-                x: selectedNodeObject.x,
-                y: selectedNodeObject.y - BOOKMARK_OFFSET,
-                fixed: true,
-            };
-            selectedNodeObject.bookMarked = bookMarkId;
-            ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
-            ymapRef.current.set(`BookMark ${bookMarkId}`, JSON.stringify(BookMarkNode));
         }
         // 북마크가 되어있다면
         else {
-            ymapRef.current.delete(`BookMark ${selectedNodeObject.bookMarked}`);
-            selectedNodeObject.bookMarked = false;
-            ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
         }
     };
 
@@ -1055,8 +1022,6 @@ const MindMap = ({
             }
         });
 
-        const willDeleteNodeObject = JSON.parse(willDeleteNode);
-        ymapRef.current.delete(`BookMark ${willDeleteNodeObject.bookMarked}`);
         ymapRef.current.delete(`Node ${nodeId}`);
         ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` &&
             ymapRef.current.delete(`User ${tempUserId} selected`);
