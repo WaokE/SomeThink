@@ -53,6 +53,7 @@ import AlertToast from "../ToastMessage/Alert";
 import InformationToast from "../ToastMessage/Information";
 import GraphToMarkdown from "./MarkDown";
 import { SnackbarProvider } from "notistack";
+import HighLighter from "./HighLighter";
 
 import "./MindMap.css";
 
@@ -132,6 +133,7 @@ const MindMap = ({
     const [clickedNodeId, setClickedNodeId] = useState("");
     const [connectedNodeLabels, setConnectedNodeLabels] = useState([]);
     const [allNodeLabels, setAllNodeLabels] = useState([]);
+    const [highLightPos, setHighLightPos] = useState(false);
 
     const memoizedHandleClickOutside = useCallback(
         handleClickOutside(
@@ -484,17 +486,37 @@ const MindMap = ({
         }
     };
 
-    const handleFocusButtonClick = () => {
+    const handleFocusButtonClick = (x, y) => {
+        console.log("handleFocusButtonClick");
+        setHighLightPos({ x: x, y: y });
         networkRef.current.moveTo({
-            position: { x: 0, y: 0 },
-            scale: 1.0,
+            position: { x: x, y: y },
+            scale: 1.3,
             offset: { x: 0, y: 0 },
             animation: {
-                duration: 1000,
-                easingFunction: "easeInOutQuad",
+                duration: 600,
+                easingFunction: "easeOutCubic",
             },
         });
     };
+
+    useEffect(() => {
+        let showTimer = null;
+        let hideTimer = null;
+
+        if (highLightPos !== null) {
+            showTimer = setTimeout(() => {
+                hideTimer = setTimeout(() => {
+                    setHighLightPos(null);
+                }, 300);
+            }, 400);
+        }
+
+        return () => {
+            clearTimeout(showTimer);
+            if (hideTimer) clearTimeout(hideTimer);
+        };
+    }, [highLightPos]);
 
     const handleTextButton = () => {
         setIsCreatingText(true);
@@ -1232,6 +1254,7 @@ const MindMap = ({
                 isMarkdownVisible={isMarkdownVisible}
                 setIsMarkdownVisible={setIsMarkdownVisible}
                 networkRef={networkRef}
+                handleFocusButtonClick={handleFocusButtonClick}
             />
             <ImageSearch
                 style={{ height: isTimerVisible ? "calc(80% - 13%)" : "80%" }}
@@ -1260,6 +1283,7 @@ const MindMap = ({
                     onRestart={handleRestart}
                 />
             )}
+            {highLightPos && <HighLighter pos={highLightPos} setHighLightPos={setHighLightPos} />}
         </div>
     );
 };
