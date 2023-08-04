@@ -4,6 +4,9 @@ import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Typography from "@mui/material/Typography";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import IconButton from "@mui/material/IconButton";
+
 const styles = {
     markdown: {
         width: "22%",
@@ -16,9 +19,23 @@ const styles = {
         backgroundColor: "#f8f8f8",
         borderRadius: "10px",
     },
+    closeButton: {
+        rotate: "180deg",
+    },
+    buttonContainer: {
+        margin_right: "10px",
+    },
 };
 
-const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef }) => {
+const GraphToMarkdown = ({
+    style,
+    nodes,
+    edges,
+    isMarkdownVisible,
+    setIsMarkdownVisible,
+    networkRef,
+    handleFocusButtonClick,
+}) => {
     const [markdownForDisplay, setMarkdownForDisplay] = useState([]);
     const [markdownForFile, setMarkdownForFile] = useState([]);
 
@@ -97,18 +114,6 @@ const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef })
         setMarkdownForDisplay(markdownLinesForDisplay);
         setMarkdownForFile(markdownLinesForFile);
     }, [nodes, edges]);
-
-    const handleFocusButtonClick = (x, y) => {
-        networkRef.current.moveTo({
-            position: { x: x, y: y },
-            scale: 1.3,
-            offset: { x: 0, y: 0 },
-            animation: {
-                duration: 500,
-                easingFunction: "easeInOutQuad",
-            },
-        });
-    };
 
     const handleDownload = () => {
         const markdownString = markdownForFile
@@ -198,6 +203,10 @@ const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef })
         ));
     };
 
+    const handleMarkdownVisible = () => {
+        setIsMarkdownVisible(false);
+    };
+
     useEffect(() => {
         // window.addEventListener("makeMarkdown", handleDownload);
         window.addEventListener("makeMarkdown", handleDownloadSnapshot);
@@ -210,6 +219,11 @@ const GraphToMarkdown = ({ style, nodes, edges, isMarkdownVisible, networkRef })
     return (
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
             <Box sx={{ ...styles.markdown, ...style }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: "0.5%" }}>
+                    <IconButton onClick={handleMarkdownVisible}>
+                        <ArrowBackRoundedIcon sx={styles.closeButton} />
+                    </IconButton>
+                </div>
                 <List>{displayMarkdown()}</List>
             </Box>
         </Slide>

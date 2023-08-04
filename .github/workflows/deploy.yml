@@ -1,0 +1,73 @@
+name: CI/CD deploy
+
+on:
+    push:
+        branches:
+            - main
+            - develop
+
+jobs:
+    build:
+        env:
+            CI: false
+        name: deploy
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: checkout code
+              uses: actions/checkout@v3.3.0
+
+            - name: cache dependecy
+              uses: actions/cache@v3.2.3
+              with:
+                  path: node_modules
+                  key: ${{runner.os}}-build-${{hashFiles('**/package-lock.json')}}
+                  restore-key: |
+                      ${{runner.os}}-build-
+                      ${{runner.os}}-
+
+            - name: client Install Dependencies
+              run: |
+                  cd client/
+                  npm install
+
+            - name: client Build
+              run: |
+                  cd client/
+                  npm run build
+
+            - name: server Install Dependencies
+              run: |
+                  cd server/
+                  npm install
+
+            - name: Create Server Env File
+              run: |
+                  cd server/
+                  touch .env
+                  cat <<EOF>> .env
+                  ${{secrets.SERVER.ENV}}
+
+            - name: Make Tar File
+              run: tar -cpvzf ./${{ secrets.TARNAME}}.tgz *
+              shell: bash
+
+            - name: configure aws
+              uses: aws-actions/configure-aws-credentials@v1
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ap-northeast-2
+
+            - name: Deploy
+              env:
+                  BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME}}
+              run: |
+                  aws s3 cp \
+                    --region ap-northeast-2 \
+                    ./${{ secrets.TARNAME}}.tgz s3://$BUCKET_NAME/build/${{ secrets.TARNAME}}.tgz
+
+            - name: Code Deploy
+              env:
+                  BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME}}
+              run: aws deploy create-deployment --application-name SomeThink --file-exists-behavior OVERWRITE --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name somethink-codedeploy --s3-location bucket=$BUCKET_NAME,bundleType=tgz,key=build/${{ secrets.TARNAME}}.tgz

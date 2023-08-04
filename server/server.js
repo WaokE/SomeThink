@@ -48,7 +48,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 server.on("upgrade", (request, socket, head) => {
     // You may check auth of request here..
-    // See https://github.com/websockets/ws#client-authentication
     /**
      * @param {any} ws
      */

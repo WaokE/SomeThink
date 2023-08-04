@@ -25,7 +25,7 @@ import FileUploader from "../Canvas/SnapshotUpload";
 
 const styles = {
     bottomNav: {
-        width: "520px", // 너비 조정
+        width: "575px", // 너비 조정
         height: "50px", // 높이 조정
         borderRadius: "100px", // 라운드를 위한 값
         border: "2px solid #d9d9d9", // 테두리 설정
@@ -67,7 +67,7 @@ export default function LowToolBar(props) {
         window.dispatchEvent(new CustomEvent("setTimer"));
     };
     const focusMindMap = () => {
-        props.FocusButton();
+        props.FocusButton(0, 0);
     };
     const resetNode = () => {
         window.dispatchEvent(new CustomEvent("resetNode"));
@@ -146,6 +146,7 @@ export default function LowToolBar(props) {
                 x: content.x,
                 y: content.y,
                 shape: content.shape,
+                widthConstraint: false,
             };
         } else {
             node = {
@@ -166,7 +167,7 @@ export default function LowToolBar(props) {
                 physics: false,
                 fixed: true,
                 color: "#f5b252",
-                widthConstraint: { minimum: 100, maximum: 200 }, 
+                widthConstraint: { minimum: 100, maximum: 200 },
                 heightConstraint: { minimum: 100, maximum: 200 },
                 font: { size: 30 },
             };
@@ -215,7 +216,6 @@ export default function LowToolBar(props) {
         { icon: <CameraAltIcon />, name: "화면 캡처", onclick: hendleExportClick },
         { icon: <SaveIcon />, name: "마인드맵 저장", onclick: makeMarkdown },
         { icon: <Upload />, name: "마인드맵 불러오기", onclick: handleUploadSnapshotClick },
-        { icon: <FormatListBulletedSharpIcon />, name: "바로가기 열기", onclick: openMarkdown },
     ];
 
     return (
@@ -261,20 +261,28 @@ export default function LowToolBar(props) {
                         onClick={makeImage}
                     />
                 </Tooltip>
-                <Tooltip title="메모 토글" placement="top" sx={styles.tooltip}>
-                    <BottomNavigationAction
-                        value="memo"
-                        icon={<ContentPasteRoundedIcon sx={styles.icon} />}
-                        sx={styles.action}
-                        onClick={switchMemo}
-                    />
-                </Tooltip>
                 <Tooltip title="포커스" placement="top" sx={styles.tooltip}>
                     <BottomNavigationAction
                         value="focus"
                         icon={<CenterFocusStrongIcon sx={styles.icon} />}
                         sx={styles.action}
                         onClick={focusMindMap}
+                    />
+                </Tooltip>
+                <Tooltip title="바로가기 열기" placement="top" sx={styles.tooltip}>
+                    <BottomNavigationAction
+                        value="reset"
+                        icon={<FormatListBulletedSharpIcon sx={styles.icon} />}
+                        sx={styles.action}
+                        onClick={openMarkdown}
+                    />
+                </Tooltip>
+                <Tooltip title="메모 토글" placement="top" sx={styles.tooltip}>
+                    <BottomNavigationAction
+                        value="memo"
+                        icon={<ContentPasteRoundedIcon sx={styles.icon} />}
+                        sx={styles.action}
+                        onClick={switchMemo}
                     />
                 </Tooltip>
                 <Tooltip title="타이머 토글" placement="top" sx={styles.tooltip}>

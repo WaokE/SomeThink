@@ -1,19 +1,13 @@
 import { CreateTextInput } from "./TextInputComponent";
-
-const colors = [
-    "#FF5733", // 빨간색
-    "#33A7FF", // 파란색
-    "#9A33FF", // 보라색
-    "#FF33E4", // 분홍색
-    "#33FFC4", // 청록색
-    "#336DFF", // 하늘색
-    "#FF33A9", // 자홍색
-    "#33FF49", // 녹색
-    "#FF8C33", // 적갈색
-    "#9AFF33", // 연두색
-];
-
-const MAX_STACK_LENGTH = 10;
+import {
+    colors,
+    MAX_STACK_LENGTH,
+    rootNode,
+    NORMAL_NODE_COLOR,
+    ROOT_NODE_COLOR,
+    throttle,
+    BOOKMARK_ICON,
+} from "../../Constant";
 
 export const handleDoubleClick = (
     event,
@@ -25,20 +19,33 @@ export const handleDoubleClick = (
 ) => {
     if (event.nodes.length > 0) {
         const selectedNodeId = event.nodes[0];
+        let label = "";
         const nodeData = ymapRef.current.get(`Node ${selectedNodeId}`);
         if (nodeData) {
             const canvas = document.querySelector(".vis-network canvas");
             if (canvas) {
                 const node = JSON.parse(nodeData);
-
+                if (node.shape === "image") {
+                    console.log("image node");
+                    label = node.label.replace(new RegExp(`${BOOKMARK_ICON}|(\\n\\s)`, "g"), "");
+                } else {
+                    label = node.label.replace(new RegExp(`${BOOKMARK_ICON}\n|(\n\\s)`, "g"), "");
+                }
                 const textField = CreateTextInput(
-                    node.label,
+                    label,
                     (newLabel) => {
                         if (newLabel === "") {
                             setAlertMessage("유효한 값을 입력해주세요!");
                             setIsAlertMessageVisible(true);
                             textField.value = node.label;
                         } else {
+                            if (node.label.startsWith(BOOKMARK_ICON)) {
+                                if (node.shape === "image") {
+                                    newLabel = `${BOOKMARK_ICON}${newLabel}`;
+                                } else {
+                                    newLabel = `${BOOKMARK_ICON}\n${newLabel}\n `;
+                                }
+                            }
                             modifyNode(selectedNodeId, newLabel);
                         }
                         document.body.removeChild(textField);
@@ -114,6 +121,7 @@ export const handleNodeDragEnd = (event, ymapRef, setSelectedNode, setUserAction
     if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
         return;
     }
+
     const nodeId = nodes[0];
     const { x: mouseX, y: mouseY } = pointer.canvas;
     const newX = mouseX - dragStartOffsetX;
@@ -137,7 +145,7 @@ export const handleNodeDragEnd = (event, ymapRef, setSelectedNode, setUserAction
     setSelectedNode(nodeId);
 };
 
-export const handleNodeDragging = (event, ymapRef, userName) => {
+export const handleNodeDragging = throttle((event, ymapRef, userName) => {
     const userList = [];
     ymapRef.current.forEach((value, key) => {
         if (typeof value === "boolean" && value === true && key !== "TimerRunning") {
@@ -158,29 +166,22 @@ export const handleNodeDragging = (event, ymapRef, userName) => {
     const newX = mouseX - dragStartOffsetX;
     const newY = mouseY - dragStartOffsetY;
 
-    const movedNode = ymapRef.current.get(`Node ${nodeId}`);
-    ymapRef.current.set(
-        `Node ${nodeId}`,
-        JSON.stringify({ ...JSON.parse(movedNode), x: newX, y: newY })
-    );
+    const movedNode = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));
+    ymapRef.current.set(`Node ${nodeId}`, JSON.stringify({ ...movedNode, x: newX, y: newY }));
 
     checkPrevSelected(userName, ymapRef);
     let selectedNode = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
     ymapRef.current.set(`User ${userName} selected`, `Node ${event.nodes[0]}`);
     selectedNode.borderWidth = 2;
-    if (selectedNode.id === 1) {
-        selectedNode.color = {
-            border: "#CBFFA9",
-        };
-    } else {
+    if (selectedNode.id !== 1) {
         selectedNode.color = {
             border: colors[indexOfUser],
-            background: "#FBD85D",
+            background: NORMAL_NODE_COLOR,
         };
     }
     selectedNode.owner = userName;
     ymapRef.current.set(`Node ${event.nodes[0]}`, JSON.stringify(selectedNode));
-};
+}, 10);
 
 // 유저가 선택한 값이 있는지 검사
 const checkPrevSelected = (userId, ymapRef) => {
@@ -192,9 +193,9 @@ const checkPrevSelected = (userId, ymapRef) => {
             if (userData.label) {
                 userData.borderWidth = 1;
                 if (userData.id === 1) {
-                    userData.color = "#f5b252";
+                    userData.color = ROOT_NODE_COLOR;
                 } else {
-                    userData.color = "#FBD85D";
+                    userData.color = NORMAL_NODE_COLOR;
                 }
                 ymapRef.current.set(`Node ${userData.id}`, JSON.stringify(userData));
             }
@@ -327,7 +328,6 @@ export const handleMouseWheel = (event, selectedNode, ymapRef) => {
     if (node.shape === "image") {
         if (event.deltaY < 0) {
             if (node.size < 70) {
-                console.log("size up");
                 ymapRef.current.set(
                     `Node ${selectedNode}`,
                     JSON.stringify({ ...node, size: node.size + 10 })
@@ -444,6 +444,17 @@ export const handleUndo = (
         });
         setUserActionStackPointer((prev) => prev - 1);
     }
+    if (action === "modify") {
+        const node = JSON.parse(
+            ymapRef.current.get(`Node ${userActionStack[userActionStackPointer].nodeId}`)
+        );
+        node.label = userActionStack[userActionStackPointer].prevLabel;
+        ymapRef.current.set(
+            `Node ${userActionStack[userActionStackPointer].nodeId}`,
+            JSON.stringify(node)
+        );
+        setUserActionStackPointer((prev) => prev - 1);
+    }
 };
 
 export const handleRedo = (
@@ -525,18 +536,7 @@ export const handleRedo = (
         userList.sort();
 
         ymapRef.current.clear();
-        ymapRef.current.set(
-            `Node 1`,
-            JSON.stringify({
-                id: 1,
-                label: "start",
-                x: 0,
-                y: 0,
-                physics: false,
-                fixed: true,
-                color: "#f5b252",
-            })
-        );
+        ymapRef.current.set(`Node 1`, JSON.stringify(rootNode));
         ymapRef.current.set("RootQuadrant", 0);
 
         userList.forEach((user) => {
@@ -550,6 +550,12 @@ export const handleRedo = (
         deletedNodes.forEach((node) => {
             ymapRef.current.delete(`Node ${node.id}`);
         });
+        setUserActionStackPointer((prev) => prev + 1);
+    }
+    if (action === "modify") {
+        const node = JSON.parse(ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`));
+        node.label = userActionStack[prevPointer].newLabel;
+        ymapRef.current.set(`Node ${userActionStack[prevPointer].nodeId}`, JSON.stringify(node));
         setUserActionStackPointer((prev) => prev + 1);
     }
 };

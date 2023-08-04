@@ -19,7 +19,8 @@ const wsReadyStateOpen = 1;
 const wsReadyStateClosing = 2; // eslint-disable-line
 const wsReadyStateClosed = 3; // eslint-disable-line
 
-const rooms = new Array();
+const rooms = new Map();
+const timers = new Map();
 
 // disable gc when using snapshots!
 const gcEnabled = process.env.GC !== "false" && process.env.GC !== "0";
@@ -85,6 +86,9 @@ const updateHandler = (update, origin, doc) => {
     const message = encoding.toUint8Array(encoder);
     doc.conns.forEach((_, conn) => send(doc, conn, message));
 };
+/**
+ * @param {int} length
+ */
 const generateClientId = (length) => {
     let result = "";
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -95,25 +99,50 @@ const generateClientId = (length) => {
     }
     return result;
 };
-/* search the room */
 
-const searchrooms = (rooms, docName, clientid) => {
-    const room = rooms.filter((room) => room.roomName === docName && room.clientid === clientid);
-    return room;
-};
-/* delete room */
+/**
+ * @param {Map} map
+ * @param {string} roomName
+ * @param {string} clientId
+ */
 
-const deleteroom = (room) => {
-    const index = rooms.indexOf(room[0]);
-    rooms.splice(index, 1);
-    return rooms;
+const deletemember = (map, roomName, clientId) => {
+    map.get(roomName).delete(clientId);
 };
-/* count room */
 
-const countrooms = (rooms, docName) => {
-    const room = rooms.filter((room) => room.roomName === docName);
-    return room.length;
+/**
+ * @param {Map} map
+ * @param {string} roomName
+ * @param {string} data
+ */
+const addDataToRoom = (map, roomName, data) => {
+    if (map.has(roomName)) {
+        const existingData = map.get(roomName);
+        existingData.add(data);
+    } else {
+        const newDataSet = new Set();
+        newDataSet.add(data);
+        map.set(roomName, newDataSet);
+    }
 };
+/**
+ * @param {WSSharedDoc} doc
+ * @param {Map} map
+ * @param {string} mapkey
+ * @param {string} roomName
+ */
+const removeDoc = (doc, map, mapkey, roomName) => {
+    if (map.get(roomName).size === 0 && doc.awareness) {
+        console.log("delete all");
+        map.delete(roomName);
+        doc.share.get(mapkey)._map.forEach((value, key) => {
+            doc.share.get(mapkey)._map.delete(key);
+        });
+        doc.awareness.meta.clear();
+        doc.store.clients.clear();
+    }
+};
+
 class WSSharedDoc extends Y.Doc {
     /**
      * @param {string} name
@@ -297,9 +326,8 @@ exports.ServersetupWSConnection = (
             messageListener(conn, doc, new Uint8Array(message))
     );
 
-    const clientId = generateClientId(8);
-    conn.clientId = clientId;
-    rooms.push({ clientid: clientId, roomName: docName });
+    conn.clientId = generateClientId(8);
+    addDataToRoom(rooms, docName, conn.clientId);
     console.log(`Client ${conn.clientId} connected to room ${docName}`);
 
     // Check if connection is still alive
@@ -323,18 +351,10 @@ exports.ServersetupWSConnection = (
     }, pingTimeout);
     conn.on("close", () => {
         console.log(`disconnected ${conn.clientId}`);
-        const result = searchrooms(rooms, docName, conn.clientId);
-        deleteroom(result);
+        deletemember(rooms, docName, conn.clientId);
         closeConn(doc, conn);
         clearInterval(pingInterval);
-        if (countrooms(rooms, docName) === 0 && doc.awareness) {
-            console.log("delete all");
-            doc.share.get("MindMap")._map.forEach((value, key) => {
-                doc.share.get("MindMap")._map.delete(key);
-            });
-            doc.awareness.meta.clear();
-            doc.store.clients.clear();
-        }
+        removeDoc(doc, rooms, "MindMap", docName);
     });
     conn.on("pong", () => {
         pongReceived = true;
@@ -385,6 +405,9 @@ exports.TimersetupWSConnection = (
     // Check if connection is still alive
     let pongReceived = true;
 
+    conn.clientId = generateClientId(8);
+    addDataToRoom(timers, docName, conn.clientId);
+
     const pingInterval = setInterval(() => {
         if (!pongReceived) {
             if (doc.conns.has(conn)) {
@@ -401,9 +424,12 @@ exports.TimersetupWSConnection = (
             }
         }
     }, pingTimeout);
+
     conn.on("close", () => {
+        deletemember(timers, docName, conn.clientId);
         closeConn(doc, conn);
         clearInterval(pingInterval);
+        removeDoc(doc, timers, "TimerData", docName);
     });
     conn.on("pong", () => {
         pongReceived = true;

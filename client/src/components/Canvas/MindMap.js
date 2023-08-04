@@ -1,4 +1,15 @@
 //  node ./node_modules/y-websocket/bin/server.js
+import {
+    colors,
+    mindMapOptions,
+    rootNode,
+    MAX_STACK_LENGTH,
+    ROOT_NODE_COLOR,
+    NORMAL_NODE_COLOR,
+    BOOKMARK_ICON,
+    throttle,
+} from "../../Constant";
+
 import Graph from "react-graph-vis";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import TopBar from "../TopBar/TopBar";
@@ -42,6 +53,7 @@ import AlertToast from "../ToastMessage/Alert";
 import InformationToast from "../ToastMessage/Information";
 import GraphToMarkdown from "./MarkDown";
 import { SnackbarProvider } from "notistack";
+import HighLighter from "./HighLighter";
 
 import "./MindMap.css";
 
@@ -81,116 +93,7 @@ const MindMap = ({
 
     const [selectedImage, setSelectedImage] = useState(false);
 
-    const colors = [
-        "#FF5733", // 빨간색
-        "#33A7FF", // 파란색
-        "#9A33FF", // 보라색
-        "#FF33E4", // 분홍색
-        "#33FFC4", // 청록색
-        "#336DFF", // 하늘색
-        "#FF33A9", // 자홍색
-        "#33FF49", // 녹색
-        "#FF8C33", // 적갈색
-        "#9AFF33", // 연두색
-    ];
-
-    const MAX_STACK_LENGTH = 10;
-
-    let options = {
-        layout: {
-            hierarchical: false,
-        },
-        nodes: {
-            shape: "circle",
-            size: 30,
-            mass: 1,
-            color: "#FBD85D",
-            widthConstraint: {
-                maximum: 100,
-            },
-            font: {
-                face: "MainFont",
-            },
-        },
-        edges: {
-            arrows: {
-                to: {
-                    enabled: false,
-                },
-            },
-            width: 2,
-            color: "#000000",
-        },
-        physics: {
-            enabled: false,
-        },
-        interaction: {
-            multiselect: false,
-            zoomView: false,
-        },
-        manipulation: {
-            addEdge: (data, callback) => {},
-        },
-    };
-
-    const templateNodes = [
-        {
-            id: 1,
-            label: "start",
-            x: 0,
-            y: 0,
-            physics: false,
-            fixed: true,
-            color: "#f5b252",
-            widthConstraint: { minimum: 100, maximum: 200 }, // 너비를 100으로 고정
-            heightConstraint: { minimum: 100, maximum: 200 }, // 높이를 100으로 고정
-            font: { size: 30 },
-        },
-        {
-            id: 2,
-            label: "노드를 우클릭하여 메뉴를 열 수 있습니다.",
-            x: 100,
-            y: 100,
-            physics: false,
-            fixed: true,
-            color: "#FBD85D",
-            shape: "box",
-            widthConstraint: 100,
-        },
-        {
-            id: 3,
-            label: "노드를 더블클릭하여 키워드를 수정할 수 있습니다.",
-            x: -100,
-            y: 100,
-            physics: false,
-            fixed: true,
-            color: "#FBD85D",
-            shape: "box",
-            widthConstraint: 100,
-        },
-        {
-            id: 4,
-            label: "노드를 드래그하여 이동할 수 있습니다.",
-            x: 100,
-            y: -100,
-            physics: false,
-            fixed: true,
-            color: "#FBD85D",
-            shape: "box",
-            widthConstraint: 100,
-        },
-        {
-            id: 5,
-            label: "하단 메뉴를 통해 이미지와 텍스트, 노드를 쉽게 추가할 수 있습니다.",
-            x: -100,
-            y: -100,
-            physics: false,
-            fixed: true,
-            color: "#FBD85D",
-            shape: "box",
-            widthConstraint: 100,
-        },
-    ];
+    let options = { ...mindMapOptions };
 
     if (!selectedImage) {
         options = {
@@ -230,6 +133,7 @@ const MindMap = ({
     const [clickedNodeId, setClickedNodeId] = useState("");
     const [connectedNodeLabels, setConnectedNodeLabels] = useState([]);
     const [allNodeLabels, setAllNodeLabels] = useState([]);
+    const [highLightPos, setHighLightPos] = useState(false);
 
     const memoizedHandleClickOutside = useCallback(
         handleClickOutside(
@@ -281,7 +185,7 @@ const MindMap = ({
             } else {
                 selectedNodeObject.color = {
                     border: colors[indexOfUser],
-                    background: "#FBD85D",
+                    background: NORMAL_NODE_COLOR,
                 };
             }
             selectedNodeObject.owner = tempUserId;
@@ -305,19 +209,12 @@ const MindMap = ({
         }
     };
 
-    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-    const [windowHeight, setWindowHeight] = useState(window.innerHeight);
-
     useEffect(() => {
         const handleResize = () => {
-            setWindowWidth(window.innerWidth);
-            setWindowHeight(window.innerHeight);
+            networkRef.current.redraw();
         };
-
-        // 컴포넌트가 마운트될 때와 사이즈 변경 시에 이벤트 핸들러를 등록합니다.
         window.addEventListener("resize", handleResize);
 
-        // 컴포넌트가 언마운트될 때 이벤트 핸들러를 해제합니다.
         return () => {
             window.removeEventListener("resize", handleResize);
         };
@@ -332,8 +229,6 @@ const MindMap = ({
         );
         // const provider = new WebsocketProvider("ws://localhost:1234", sessionId, ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
-        // ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
-        // ymapRef.current.set("RootQuadrant", 0);
 
         ymapRef.current.observe((event) => {
             const updatedGraph = {
@@ -385,14 +280,12 @@ const MindMap = ({
         if (userName && ymapRef.current && !ymapRef.current.has(userName)) {
             ymapRef.current.set(userName, true);
         }
-        console.log("handleSessionJoin");
     }, [userName]);
 
     const handleSessionLeave = useCallback(() => {
         if (userName && ymapRef.current && ymapRef.current.has(userName)) {
             ymapRef.current.delete(userName);
         }
-        console.log("handleSessionLeave");
     }, [userName]);
 
     useEffect(() => {
@@ -422,7 +315,7 @@ const MindMap = ({
         return userList;
     }, []);
 
-    const handleMouseMove = (e) => {
+    const handleMouseMove = throttle((e) => {
         if (networkRef.current !== null) {
             const coord = networkRef.current.DOMtoCanvas({
                 x: e.clientX,
@@ -435,7 +328,7 @@ const MindMap = ({
                 JSON.stringify({ x: nx, y: ny, id: userName })
             );
         }
-    };
+    }, 10);
 
     const handleUserSelect = (event) => {
         const tempUserId = userName;
@@ -512,7 +405,7 @@ const MindMap = ({
             } else {
                 selectedNode.color = {
                     border: colors[indexOfUser],
-                    background: "#FBD85D",
+                    background: NORMAL_NODE_COLOR,
                 };
             }
             selectedNode.owner = tempUserId;
@@ -543,9 +436,9 @@ const MindMap = ({
                 if (userData.label) {
                     userData.borderWidth = 1;
                     if (userData.id === 1) {
-                        userData.color = "#f5b252";
+                        userData.color = ROOT_NODE_COLOR;
                     } else {
-                        userData.color = "#FBD85D";
+                        userData.color = NORMAL_NODE_COLOR;
                     }
                     ymapRef.current.set(`Node ${userData.id}`, JSON.stringify(userData));
                 }
@@ -565,7 +458,6 @@ const MindMap = ({
             ((e.key === "z" || e.key === "Z") && e.ctrlKey && e.shiftKey) ||
             ((e.key === "z" || e.key === "Z") && e.metaKey && e.shiftKey)
         ) {
-            console.log("redo");
             handleRedo(
                 setAlertMessage,
                 setIsAlertMessageVisible,
@@ -579,7 +471,6 @@ const MindMap = ({
             ((e.key === "z" || e.key === "Z") && e.ctrlKey) ||
             (e.key === "z" && e.metaKey)
         ) {
-            console.log("undo");
             handleUndo(
                 setAlertMessage,
                 setIsAlertMessageVisible,
@@ -595,17 +486,37 @@ const MindMap = ({
         }
     };
 
-    const handleFocusButtonClick = () => {
+    const handleFocusButtonClick = (x, y) => {
+        console.log("handleFocusButtonClick");
+        setHighLightPos({ x: x, y: y });
         networkRef.current.moveTo({
-            position: { x: 0, y: 0 },
-            scale: 1.0,
+            position: { x: x, y: y },
+            scale: 1.3,
             offset: { x: 0, y: 0 },
             animation: {
-                duration: 1000,
-                easingFunction: "easeInOutQuad",
+                duration: 600,
+                easingFunction: "easeOutCubic",
             },
         });
     };
+
+    useEffect(() => {
+        let showTimer = null;
+        let hideTimer = null;
+
+        if (highLightPos !== null) {
+            showTimer = setTimeout(() => {
+                hideTimer = setTimeout(() => {
+                    setHighLightPos(null);
+                }, 300);
+            }, 400);
+        }
+
+        return () => {
+            clearTimeout(showTimer);
+            if (hideTimer) clearTimeout(hideTimer);
+        };
+    }, [highLightPos]);
 
     const handleTextButton = () => {
         setIsCreatingText(true);
@@ -644,13 +555,14 @@ const MindMap = ({
                 }
             });
 
-            ymapRef.current.clear();
-            ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
-            ymapRef.current.set("RootQuadrant", 0);
-
-            currentUserData.forEach((user) => {
-                ymapRef.current.set(user, true);
+            ymapRef.current.forEach((value, key) => {
+                if (!currentUserData.includes(key)) {
+                    ymapRef.current.delete(key);
+                }
             });
+
+            ymapRef.current.set(`Node 1`, JSON.stringify(rootNode));
+            ymapRef.current.set("RootQuadrant", 0);
         }
     };
 
@@ -719,8 +631,6 @@ const MindMap = ({
     const deleteEdge = () => {
         const selectedEdgeArray = [selectedEdge];
         selectedEdgeArray.forEach((edge) => {
-            console.log(edge);
-            console.log(typeof edge);
             const splitedEdge = edge.split(" ");
             const from = splitedEdge[0];
             const to = splitedEdge[2];
@@ -775,7 +685,7 @@ const MindMap = ({
                     label: label,
                     x: selectedNode.x + nx[quadrant - 1],
                     y: selectedNode.y + ny[quadrant - 1],
-                    color: "#FBD85D",
+                    color: NORMAL_NODE_COLOR,
                 };
                 setUserActionStack((prev) => {
                     // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
@@ -850,11 +760,16 @@ const MindMap = ({
         const image = new Image();
         image.crossOrigin = "Anonymous";
         image.onload = function () {
+            const aspectRatio = image.width / image.height;
+            const newWidth = 250;
+            const newHeight = newWidth / aspectRatio;
             const canvas = document.createElement("canvas");
-            canvas.width = image.width;
-            canvas.height = image.height;
+            canvas.width = newWidth;
+            canvas.height = newHeight;
             const ctx = canvas.getContext("2d");
-            ctx.drawImage(image, 0, 0);
+
+            ctx.drawImage(image, 0, 0, newWidth, newHeight);
+
             const dataURL = canvas.toDataURL();
             const coord = networkRef.current.DOMtoCanvas({
                 x: window.innerWidth / 2,
@@ -873,8 +788,6 @@ const MindMap = ({
 
             ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
         };
-
-        // 이미지를 프록시를 통해 가져옴
         image.src = url;
     };
 
@@ -893,30 +806,65 @@ const MindMap = ({
     const modifyNode = (nodeId, newLabel) => {
         const node = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));
         if (node) {
+            setUserActionStack((prev) => {
+                // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
+                if (prev.length >= MAX_STACK_LENGTH) {
+                    setUserActionStackPointer(prev.length - 1);
+                    return [
+                        ...prev.slice(1),
+                        {
+                            action: "modify",
+                            nodeId: nodeId,
+                            prevLabel: node.label,
+                            newLabel: newLabel,
+                        },
+                    ];
+                }
+                // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+                else {
+                    setUserActionStackPointer(prev.length);
+                    return [
+                        ...prev,
+                        {
+                            action: "modify",
+                            nodeId: nodeId,
+                            prevLabel: node.label,
+                            newLabel: newLabel,
+                        },
+                    ];
+                }
+            });
             node.label = newLabel;
             ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(node));
         }
     };
 
     const bookMarkNode = () => {
-        let selectedNodeObject = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
-        // 북마크가 되어있지 않다면 북마크 추가
-        if (selectedNodeObject.shape !== "icon") {
-            selectedNodeObject.shape = "icon";
-            selectedNodeObject.icon = {
-                face: "'FontAwesome'",
-                code: "\uf08d",
-                size: 70,
-                color: "#EF6262",
-            };
+        const nodeKey = `Node ${selectedNode}`;
+        let selectedNodeObject = JSON.parse(ymapRef.current.get(nodeKey));
+
+        // 북마크 상태 토글
+        selectedNodeObject.bookMarked = !selectedNodeObject.bookMarked;
+
+        // 북마크 상태에 따라 라벨과 폰트 설정 변경
+        const isImageShape = selectedNodeObject.shape === "image";
+        const bookmarkIconLabel = `${BOOKMARK_ICON}\n`;
+
+        if (selectedNodeObject.bookMarked) {
+            selectedNodeObject.label =
+                (isImageShape ? BOOKMARK_ICON : bookmarkIconLabel) +
+                selectedNodeObject.label +
+                "\n ";
+            selectedNodeObject.font = { multi: true };
+        } else {
+            const regex = isImageShape
+                ? new RegExp(`${BOOKMARK_ICON}|(\\n\\s)`, "g")
+                : new RegExp(`${BOOKMARK_ICON}\\n|(\\n\\s)`, "g");
+            selectedNodeObject.label = selectedNodeObject.label.replace(regex, "");
+            selectedNodeObject.font = { multi: false };
         }
-        // 북마크가 되어있다면
-        else {
-            selectedNodeObject.shape = "circle";
-            delete selectedNodeObject.icon;
-        }
-        // 변경사항 반영
-        ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
+
+        ymapRef.current.set(nodeKey, JSON.stringify(selectedNodeObject));
     };
 
     useEffect(() => {
@@ -987,6 +935,7 @@ const MindMap = ({
                 return [...prev];
             }
         });
+
         ymapRef.current.delete(`Node ${nodeId}`);
         ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` &&
             ymapRef.current.delete(`User ${tempUserId} selected`);
@@ -1034,15 +983,13 @@ const MindMap = ({
 
         const clickedNodeId = nodes[0];
         setClickedNodeId(clickedNodeId);
-        console.log("clickedNodeId:", clickedNodeId);
         const clickedNode = JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`));
-        console.log("x:", clickedNode.x, "y:", clickedNode.y);
         if (!clickedNode) {
             return;
         }
 
         const connectedNodeLabels = getConnectedNodeLabels(clickedNodeId, ymapRef);
-        const allNodeLabels = getAllNodeLabels(ymapRef);
+        const allNodeLabels = getAllNodeLabels(ymapRef, clickedNodeId);
         const newNodeLabels = await fetchNewNodeLabels(connectedNodeLabels, allNodeLabels);
 
         if (newNodeLabels.length === 0) {
@@ -1082,7 +1029,7 @@ const MindMap = ({
     const [MindMap, setMindMap] = useState(() => {
         return {
             graph: {
-                nodes: templateNodes,
+                nodes: [rootNode],
                 edges: [],
             },
         };
@@ -1305,7 +1252,9 @@ const MindMap = ({
                 nodes={nodes}
                 edges={edges}
                 isMarkdownVisible={isMarkdownVisible}
+                setIsMarkdownVisible={setIsMarkdownVisible}
                 networkRef={networkRef}
+                handleFocusButtonClick={handleFocusButtonClick}
             />
             <ImageSearch
                 style={{ height: isTimerVisible ? "calc(80% - 13%)" : "80%" }}
@@ -1334,6 +1283,7 @@ const MindMap = ({
                     onRestart={handleRestart}
                 />
             )}
+            {highLightPos && <HighLighter pos={highLightPos} setHighLightPos={setHighLightPos} />}
         </div>
     );
 };
