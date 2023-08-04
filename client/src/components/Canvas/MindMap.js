@@ -557,6 +557,8 @@ const MindMap = ({
                     userData.borderWidth = 1;
                     if (userData.id === 1) {
                         userData.color = "#f5b252";
+                    } else if (userData.bookMarked) {
+                        userData.color = "#FC5185";
                     } else {
                         userData.color = "#FBD85D";
                     }
@@ -947,10 +949,15 @@ const MindMap = ({
         let selectedNodeObject = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
         // 북마크가 되어있지 않다면 북마크 추가
         if (!selectedNodeObject.bookMarked) {
+            selectedNodeObject.bookMarked = true;
+            selectedNodeObject.color = "#FC5185";
         }
         // 북마크가 되어있다면
         else {
+            selectedNodeObject.bookMarked = false;
+            selectedNodeObject.color = "#FBD85D";
         }
+        ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
     };
 
     useEffect(() => {
