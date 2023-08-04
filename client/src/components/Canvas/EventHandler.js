@@ -325,7 +325,6 @@ export const handleMouseWheel = (event, selectedNode, ymapRef) => {
     if (node.shape === "image") {
         if (event.deltaY < 0) {
             if (node.size < 70) {
-                console.log("size up");
                 ymapRef.current.set(
                     `Node ${selectedNode}`,
                     JSON.stringify({ ...node, size: node.size + 10 })

@@ -385,14 +385,12 @@ const MindMap = ({
         if (userName && ymapRef.current && !ymapRef.current.has(userName)) {
             ymapRef.current.set(userName, true);
         }
-        console.log("handleSessionJoin");
     }, [userName]);
 
     const handleSessionLeave = useCallback(() => {
         if (userName && ymapRef.current && ymapRef.current.has(userName)) {
             ymapRef.current.delete(userName);
         }
-        console.log("handleSessionLeave");
     }, [userName]);
 
     useEffect(() => {
@@ -435,7 +433,6 @@ const MindMap = ({
     };
 
     const handleMouseMove = throttle((e) => {
-        console.log("event!!!");
         if (networkRef.current !== null) {
             const coord = networkRef.current.DOMtoCanvas({
                 x: e.clientX,
@@ -580,7 +577,6 @@ const MindMap = ({
             ((e.key === "z" || e.key === "Z") && e.ctrlKey && e.shiftKey) ||
             ((e.key === "z" || e.key === "Z") && e.metaKey && e.shiftKey)
         ) {
-            console.log("redo");
             handleRedo(
                 setAlertMessage,
                 setIsAlertMessageVisible,
@@ -594,7 +590,6 @@ const MindMap = ({
             ((e.key === "z" || e.key === "Z") && e.ctrlKey) ||
             (e.key === "z" && e.metaKey)
         ) {
-            console.log("undo");
             handleUndo(
                 setAlertMessage,
                 setIsAlertMessageVisible,
@@ -735,8 +730,6 @@ const MindMap = ({
     const deleteEdge = () => {
         const selectedEdgeArray = [selectedEdge];
         selectedEdgeArray.forEach((edge) => {
-            console.log(edge);
-            console.log(typeof edge);
             const splitedEdge = edge.split(" ");
             const from = splitedEdge[0];
             const to = splitedEdge[2];
@@ -1076,9 +1069,7 @@ const MindMap = ({
 
         const clickedNodeId = nodes[0];
         setClickedNodeId(clickedNodeId);
-        console.log("clickedNodeId:", clickedNodeId);
         const clickedNode = JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`));
-        console.log("x:", clickedNode.x, "y:", clickedNode.y);
         if (!clickedNode) {
             return;
         }
