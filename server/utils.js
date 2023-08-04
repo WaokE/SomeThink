@@ -125,6 +125,23 @@ const addDataToRoom = (map, roomName, data) => {
         map.set(roomName, newDataSet);
     }
 };
+/**
+ * @param {WSSharedDoc} doc
+ * @param {Map} map
+ * @param {string} mapkey
+ * @param {string} roomName
+ */
+const removeDoc = (doc, map, mapkey, roomName) => {
+    if (map.get(roomName).size === 0 && doc.awareness) {
+        console.log("delete all");
+        map.delete(roomName);
+        doc.share.get(mapkey)._map.forEach((value, key) => {
+            doc.share.get(mapkey)._map.delete(key);
+        });
+        doc.awareness.meta.clear();
+        doc.store.clients.clear();
+    }
+};
 
 class WSSharedDoc extends Y.Doc {
     /**
@@ -337,15 +354,7 @@ exports.ServersetupWSConnection = (
         deletemember(rooms, docName, conn.clientId);
         closeConn(doc, conn);
         clearInterval(pingInterval);
-        if (rooms.get(docName).size === 0 && doc.awareness) {
-            console.log("delete all");
-            rooms.delete(docName);
-            doc.share.get("MindMap")._map.forEach((value, key) => {
-                doc.share.get("MindMap")._map.delete(key);
-            });
-            doc.awareness.meta.clear();
-            doc.store.clients.clear();
-        }
+        removeDoc(doc, rooms, "MindMap", docName);
     });
     conn.on("pong", () => {
         pongReceived = true;
@@ -419,14 +428,7 @@ exports.TimersetupWSConnection = (
         deletemember(timers, docName, conn.clientId);
         closeConn(doc, conn);
         clearInterval(pingInterval);
-        if (timers.get(docName).size === 0 && doc.awareness) {
-            timers.delete(docName);
-            doc.share.get("TimerData")._map.forEach((value, key) => {
-                doc.share.get("TimerData")._map.delete(key);
-            });
-            doc.awareness.meta.clear();
-            doc.store.clients.clear();
-        }
+        removeDoc(doc, timers, "TimerData", docName);
     });
     conn.on("pong", () => {
         pongReceived = true;
