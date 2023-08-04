@@ -1112,7 +1112,7 @@ const MindMap = ({
         }
 
         const connectedNodeLabels = getConnectedNodeLabels(clickedNodeId, ymapRef);
-        const allNodeLabels = getAllNodeLabels(ymapRef);
+        const allNodeLabels = getAllNodeLabels(ymapRef, clickedNodeId);
         const newNodeLabels = await fetchNewNodeLabels(connectedNodeLabels, allNodeLabels);
 
         if (newNodeLabels.length === 0) {
