@@ -16,13 +16,9 @@ class App extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {
-            isLoading: false,
-        };
-
         // These properties are in the state's component in order to re-render the HTML whenever their values change
         this.state = {
-            mySessionId: "RoomA",
+            mySessionId: undefined,
             myUserName: "User" + Math.floor(Math.random() * 200),
             session: undefined,
             mainStreamManager: undefined,
@@ -30,6 +26,7 @@ class App extends Component {
             subscribers: [],
             audioEnabled: false,
             speakingUserName: [],
+            isLoading: false,
         };
 
         this.joinSession = this.joinSession.bind(this);
@@ -39,6 +36,8 @@ class App extends Component {
         this.handleChangeUserName = this.handleChangeUserName.bind(this);
         this.handleMainVideoStream = this.handleMainVideoStream.bind(this);
         this.onbeforeunload = this.onbeforeunload.bind(this);
+        this.handleCreateSession = this.handleCreateSession.bind(this);
+        this.handleJoinSession = this.handleJoinSession.bind(this);
     }
 
     componentDidMount() {
@@ -56,6 +55,36 @@ class App extends Component {
     handleChangeSessionId(e) {
         this.setState({
             mySessionId: e.target.value,
+        });
+    }
+
+    makeid(length) {
+        let result = "";
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        const charactersLength = characters.length;
+        let counter = 0;
+        while (counter < length) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            counter += 1;
+        }
+        return result;
+    }
+
+    handleCreateSession() {
+        this.setState({
+            mySessionId: this.makeid(8),
+        });
+        this.joinSession();
+    }
+
+    handleJoinSession() {
+        const mySessionId = this.state.mySessionId;
+        this.validateSessionId(mySessionId).then((response) => {
+            if (response === true) {
+                this.joinSession();
+            } else {
+                alert("존재하지 않는 방입니다.");
+            }
         });
     }
 
@@ -138,8 +167,6 @@ class App extends Component {
 
                 // On every new Stream received...
                 mySession.on("streamCreated", (event) => {
-                    // Subscribe to the Stream to receive it. Second parameter is undefined
-                    // so OpenVidu doesn't create an HTML video by its own
                     var subscriber = mySession.subscribe(event.stream, undefined);
                     var subscribers = this.state.subscribers;
                     subscribers.push(subscriber);
@@ -162,13 +189,11 @@ class App extends Component {
                 });
 
                 mySession.on("publisherStartSpeaking", (event) => {
-                    // console.log(event.connection.connectionId + " start speaking");
                     const userName = JSON.parse(event.connection.data).clientData;
                     this.handleSpeakingUser(userName);
                 });
 
                 mySession.on("publisherStopSpeaking", (event) => {
-                    // console.log(event.connection.connectionId + " stop speaking");
                     const userName = JSON.parse(event.connection.data).clientData;
                     this.handleDeleteSpeakingUser(userName);
                 });
@@ -182,22 +207,18 @@ class App extends Component {
                     mySession
                         .connect(token, { clientData: this.state.myUserName })
                         .then(async () => {
-                            // --- 5) Get your own camera stream ---
-
-                            // Init a publisher passing undefined as targetElement (we don't want OpenVidu to insert a video
-                            // element: we will manage it on our own) and with the desired properties
+                            // --- 5) Get your own audio stream ---
                             let publisher = await this.OV.initPublisherAsync(undefined, {
-                                audioSource: undefined, // The source of audio. If undefined default microphone
-                                videoSource: false, // The source of video. If undefined default webcam
-                                publishAudio: false, // Whether you want to start publishing with your audio unmuted or not
-                                publishVideo: false, // Whether you want to start publishing with your video enabled or not
+                                audioSource: undefined,
+                                videoSource: false,
+                                publishAudio: false,
+                                publishVideo: false,
                             });
 
                             // --- 6) Publish your stream ---
 
                             mySession.publish(publisher);
 
-                            // Set the main video in the page to display our webcam and store our Publisher
                             this.setState({
                                 mainStreamManager: publisher,
                                 publisher: publisher,
@@ -245,7 +266,7 @@ class App extends Component {
         this.setState({
             session: undefined,
             subscribers: [],
-            mySessionId: "RoomA",
+            mySessionId: undefined,
             myUserName: "User" + Math.floor(Math.random() * 200),
             mainStreamManager: undefined,
             publisher: undefined,
@@ -290,9 +311,12 @@ class App extends Component {
                                 </div>
                                 <div id="join-dialog" className="jumbotron vertical-center">
                                     <h1 className="logo"></h1>
-                                    <form className="form-group" onSubmit={this.joinSession}>
+                                    <form
+                                        className="form-group"
+                                        onSubmit={this.handleCreateSession}
+                                    >
                                         <p>
-                                            <label>Name </label>
+                                            <label> 이름 </label>
                                             <input
                                                 className="form-control"
                                                 type="text"
@@ -303,20 +327,6 @@ class App extends Component {
                                             />
                                         </p>
                                         <p>
-                                            <label> Room </label>
-                                            <input
-                                                className="form-control"
-                                                type="text"
-                                                id="sessionId"
-                                                value={mySessionId}
-                                                onChange={this.handleChangeSessionId}
-                                                style={{ pointerEvents: "auto" }}
-                                                pattern="[0-9A-Za-z]+"
-                                                title="영어나 숫자만 입력해주세요"
-                                                required
-                                            />
-                                        </p>
-                                        <p className="text-center">
                                             <input
                                                 onClick={() => {
                                                     this.setState(
@@ -331,7 +341,47 @@ class App extends Component {
                                                 className="btn btn-lg btn-success"
                                                 name="commit"
                                                 type="submit"
-                                                value="JOIN"
+                                                value="생성"
+                                            />
+                                        </p>
+                                    </form>
+                                    <form
+                                        className="form-group"
+                                        onSubmit={(event) => {
+                                            event.preventDefault();
+                                            this.handleJoinSession();
+                                        }}
+                                    >
+                                        <p>
+                                            <label> 코드 </label>
+                                            <input
+                                                className="form-control"
+                                                type="text"
+                                                id="sessionId"
+                                                onChange={this.handleChangeSessionId}
+                                                style={{ pointerEvents: "auto" }}
+                                                pattern="[0-9A-Za-z]+"
+                                                title="영어나 숫자만 입력해주세요"
+                                                placeholder="#INVITE CODE"
+                                            />
+                                        </p>
+                                        <p className="text-center">
+                                            <input
+                                                onClick={() => {
+                                                    this.setState(
+                                                        {
+                                                            isLoading: true,
+                                                        },
+                                                        () => {
+                                                            this.forceUpdate();
+                                                        }
+                                                    );
+                                                    console.log(mySessionId);
+                                                }}
+                                                className="btn btn-lg btn-success"
+                                                name="commit"
+                                                type="submit"
+                                                value="참가"
                                             />
                                         </p>
                                     </form>
@@ -392,6 +442,7 @@ class App extends Component {
      */
     async getToken() {
         const sessionId = await this.createSession(this.state.mySessionId);
+        console.log("세션 아이디 : " + sessionId);
         return await this.createToken(sessionId);
     }
 
@@ -415,6 +466,16 @@ class App extends Component {
             }
         );
         return response.data; // The token
+    }
+
+    async validateSessionId(sessionId) {
+        const response = await axios.get(
+            APPLICATION_SERVER_URL + "api/sessions/" + sessionId + "/validate",
+            {
+                headers: { "Content-Type": "application/json" },
+            }
+        );
+        return response.data;
     }
 }
 

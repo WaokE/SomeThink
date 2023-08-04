@@ -22,8 +22,19 @@ body {
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    /* justify-content: center; */
     align-items: center;
+    text-align: center;
+    z-index: 2; /* Add a higher z-index to the join-dialog */
+}
+
+.form-group {
+    /* width: 45%; */
+    margin: 10px;
+    display: flex;
+}
+.form-group p {
+    margin: 0 10px;
 }
 
 h1.logo {
@@ -38,18 +49,13 @@ h1.logo {
 
 .btn-success {
     background-color: #fbd85d;
-    margin-top: 30px;
+    /* margin-top: 30px; */
     color: black;
-}
-
-.form-group {
-    margin: 10px;
 }
 
 p {
     font-size: 20px;
     color: black;
-    padding-top: 10px;
 }
 
 .form-control {
@@ -286,5 +292,9 @@ p {
         width: 100%;
         left: 50%;
         z-index: -1;
+    }
+
+    .big-circle {
+        display: none;
     }
 }

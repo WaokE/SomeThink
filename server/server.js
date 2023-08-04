@@ -69,7 +69,7 @@ app.post("/api/generate", generatorHandler);
 app.post("/api/sessions", async (req, res) => {
     var session = await openvidu.createSession(req.body);
     res.send(session.sessionId);
-    wss.createConnection();
+    // wss.createConnection();
 });
 
 app.post("/api/sessions/:sessionId/connections", async (req, res) => {
@@ -80,6 +80,16 @@ app.post("/api/sessions/:sessionId/connections", async (req, res) => {
         var connection = await session.createConnection(req.body);
         console.log("connection", connection);
         res.send(connection.token);
+    }
+});
+
+app.get("/api/sessions/:sessionId/validate", (req, res) => {
+    const sessionId = req.params.sessionId;
+    const sessionExists = openvidu.activeSessions.find((s) => s.sessionId === sessionId);
+    if (sessionExists) {
+        res.send(true);
+    } else {
+        res.send(false);
     }
 });
 
