@@ -33,7 +33,7 @@ export const mindMapOptions = {
                 enabled: false,
             },
         },
-        width: 2,
+        width: 4,
         color: "#000000",
     },
     physics: {
