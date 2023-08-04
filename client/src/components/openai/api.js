@@ -1,3 +1,4 @@
+import { NORMAL_NODE_COLOR } from "../../Constant";
 const getConnectedNodeLabels = (clickedNodeId, ymapRef) => {
     const connectedNodeIds = [clickedNodeId];
     let currentNodeId = clickedNodeId;
@@ -100,8 +101,9 @@ const addNewNodesAndEdges = (clickedNode, newNodeLabels, clickedNodeId, ymapRef)
             x: x,
             y: y,
             physics: false,
-            color: "#FBD85D",
-            size: 30,
+            color: NORMAL_NODE_COLOR,
+            widthConstraint: { minimum: 50, maximum: 100 },
+            heightConstraint: { minimum: 50, maximum: 100 },
         };
 
         ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));

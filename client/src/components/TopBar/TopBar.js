@@ -9,6 +9,7 @@ import MicSharpIcon from "@mui/icons-material/MicSharp";
 import MicOffSharpIcon from "@mui/icons-material/MicOffSharp";
 import Switch from "@mui/material/Switch";
 import { ExitToApp } from "@mui/icons-material";
+import { rootNode } from "../../Constant";
 
 const colors = [
     "#FF5733", // 빨간색
@@ -62,21 +63,7 @@ function TopBar({
     useEffect(() => {
         if (userList.length >= prevUserListLength) {
             if (!isLoading && userList.length === 1) {
-                ymapRef.current.set(
-                    `Node 1`,
-                    JSON.stringify({
-                        id: 1,
-                        label: "start",
-                        x: 0,
-                        y: 0,
-                        physics: false,
-                        fixed: true,
-                        color: "#f5b252",
-                        widthConstraint: { minimum: 100, maximum: 200 },
-                        heightConstraint: { minimum: 100, maximum: 200 },
-                        font: { multi: true, size: 30 },
-                    })
-                );
+                ymapRef.current.set(`Node 1`, JSON.stringify(rootNode));
                 ymapRef.current.set("RootQuadrant", 0);
                 ymapRef.current.set(userName, true);
             }
