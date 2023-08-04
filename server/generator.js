@@ -5,6 +5,10 @@ const configuration = new openai.Configuration({
 });
 const openaiApi = new openai.OpenAIApi(configuration);
 
+/**
+ * @param {any} req
+ * @param {any} res
+ */
 module.exports = async function (req, res) {
     if (!configuration.apiKey) {
         res.status(500).json({
@@ -50,7 +54,11 @@ module.exports = async function (req, res) {
     }
 };
 
-function generatePrompt(keyword, allKeywords) {
+/**
+ * @param {String} keyword
+ * @param {String} allKeywords
+ */
+const generatePrompt = (keyword, allKeywords) => {
     console.log(keyword);
     return `I'd like to get a recommendation for a word that is a subnode of this ${
         keyword.split(", ")[0]
@@ -69,4 +77,4 @@ function generatePrompt(keyword, allKeywords) {
   
     Question: ${keyword}
     Answer:`;
-}
+};
