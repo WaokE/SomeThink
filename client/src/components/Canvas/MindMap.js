@@ -1,4 +1,14 @@
 //  node ./node_modules/y-websocket/bin/server.js
+import {
+    colors,
+    mindMapOptions,
+    rootNode,
+    MAX_STACK_LENGTH,
+    ROOT_NODE_COLOR,
+    NORMAL_NODE_COLOR,
+    BOOKMARKED_NODE_COLOR,
+} from "../../Constant";
+
 import Graph from "react-graph-vis";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import TopBar from "../TopBar/TopBar";
@@ -81,116 +91,7 @@ const MindMap = ({
 
     const [selectedImage, setSelectedImage] = useState(false);
 
-    const colors = [
-        "#FF5733", // 빨간색
-        "#33A7FF", // 파란색
-        "#9A33FF", // 보라색
-        "#FF33E4", // 분홍색
-        "#33FFC4", // 청록색
-        "#336DFF", // 하늘색
-        "#FF33A9", // 자홍색
-        "#33FF49", // 녹색
-        "#FF8C33", // 적갈색
-        "#9AFF33", // 연두색
-    ];
-
-    const MAX_STACK_LENGTH = 10;
-
-    let options = {
-        layout: {
-            hierarchical: false,
-        },
-        nodes: {
-            shape: "circle",
-            size: 30,
-            mass: 1,
-            color: "#FBD85D",
-            widthConstraint: {
-                maximum: 100,
-            },
-            font: {
-                face: "MainFont",
-            },
-        },
-        edges: {
-            arrows: {
-                to: {
-                    enabled: false,
-                },
-            },
-            width: 2,
-            color: "#000000",
-        },
-        physics: {
-            enabled: false,
-        },
-        interaction: {
-            multiselect: false,
-            zoomView: false,
-        },
-        manipulation: {
-            addEdge: (data, callback) => {},
-        },
-    };
-
-    const templateNodes = [
-        {
-            id: 1,
-            label: "start",
-            x: 0,
-            y: 0,
-            physics: false,
-            fixed: true,
-            color: "#f5b252",
-            widthConstraint: { minimum: 100, maximum: 200 }, // 너비를 100으로 고정
-            heightConstraint: { minimum: 100, maximum: 200 }, // 높이를 100으로 고정
-            font: { size: 30 },
-        },
-        {
-            id: 2,
-            label: "노드를 우클릭하여 메뉴를 열 수 있습니다.",
-            x: 100,
-            y: 100,
-            physics: false,
-            fixed: true,
-            color: "#FBD85D",
-            shape: "box",
-            widthConstraint: 100,
-        },
-        {
-            id: 3,
-            label: "노드를 더블클릭하여 키워드를 수정할 수 있습니다.",
-            x: -100,
-            y: 100,
-            physics: false,
-            fixed: true,
-            color: "#FBD85D",
-            shape: "box",
-            widthConstraint: 100,
-        },
-        {
-            id: 4,
-            label: "노드를 드래그하여 이동할 수 있습니다.",
-            x: 100,
-            y: -100,
-            physics: false,
-            fixed: true,
-            color: "#FBD85D",
-            shape: "box",
-            widthConstraint: 100,
-        },
-        {
-            id: 5,
-            label: "하단 메뉴를 통해 이미지와 텍스트, 노드를 쉽게 추가할 수 있습니다.",
-            x: -100,
-            y: -100,
-            physics: false,
-            fixed: true,
-            color: "#FBD85D",
-            shape: "box",
-            widthConstraint: 100,
-        },
-    ];
+    let options = { ...mindMapOptions };
 
     if (!selectedImage) {
         options = {
@@ -281,7 +182,7 @@ const MindMap = ({
             } else {
                 selectedNodeObject.color = {
                     border: colors[indexOfUser],
-                    background: "#FBD85D",
+                    background: NORMAL_NODE_COLOR,
                 };
             }
             selectedNodeObject.owner = tempUserId;
@@ -332,8 +233,6 @@ const MindMap = ({
         );
         // const provider = new WebsocketProvider("ws://localhost:1234", sessionId, ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
-        // ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
-        // ymapRef.current.set("RootQuadrant", 0);
 
         ymapRef.current.observe((event) => {
             const updatedGraph = {
@@ -385,14 +284,12 @@ const MindMap = ({
         if (userName && ymapRef.current && !ymapRef.current.has(userName)) {
             ymapRef.current.set(userName, true);
         }
-        console.log("handleSessionJoin");
     }, [userName]);
 
     const handleSessionLeave = useCallback(() => {
         if (userName && ymapRef.current && ymapRef.current.has(userName)) {
             ymapRef.current.delete(userName);
         }
-        console.log("handleSessionLeave");
     }, [userName]);
 
     useEffect(() => {
@@ -435,7 +332,6 @@ const MindMap = ({
     };
 
     const handleMouseMove = throttle((e) => {
-        console.log("event!!!");
         if (networkRef.current !== null) {
             const coord = networkRef.current.DOMtoCanvas({
                 x: e.clientX,
@@ -525,7 +421,7 @@ const MindMap = ({
             } else {
                 selectedNode.color = {
                     border: colors[indexOfUser],
-                    background: "#FBD85D",
+                    background: NORMAL_NODE_COLOR,
                 };
             }
             selectedNode.owner = tempUserId;
@@ -556,11 +452,11 @@ const MindMap = ({
                 if (userData.label) {
                     userData.borderWidth = 1;
                     if (userData.id === 1) {
-                        userData.color = "#f5b252";
+                        userData.color = ROOT_NODE_COLOR;
                     } else if (userData.bookMarked) {
-                        userData.color = "#FC5185";
+                        userData.color = BOOKMARKED_NODE_COLOR;
                     } else {
-                        userData.color = "#FBD85D";
+                        userData.color = NORMAL_NODE_COLOR;
                     }
                     ymapRef.current.set(`Node ${userData.id}`, JSON.stringify(userData));
                 }
@@ -580,7 +476,6 @@ const MindMap = ({
             ((e.key === "z" || e.key === "Z") && e.ctrlKey && e.shiftKey) ||
             ((e.key === "z" || e.key === "Z") && e.metaKey && e.shiftKey)
         ) {
-            console.log("redo");
             handleRedo(
                 setAlertMessage,
                 setIsAlertMessageVisible,
@@ -594,7 +489,6 @@ const MindMap = ({
             ((e.key === "z" || e.key === "Z") && e.ctrlKey) ||
             (e.key === "z" && e.metaKey)
         ) {
-            console.log("undo");
             handleUndo(
                 setAlertMessage,
                 setIsAlertMessageVisible,
@@ -665,7 +559,7 @@ const MindMap = ({
                 }
             });
 
-            ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
+            ymapRef.current.set(`Node 1`, JSON.stringify(rootNode));
             ymapRef.current.set("RootQuadrant", 0);
         }
     };
@@ -735,8 +629,6 @@ const MindMap = ({
     const deleteEdge = () => {
         const selectedEdgeArray = [selectedEdge];
         selectedEdgeArray.forEach((edge) => {
-            console.log(edge);
-            console.log(typeof edge);
             const splitedEdge = edge.split(" ");
             const from = splitedEdge[0];
             const to = splitedEdge[2];
@@ -791,7 +683,7 @@ const MindMap = ({
                     label: label,
                     x: selectedNode.x + nx[quadrant - 1],
                     y: selectedNode.y + ny[quadrant - 1],
-                    color: "#FBD85D",
+                    color: NORMAL_NODE_COLOR,
                 };
                 setUserActionStack((prev) => {
                     // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
@@ -950,12 +842,12 @@ const MindMap = ({
         // 북마크가 되어있지 않다면 북마크 추가
         if (!selectedNodeObject.bookMarked) {
             selectedNodeObject.bookMarked = true;
-            selectedNodeObject.color = "#FC5185";
+            selectedNodeObject.color = BOOKMARKED_NODE_COLOR;
         }
         // 북마크가 되어있다면
         else {
             selectedNodeObject.bookMarked = false;
-            selectedNodeObject.color = "#FBD85D";
+            selectedNodeObject.color = NORMAL_NODE_COLOR;
         }
         ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
     };
@@ -1076,9 +968,7 @@ const MindMap = ({
 
         const clickedNodeId = nodes[0];
         setClickedNodeId(clickedNodeId);
-        console.log("clickedNodeId:", clickedNodeId);
         const clickedNode = JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`));
-        console.log("x:", clickedNode.x, "y:", clickedNode.y);
         if (!clickedNode) {
             return;
         }
@@ -1124,7 +1014,7 @@ const MindMap = ({
     const [MindMap, setMindMap] = useState(() => {
         return {
             graph: {
-                nodes: templateNodes,
+                nodes: [rootNode],
                 edges: [],
             },
         };

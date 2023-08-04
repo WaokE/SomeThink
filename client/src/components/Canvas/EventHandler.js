@@ -1,19 +1,12 @@
 import { CreateTextInput } from "./TextInputComponent";
-
-const colors = [
-    "#FF5733", // 빨간색
-    "#33A7FF", // 파란색
-    "#9A33FF", // 보라색
-    "#FF33E4", // 분홍색
-    "#33FFC4", // 청록색
-    "#336DFF", // 하늘색
-    "#FF33A9", // 자홍색
-    "#33FF49", // 녹색
-    "#FF8C33", // 적갈색
-    "#9AFF33", // 연두색
-];
-
-const MAX_STACK_LENGTH = 10;
+import {
+    colors,
+    MAX_STACK_LENGTH,
+    rootNode,
+    NORMAL_NODE_COLOR,
+    ROOT_NODE_COLOR,
+    BOOKMARKED_NODE_COLOR,
+} from "../../Constant";
 
 export const handleDoubleClick = (
     event,
@@ -166,14 +159,10 @@ export const handleNodeDragging = (event, ymapRef, userName) => {
     let selectedNode = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
     ymapRef.current.set(`User ${userName} selected`, `Node ${event.nodes[0]}`);
     selectedNode.borderWidth = 2;
-    if (selectedNode.id === 1) {
-        selectedNode.color = {
-            border: "#CBFFA9",
-        };
-    } else {
+    if (selectedNode.id !== 1) {
         selectedNode.color = {
             border: colors[indexOfUser],
-            background: "#FBD85D",
+            background: NORMAL_NODE_COLOR,
         };
     }
     selectedNode.owner = userName;
@@ -190,9 +179,9 @@ const checkPrevSelected = (userId, ymapRef) => {
             if (userData.label) {
                 userData.borderWidth = 1;
                 if (userData.id === 1) {
-                    userData.color = "#f5b252";
+                    userData.color = ROOT_NODE_COLOR;
                 } else {
-                    userData.color = "#FBD85D";
+                    userData.color = NORMAL_NODE_COLOR;
                 }
                 ymapRef.current.set(`Node ${userData.id}`, JSON.stringify(userData));
             }
@@ -325,7 +314,6 @@ export const handleMouseWheel = (event, selectedNode, ymapRef) => {
     if (node.shape === "image") {
         if (event.deltaY < 0) {
             if (node.size < 70) {
-                console.log("size up");
                 ymapRef.current.set(
                     `Node ${selectedNode}`,
                     JSON.stringify({ ...node, size: node.size + 10 })
@@ -534,18 +522,7 @@ export const handleRedo = (
         userList.sort();
 
         ymapRef.current.clear();
-        ymapRef.current.set(
-            `Node 1`,
-            JSON.stringify({
-                id: 1,
-                label: "start",
-                x: 0,
-                y: 0,
-                physics: false,
-                fixed: true,
-                color: "#f5b252",
-            })
-        );
+        ymapRef.current.set(`Node 1`, JSON.stringify(rootNode));
         ymapRef.current.set("RootQuadrant", 0);
 
         userList.forEach((user) => {
