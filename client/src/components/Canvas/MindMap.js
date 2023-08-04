@@ -6,7 +6,7 @@ import {
     MAX_STACK_LENGTH,
     ROOT_NODE_COLOR,
     NORMAL_NODE_COLOR,
-    BOOKMARKED_NODE_COLOR,
+    BOOKMARK_ICON,
     throttle,
 } from "../../Constant";
 
@@ -442,8 +442,6 @@ const MindMap = ({
                     userData.borderWidth = 1;
                     if (userData.id === 1) {
                         userData.color = ROOT_NODE_COLOR;
-                    } else if (userData.bookMarked) {
-                        userData.color = BOOKMARKED_NODE_COLOR;
                     } else {
                         userData.color = NORMAL_NODE_COLOR;
                     }
@@ -827,18 +825,31 @@ const MindMap = ({
     };
 
     const bookMarkNode = () => {
-        let selectedNodeObject = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
-        // 북마크가 되어있지 않다면 북마크 추가
-        if (!selectedNodeObject.bookMarked) {
-            selectedNodeObject.bookMarked = true;
-            selectedNodeObject.color = BOOKMARKED_NODE_COLOR;
+        const nodeKey = `Node ${selectedNode}`;
+        let selectedNodeObject = JSON.parse(ymapRef.current.get(nodeKey));
+
+        // 북마크 상태 토글
+        selectedNodeObject.bookMarked = !selectedNodeObject.bookMarked;
+
+        // 북마크 상태에 따라 라벨과 폰트 설정 변경
+        const isImageShape = selectedNodeObject.shape === "image";
+        const bookmarkIconLabel = `${BOOKMARK_ICON}\n`;
+
+        if (selectedNodeObject.bookMarked) {
+            selectedNodeObject.label =
+                (isImageShape ? BOOKMARK_ICON : bookmarkIconLabel) +
+                selectedNodeObject.label +
+                "\n ";
+            selectedNodeObject.font = { multi: true };
+        } else {
+            const regex = isImageShape
+                ? new RegExp(`${BOOKMARK_ICON}|(\\n\\s)`, "g")
+                : new RegExp(`${BOOKMARK_ICON}\\n|(\\n\\s)`, "g");
+            selectedNodeObject.label = selectedNodeObject.label.replace(regex, "");
+            selectedNodeObject.font = { multi: false };
         }
-        // 북마크가 되어있다면
-        else {
-            selectedNodeObject.bookMarked = false;
-            selectedNodeObject.color = NORMAL_NODE_COLOR;
-        }
-        ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
+
+        ymapRef.current.set(nodeKey, JSON.stringify(selectedNodeObject));
     };
 
     useEffect(() => {

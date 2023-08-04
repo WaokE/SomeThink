@@ -5,8 +5,8 @@ import {
     rootNode,
     NORMAL_NODE_COLOR,
     ROOT_NODE_COLOR,
-    BOOKMARKED_NODE_COLOR,
     throttle,
+    BOOKMARK_ICON,
 } from "../../Constant";
 
 export const handleDoubleClick = (
@@ -19,20 +19,33 @@ export const handleDoubleClick = (
 ) => {
     if (event.nodes.length > 0) {
         const selectedNodeId = event.nodes[0];
+        let label = "";
         const nodeData = ymapRef.current.get(`Node ${selectedNodeId}`);
         if (nodeData) {
             const canvas = document.querySelector(".vis-network canvas");
             if (canvas) {
                 const node = JSON.parse(nodeData);
-
+                if (node.shape === "image") {
+                    console.log("image node");
+                    label = node.label.replace(new RegExp(`${BOOKMARK_ICON}|(\\n\\s)`, "g"), "");
+                } else {
+                    label = node.label.replace(new RegExp(`${BOOKMARK_ICON}\n|(\n\\s)`, "g"), "");
+                }
                 const textField = CreateTextInput(
-                    node.label,
+                    label,
                     (newLabel) => {
                         if (newLabel === "") {
                             setAlertMessage("유효한 값을 입력해주세요!");
                             setIsAlertMessageVisible(true);
                             textField.value = node.label;
                         } else {
+                            if (node.label.startsWith(BOOKMARK_ICON)) {
+                                if (node.shape === "image") {
+                                    newLabel = `${BOOKMARK_ICON}${newLabel}`;
+                                } else {
+                                    newLabel = `${BOOKMARK_ICON}\n${newLabel}\n `;
+                                }
+                            }
                             modifyNode(selectedNodeId, newLabel);
                         }
                         document.body.removeChild(textField);
