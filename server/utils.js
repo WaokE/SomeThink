@@ -19,7 +19,7 @@ const wsReadyStateOpen = 1;
 const wsReadyStateClosing = 2; // eslint-disable-line
 const wsReadyStateClosed = 3; // eslint-disable-line
 
-const rooms = new Array();
+const rooms = new Map();
 
 // disable gc when using snapshots!
 const gcEnabled = process.env.GC !== "false" && process.env.GC !== "0";
@@ -85,6 +85,9 @@ const updateHandler = (update, origin, doc) => {
     const message = encoding.toUint8Array(encoder);
     doc.conns.forEach((_, conn) => send(doc, conn, message));
 };
+/**
+ * @param {int} length
+ */
 const generateClientId = (length) => {
     let result = "";
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -95,25 +98,31 @@ const generateClientId = (length) => {
     }
     return result;
 };
-/* search the room */
 
-const searchrooms = (rooms, docName, clientid) => {
-    const room = rooms.filter((room) => room.roomName === docName && room.clientid === clientid);
-    return room;
-};
-/* delete room */
+/**
+ * @param {string} roomName
+ * @param {string} clientId
+ */
 
-const deleteroom = (room) => {
-    const index = rooms.indexOf(room[0]);
-    rooms.splice(index, 1);
-    return rooms;
+const deletemember = (roomName, clientId) => {
+    rooms.get(roomName).delete(clientId);
 };
-/* count room */
 
-const countrooms = (rooms, docName) => {
-    const room = rooms.filter((room) => room.roomName === docName);
-    return room.length;
+/**
+ * @param {string} roomName
+ * @param {string} data
+ */
+const addDataToRoom = (roomName, data) => {
+    if (rooms.has(roomName)) {
+        const existingData = rooms.get(roomName);
+        existingData.add(data);
+    } else {
+        const newDataSet = new Set();
+        newDataSet.add(data);
+        rooms.set(roomName, newDataSet);
+    }
 };
+
 class WSSharedDoc extends Y.Doc {
     /**
      * @param {string} name
@@ -297,9 +306,8 @@ exports.ServersetupWSConnection = (
             messageListener(conn, doc, new Uint8Array(message))
     );
 
-    const clientId = generateClientId(8);
-    conn.clientId = clientId;
-    rooms.push({ clientid: clientId, roomName: docName });
+    conn.clientId = generateClientId(8);
+    addDataToRoom(docName, conn.clientId);
     console.log(`Client ${conn.clientId} connected to room ${docName}`);
 
     // Check if connection is still alive
@@ -323,12 +331,12 @@ exports.ServersetupWSConnection = (
     }, pingTimeout);
     conn.on("close", () => {
         console.log(`disconnected ${conn.clientId}`);
-        const result = searchrooms(rooms, docName, conn.clientId);
-        deleteroom(result);
+        deletemember(docName, conn.clientId);
         closeConn(doc, conn);
         clearInterval(pingInterval);
-        if (countrooms(rooms, docName) === 0 && doc.awareness) {
+        if (rooms.get(docName).size === 0 && doc.awareness) {
             console.log("delete all");
+            rooms.delete(docName);
             doc.share.get("MindMap")._map.forEach((value, key) => {
                 doc.share.get("MindMap")._map.delete(key);
             });
