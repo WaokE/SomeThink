@@ -7,15 +7,22 @@
 require("dotenv").config(!!process.env.CONFIG ? { path: process.env.CONFIG } : {});
 const WebSocket = require("ws");
 const http = require("http");
-const Y = require("yjs");
 const server = http.createServer((request, response) => {
     response.writeHead(200, { "Content-Type": "text/plain" });
     response.end("okay");
 });
-const wss = new WebSocket.Server({ noServer: true });
-const setupWSConnection = require("./utils.js").ServersetupWSConnection;
-const host = process.env.HOST || "localhost";
 const SYNCPORT = process.env.PORT || 1234;
+const TIMERPORT = process.env.TIMER_PORT || 2345;
+
+const wss = new WebSocket.Server({ noServer: true });
+
+const timerwss = new WebSocket.Server({ port: TIMERPORT });
+
+const setupWSConnection = require("./utils.js").ServersetupWSConnection;
+
+const TimersetupWSConnection = require("./utils.js").TimersetupWSConnection;
+
+const host = process.env.HOST || "localhost";
 
 const express = require("express");
 const cors = require("cors"); // Add this line to import CORS
@@ -33,7 +40,6 @@ let OPENVIDU_SECRET = process.env.OPENVIDU_SECRET;
 
 const openvidu = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
 const bodyParser = require("body-parser");
-/* generate Client id */
 
 app.use(
     cors({
@@ -41,11 +47,15 @@ app.use(
     })
 );
 app.use(express.json()); // for parsing application/json
-wss.on("connection", setupWSConnection);
 // Allow application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 // Allow application/json
 app.use(bodyParser.json());
+
+wss.on("connection", setupWSConnection);
+
+timerwss.on("connection", TimersetupWSConnection);
+
 server.on("upgrade", (request, socket, head) => {
     // You may check auth of request here..
     /**

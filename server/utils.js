@@ -182,7 +182,6 @@ class WSSharedDoc extends Y.Doc {
     }
 }
 /**
- * Gets a Y.Doc by name, whether in memory or on disk
  *
  * @param {string} docname - the name of the Y.Doc to find or create
  * @param {boolean} gc - whether to allow gc on the doc (applies only when created)
@@ -370,6 +369,7 @@ exports.ServersetupWSConnection = (
         }
     }
 };
+
 /**
  * @param {any} conn
  * @param {any} req
@@ -416,10 +416,8 @@ exports.TimersetupWSConnection = (
     conn.on("pong", () => {
         pongReceived = true;
     });
-    // put the following in a variables in a block so the interval handlers don't keep in in
-    // scope
     {
-        // send sync step 1
+        // send sync step
         const encoder = encoding.createEncoder();
         encoding.writeVarUint(encoder, messageSync);
         syncProtocol.writeSyncStep1(encoder, doc);
