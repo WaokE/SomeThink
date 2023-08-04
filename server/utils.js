@@ -424,6 +424,7 @@ exports.TimersetupWSConnection = (
             }
         }
     }, pingTimeout);
+
     conn.on("close", () => {
         deletemember(timers, docName, conn.clientId);
         closeConn(doc, conn);
