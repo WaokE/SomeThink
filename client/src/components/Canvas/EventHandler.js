@@ -310,7 +310,7 @@ export const handleAddImageNode =
             x: 0,
             y: 0,
             physics: false,
-            size: 30,
+            size: 50,
         };
 
         ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
@@ -327,14 +327,14 @@ export const handleMouseWheel = (event, selectedNode, ymapRef) => {
     const node = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
     if (node.shape === "image") {
         if (event.deltaY < 0) {
-            if (node.size < 70) {
+            if (node.size < 100) {
                 ymapRef.current.set(
                     `Node ${selectedNode}`,
                     JSON.stringify({ ...node, size: node.size + 10 })
                 );
             }
         } else if (event.deltaY > 0) {
-            if (node.size > 20) {
+            if (node.size > 50) {
                 ymapRef.current.set(
                     `Node ${selectedNode}`,
                     JSON.stringify({ ...node, size: node.size - 10 })

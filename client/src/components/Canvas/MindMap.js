@@ -686,6 +686,8 @@ const MindMap = ({
                     x: selectedNode.x + nx[quadrant - 1],
                     y: selectedNode.y + ny[quadrant - 1],
                     color: NORMAL_NODE_COLOR,
+                    widthConstraint: { minimum: 50, maximum: 100 },
+                    heightConstraint: { minimum: 50, maximum: 100 },
                 };
                 setUserActionStack((prev) => {
                     // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
