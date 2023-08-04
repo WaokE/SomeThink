@@ -43,9 +43,6 @@ export const mindMapOptions = {
         multiselect: false,
         zoomView: false,
     },
-    manipulation: {
-        addEdge: (data, callback) => {},
-    },
 };
 
 export const rootNode = {
