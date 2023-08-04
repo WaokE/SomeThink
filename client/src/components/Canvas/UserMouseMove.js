@@ -1,19 +1,8 @@
 import React from "react";
+import { colors } from "../../Constant";
 
 const UserMouseMove = (props) => {
     const { userMouseData, networkRef, userName, userList } = props;
-    const colors = [
-        "#FF5733", // 빨간색
-        "#33A7FF", // 파란색
-        "#9A33FF", // 보라색
-        "#FF33E4", // 분홍색
-        "#33FFC4", // 청록색
-        "#336DFF", // 하늘색
-        "#FF33A9", // 자홍색
-        "#33FF49", // 녹색
-        "#FF8C33", // 적갈색
-        "#9AFF33", // 연두색
-    ];
 
     const filteredUserMouseData = userMouseData.filter((data) => {
         const [id] = data;
