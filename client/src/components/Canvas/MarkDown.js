@@ -35,6 +35,7 @@ const GraphToMarkdown = ({
     isMarkdownVisible,
     setIsMarkdownVisible,
     networkRef,
+    handleFocusButtonClick,
 }) => {
     const [markdownForDisplay, setMarkdownForDisplay] = useState([]);
     const [markdownForFile, setMarkdownForFile] = useState([]);
@@ -114,18 +115,6 @@ const GraphToMarkdown = ({
         setMarkdownForDisplay(markdownLinesForDisplay);
         setMarkdownForFile(markdownLinesForFile);
     }, [nodes, edges]);
-
-    const handleFocusButtonClick = (x, y) => {
-        networkRef.current.moveTo({
-            position: { x: x, y: y },
-            scale: 1.3,
-            offset: { x: 0, y: 0 },
-            animation: {
-                duration: 500,
-                easingFunction: "easeInOutQuad",
-            },
-        });
-    };
 
     const handleDownload = () => {
         const markdownString = markdownForFile

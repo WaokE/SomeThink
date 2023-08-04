@@ -67,7 +67,7 @@ export default function LowToolBar(props) {
         window.dispatchEvent(new CustomEvent("setTimer"));
     };
     const focusMindMap = () => {
-        props.FocusButton();
+        props.FocusButton(0, 0);
     };
     const resetNode = () => {
         window.dispatchEvent(new CustomEvent("resetNode"));
