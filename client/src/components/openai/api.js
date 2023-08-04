@@ -23,15 +23,39 @@ const getConnectedNodeLabels = (clickedNodeId, ymapRef) => {
     return connectedNodeLabels;
 };
 
-const getAllNodeLabels = (ymapRef) => {
-    const allNodeLabels = Array.from(ymapRef.current.keys())
-        .filter((key) => key.startsWith("Node "))
-        .map((key) => {
-            const node = JSON.parse(ymapRef.current.get(key));
-            return node ? node.label : null;
-        });
+const getAllNodeLabels = (ymapRef, currentNodeId) => {
+    const getAllNodeLabels = [];
+    const visitedNodes = new Set();
+    const queue = [];
+    queue.push({ node: currentNodeId, depth: 0 });
+    visitedNodes.add(currentNodeId);
 
-    return allNodeLabels;
+    while (queue.length > 0) {
+        const { node, depth } = queue.shift();
+        if (depth > 1) {
+            break;
+        }
+
+        ymapRef.current.forEach((value, key) => {
+            if (key.startsWith("Edge ")) {
+                const edge = JSON.parse(value);
+                if (edge.from === node || edge.to === node) {
+                    const connectedNodeId = edge.from === node ? edge.to : edge.from;
+                    if (!visitedNodes.has(connectedNodeId)) {
+                        const connectedNodeData = ymapRef.current.get(`Node ${connectedNodeId}`);
+                        if (connectedNodeData) {
+                            const connectedNodeLabel = JSON.parse(connectedNodeData).label;
+                            getAllNodeLabels.push(connectedNodeLabel);
+                            queue.push({ node: connectedNodeId, depth: depth + 1 });
+                            visitedNodes.add(connectedNodeId);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    return getAllNodeLabels;
 };
 
 const fetchNewNodeLabels = async (connectedNodeLabels, allNodeLabels) => {
