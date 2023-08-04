@@ -23,7 +23,6 @@ const styles = {
         rotate: "180deg",
     },
     buttonContainer: {
-        float: "right",
         margin_right: "10px",
     },
 };
@@ -220,9 +219,11 @@ const GraphToMarkdown = ({
     return (
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
             <Box sx={{ ...styles.markdown, ...style }}>
-                <IconButton onClick={handleMarkdownVisible} sx={styles.buttonContainer}>
-                    <ArrowBackRoundedIcon sx={styles.closeButton} />
-                </IconButton>
+                <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: "0.5%" }}>
+                    <IconButton onClick={handleMarkdownVisible}>
+                        <ArrowBackRoundedIcon sx={styles.closeButton} />
+                    </IconButton>
+                </div>
                 <List>{displayMarkdown()}</List>
             </Box>
         </Slide>
