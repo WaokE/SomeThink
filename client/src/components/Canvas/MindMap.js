@@ -670,13 +670,14 @@ const MindMap = ({
                 }
             });
 
-            ymapRef.current.clear();
+            ymapRef.current.forEach((value, key) => {
+                if (!currentUserData.includes(key)) {
+                    ymapRef.current.delete(key);
+                }
+            });
+
             ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
             ymapRef.current.set("RootQuadrant", 0);
-
-            currentUserData.forEach((user) => {
-                ymapRef.current.set(user, true);
-            });
         }
     };
 
