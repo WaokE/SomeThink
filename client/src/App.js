@@ -10,7 +10,7 @@ import "./App.css";
 import "./Fonts/Font.css";
 
 const APPLICATION_SERVER_URL =
-    process.env.NODE_ENV === "production" ? "" : "http://localhost:5050/";
+    process.env.NODE_ENV === "production" ? "" : "https://somethink.online/";
 
 class App extends Component {
     constructor(props) {
@@ -18,7 +18,7 @@ class App extends Component {
 
         // These properties are in the state's component in order to re-render the HTML whenever their values change
         this.state = {
-            mySessionId: "undefined",
+            mySessionId: undefined,
             myUserName: "User" + Math.floor(Math.random() * 200),
             session: undefined,
             mainStreamManager: undefined,
@@ -81,7 +81,6 @@ class App extends Component {
         const mySessionId = this.state.mySessionId;
         this.validateSessionId(mySessionId).then((response) => {
             if (response === true) {
-                console.log(mySessionId);
                 this.joinSession();
             } else {
                 alert("존재하지 않는 방입니다.");
@@ -168,8 +167,6 @@ class App extends Component {
 
                 // On every new Stream received...
                 mySession.on("streamCreated", (event) => {
-                    // Subscribe to the Stream to receive it. Second parameter is undefined
-                    // so OpenVidu doesn't create an HTML video by its own
                     var subscriber = mySession.subscribe(event.stream, undefined);
                     var subscribers = this.state.subscribers;
                     subscribers.push(subscriber);
@@ -192,13 +189,11 @@ class App extends Component {
                 });
 
                 mySession.on("publisherStartSpeaking", (event) => {
-                    // console.log(event.connection.connectionId + " start speaking");
                     const userName = JSON.parse(event.connection.data).clientData;
                     this.handleSpeakingUser(userName);
                 });
 
                 mySession.on("publisherStopSpeaking", (event) => {
-                    // console.log(event.connection.connectionId + " stop speaking");
                     const userName = JSON.parse(event.connection.data).clientData;
                     this.handleDeleteSpeakingUser(userName);
                 });
@@ -212,22 +207,18 @@ class App extends Component {
                     mySession
                         .connect(token, { clientData: this.state.myUserName })
                         .then(async () => {
-                            // --- 5) Get your own camera stream ---
-
-                            // Init a publisher passing undefined as targetElement (we don't want OpenVidu to insert a video
-                            // element: we will manage it on our own) and with the desired properties
+                            // --- 5) Get your own audio stream ---
                             let publisher = await this.OV.initPublisherAsync(undefined, {
-                                audioSource: undefined, // The source of audio. If undefined default microphone
-                                videoSource: false, // The source of video. If undefined default webcam
-                                publishAudio: false, // Whether you want to start publishing with your audio unmuted or not
-                                publishVideo: false, // Whether you want to start publishing with your video enabled or not
+                                audioSource: undefined,
+                                videoSource: false,
+                                publishAudio: false,
+                                publishVideo: false,
                             });
 
                             // --- 6) Publish your stream ---
 
                             mySession.publish(publisher);
 
-                            // Set the main video in the page to display our webcam and store our Publisher
                             this.setState({
                                 mainStreamManager: publisher,
                                 publisher: publisher,
@@ -275,7 +266,7 @@ class App extends Component {
         this.setState({
             session: undefined,
             subscribers: [],
-            mySessionId: "undefined",
+            mySessionId: undefined,
             myUserName: "User" + Math.floor(Math.random() * 200),
             mainStreamManager: undefined,
             publisher: undefined,
@@ -325,7 +316,7 @@ class App extends Component {
                                         onSubmit={this.handleCreateSession}
                                     >
                                         <p>
-                                            <label>Name </label>
+                                            <label> 이름 </label>
                                             <input
                                                 className="form-control"
                                                 type="text"
@@ -341,33 +332,37 @@ class App extends Component {
                                                     this.setState(
                                                         {
                                                             isLoading: true,
+                                                        },
+                                                        () => {
+                                                            this.forceUpdate();
                                                         }
-                                                        // () => {
-                                                        //     this.forceUpdate();
-                                                        // }
                                                     );
                                                 }}
                                                 className="btn btn-lg btn-success"
                                                 name="commit"
                                                 type="submit"
-                                                value="CREATE"
+                                                value="생성"
                                             />
                                         </p>
                                     </form>
-                                    <form className="form-group" onSubmit={this.handleJoinSession}>
+                                    <form
+                                        className="form-group"
+                                        onSubmit={(event) => {
+                                            event.preventDefault();
+                                            this.handleJoinSession();
+                                        }}
+                                    >
                                         <p>
-                                            <label> Type </label>
+                                            <label> 코드 </label>
                                             <input
                                                 className="form-control"
                                                 type="text"
                                                 id="sessionId"
-                                                // value={mySessionId}
                                                 onChange={this.handleChangeSessionId}
                                                 style={{ pointerEvents: "auto" }}
                                                 pattern="[0-9A-Za-z]+"
                                                 title="영어나 숫자만 입력해주세요"
                                                 placeholder="#INVITE CODE"
-                                                // required
                                             />
                                         </p>
                                         <p className="text-center">
@@ -376,16 +371,17 @@ class App extends Component {
                                                     this.setState(
                                                         {
                                                             isLoading: true,
+                                                        },
+                                                        () => {
+                                                            this.forceUpdate();
                                                         }
-                                                        // () => {
-                                                        //     this.forceUpdate();
-                                                        // }
                                                     );
+                                                    console.log(mySessionId);
                                                 }}
                                                 className="btn btn-lg btn-success"
                                                 name="commit"
                                                 type="submit"
-                                                value="JOIN"
+                                                value="참가"
                                             />
                                         </p>
                                     </form>
