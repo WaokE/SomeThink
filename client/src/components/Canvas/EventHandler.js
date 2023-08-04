@@ -6,6 +6,7 @@ import {
     NORMAL_NODE_COLOR,
     ROOT_NODE_COLOR,
     BOOKMARKED_NODE_COLOR,
+    throttle,
 } from "../../Constant";
 
 export const handleDoubleClick = (
@@ -131,7 +132,7 @@ export const handleNodeDragEnd = (event, ymapRef, setSelectedNode, setUserAction
     setSelectedNode(nodeId);
 };
 
-export const handleNodeDragging = (event, ymapRef, userName) => {
+export const handleNodeDragging = throttle((event, ymapRef, userName) => {
     const userList = [];
     ymapRef.current.forEach((value, key) => {
         if (typeof value === "boolean" && value === true && key !== "TimerRunning") {
@@ -167,7 +168,7 @@ export const handleNodeDragging = (event, ymapRef, userName) => {
     }
     selectedNode.owner = userName;
     ymapRef.current.set(`Node ${event.nodes[0]}`, JSON.stringify(selectedNode));
-};
+}, 10);
 
 // 유저가 선택한 값이 있는지 검사
 const checkPrevSelected = (userId, ymapRef) => {

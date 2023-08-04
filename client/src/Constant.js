@@ -66,3 +66,15 @@ export const MAX_STACK_LENGTH = 10;
 export const ROOT_NODE_COLOR = "#f5b252";
 export const NORMAL_NODE_COLOR = "#FBD85D";
 export const BOOKMARKED_NODE_COLOR = "#FC5185";
+
+export const throttle = (callback, delay) => {
+    let previousCall = new Date().getTime();
+    return function () {
+        const time = new Date().getTime();
+
+        if (time - previousCall >= delay) {
+            previousCall = time;
+            callback.apply(null, arguments);
+        }
+    };
+};

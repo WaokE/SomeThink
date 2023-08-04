@@ -7,6 +7,7 @@ import {
     ROOT_NODE_COLOR,
     NORMAL_NODE_COLOR,
     BOOKMARKED_NODE_COLOR,
+    throttle,
 } from "../../Constant";
 
 import Graph from "react-graph-vis";
@@ -318,18 +319,6 @@ const MindMap = ({
         userList.sort();
         return userList;
     }, []);
-
-    const throttle = (callback, delay) => {
-        let previousCall = new Date().getTime();
-        return function () {
-            const time = new Date().getTime();
-
-            if (time - previousCall >= delay) {
-                previousCall = time;
-                callback.apply(null, arguments);
-            }
-        };
-    };
 
     const handleMouseMove = throttle((e) => {
         if (networkRef.current !== null) {
