@@ -24,7 +24,7 @@ const getConnectedNodeLabels = (clickedNodeId, ymapRef) => {
 };
 
 const getAllNodeLabels = (ymapRef, currentNodeId) => {
-    const getAllNodeLabels = [];
+    const allNodeLabels = [];
     const visitedNodes = new Set();
     const queue = [];
     queue.push({ node: currentNodeId, depth: 0 });
@@ -45,7 +45,7 @@ const getAllNodeLabels = (ymapRef, currentNodeId) => {
                         const connectedNodeData = ymapRef.current.get(`Node ${connectedNodeId}`);
                         if (connectedNodeData) {
                             const connectedNodeLabel = JSON.parse(connectedNodeData).label;
-                            getAllNodeLabels.push(connectedNodeLabel);
+                            allNodeLabels.push(connectedNodeLabel);
                             queue.push({ node: connectedNodeId, depth: depth + 1 });
                             visitedNodes.add(connectedNodeId);
                         }
@@ -55,7 +55,7 @@ const getAllNodeLabels = (ymapRef, currentNodeId) => {
         });
     }
 
-    return getAllNodeLabels;
+    return allNodeLabels;
 };
 
 const fetchNewNodeLabels = async (connectedNodeLabels, allNodeLabels) => {
