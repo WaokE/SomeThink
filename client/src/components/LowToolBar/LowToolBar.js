@@ -77,8 +77,8 @@ export default function LowToolBar(props) {
         props.onExportClick();
     };
 
-    const makeMarkdown = () => {
-        window.dispatchEvent(new CustomEvent("makeMarkdown"));
+    const downloadSnapshot = () => {
+        window.dispatchEvent(new CustomEvent("downloadSnapshot"));
     };
 
     const openMarkdown = () => {
@@ -214,7 +214,7 @@ export default function LowToolBar(props) {
 
     const actions = [
         { icon: <CameraAltIcon />, name: "화면 캡처", onclick: hendleExportClick },
-        { icon: <SaveIcon />, name: "마인드맵 저장", onclick: makeMarkdown },
+        { icon: <SaveIcon />, name: "마인드맵 저장", onclick: downloadSnapshot },
         { icon: <Upload />, name: "마인드맵 불러오기", onclick: handleUploadSnapshotClick },
     ];
 

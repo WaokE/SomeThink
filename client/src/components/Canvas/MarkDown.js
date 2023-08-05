@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import Slide from "@mui/material/Slide";
 import Box from "@mui/material/Box";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
 import Typography from "@mui/material/Typography";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import IconButton from "@mui/material/IconButton";
+
+import TreeView from "@mui/lab/TreeView";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import TreeItem, { useTreeItem } from "@mui/lab/TreeItem";
+import clsx from "clsx";
 
 const styles = {
     markdown: {
@@ -27,6 +31,78 @@ const styles = {
     },
 };
 
+const TreeItemContext = createContext();
+
+const CustomContent = React.forwardRef(function CustomContent(props, ref) {
+    const { nodeId, classes, className, label, icon: iconProp, expansionIcon, displayIcon } = props;
+
+    const {
+        disabled,
+        expanded,
+        selected,
+        focused,
+        handleExpansion,
+        handleSelection,
+        preventSelection,
+    } = useTreeItem(nodeId);
+
+    const { nodeHierarchy, handleFocusButtonClick } = useContext(TreeItemContext);
+
+    const node = nodeHierarchy[nodeId];
+    const icon = iconProp || expansionIcon || displayIcon;
+
+    const handleMouseDown = (event) => {
+        preventSelection(event);
+    };
+
+    const handleExpansionClick = (event) => {
+        handleExpansion(event);
+    };
+
+    const handleSelectionClick = (event) => {
+        handleSelection(event);
+        handleFocusButtonClick(node.x, node.y);
+    };
+
+    return (
+        <div
+            className={clsx(className, classes.root, {
+                [classes.expanded]: expanded,
+                [classes.selected]: selected,
+                [classes.focused]: focused,
+                [classes.disabled]: disabled,
+            })}
+            onMouseDown={handleMouseDown}
+            ref={ref}
+        >
+            <div onClick={handleExpansionClick} className={classes.iconContainer}>
+                {icon}
+            </div>
+            <Typography onClick={handleSelectionClick} component="div" className={classes.label}>
+                {label}
+            </Typography>
+        </div>
+    );
+});
+
+function CustomTreeItem(props) {
+    const { nodeId, label, nodeHierarchy, handleFocusButtonClick, ...other } = props;
+    return (
+        <TreeItemContext.Provider value={{ nodeHierarchy, handleFocusButtonClick }}>
+            <TreeItem
+                ContentComponent={CustomContent}
+                ContentComponentProps={{
+                    nodeId: nodeId,
+                    label: label,
+                }}
+                nodeId={nodeId}
+                label={label}
+                {...other}
+            />
+        </TreeItemContext.Provider>
+    );
+}
+
 const GraphToMarkdown = ({
     style,
     nodes,
@@ -36,13 +112,19 @@ const GraphToMarkdown = ({
     networkRef,
     handleFocusButtonClick,
 }) => {
-    const [markdownForDisplay, setMarkdownForDisplay] = useState([]);
-    const [markdownForFile, setMarkdownForFile] = useState([]);
+    const [nodeHierarchy, setNodeHierarchy] = useState({});
+    const [treeItems, setTreeItems] = useState([]);
 
     useEffect(() => {
-        let nodeHierarchy = {};
-        let markdownLinesForDisplay = [];
-        let markdownLinesForFile = [];
+        let newHierarchy = {};
+
+        const rootNode = nodes.find((node) => node.id === 1);
+        if (rootNode) {
+            newHierarchy[rootNode.id] = {
+                ...rootNode,
+                children: [],
+            };
+        }
 
         edges.forEach((edge) => {
             const parent = nodes.find((node) => node.id === edge.from);
@@ -50,85 +132,52 @@ const GraphToMarkdown = ({
 
             if (!parent || !child) return;
 
-            if (!nodeHierarchy[parent.id]) {
-                nodeHierarchy[parent.id] = {
-                    label: parent.label,
-                    children: [child],
+            if (!newHierarchy[parent.id]) {
+                newHierarchy[parent.id] = {
+                    ...parent,
+                    children: [],
                 };
-            } else {
-                nodeHierarchy[parent.id].children.push(child);
             }
+
+            if (!newHierarchy[child.id]) {
+                newHierarchy[child.id] = {
+                    ...child,
+                    children: [],
+                };
+            }
+
+            newHierarchy[parent.id].children.push(newHierarchy[child.id]);
         });
 
-        function buildMarkdownStringForDisplay(node, depth = 0) {
-            const space = " ".repeat((depth > 1 ? depth - 1 : 0) * 4);
-            const bullet = depth === 0 ? "" : "└ ";
-            const markdownLine = {
-                line: `${space}${bullet}${node.label}`,
-                x: node.x,
-                y: node.y,
-                depth: depth,
-            };
-
-            markdownLinesForDisplay.push(markdownLine);
-
-            const parentNode = nodeHierarchy[node.id];
-            if (parentNode && parentNode.children) {
-                parentNode.children.forEach((childNode, idx) => {
-                    childNode.isLastChild = idx === parentNode.children.length - 1;
-                    buildMarkdownStringForDisplay(childNode, depth + 1);
-                });
-            }
-        }
-
-        function buildMarkdownStringForFile(node, depth = 0) {
-            const space = " ".repeat((depth > 2 ? depth - 2 : 0) * 2);
-            const bullet = "- ";
-            const header = "#".repeat(depth + 1);
-            const markdownLine = {
-                line: `${
-                    depth === 0
-                        ? header + " **" + node.label + "**\n"
-                        : depth === 1
-                        ? "\n" + header + " " + node.label + "\n"
-                        : space + bullet + node.label
-                }\n`,
-            };
-
-            markdownLinesForFile.push(markdownLine);
-
-            const parentNode = nodeHierarchy[node.id];
-            if (parentNode && parentNode.children) {
-                parentNode.children.forEach((childNode) =>
-                    buildMarkdownStringForFile(childNode, depth + 1)
-                );
-            }
-        }
-
-        const rootNode = nodes.find((node) => node.id === 1);
-        if (rootNode) {
-            buildMarkdownStringForDisplay(rootNode);
-            buildMarkdownStringForFile(rootNode);
-        }
-
-        setMarkdownForDisplay(markdownLinesForDisplay);
-        setMarkdownForFile(markdownLinesForFile);
+        setNodeHierarchy(newHierarchy);
     }, [nodes, edges]);
 
-    const handleDownload = () => {
-        const markdownString = markdownForFile
-            .map((lineObj) => (lineObj.line ? lineObj.line : ""))
-            .join("");
-
-        console.log("markdownString", markdownString);
-
-        const element = document.createElement("a");
-        const file = new Blob([markdownString], { type: "text/plain" });
-        element.href = URL.createObjectURL(file);
-        element.download = `${nodes[0].label}.md`;
-        document.body.appendChild(element);
-        element.click();
+    const buildTreeItems = (nodeId) => {
+        const node = nodeHierarchy[nodeId];
+        if (!node) {
+            return null;
+        }
+        return (
+            <CustomTreeItem
+                nodeId={node.id.toString()}
+                label={node.label}
+                key={node.id}
+                nodeHierarchy={nodeHierarchy}
+                handleFocusButtonClick={handleFocusButtonClick}
+            >
+                {node.children
+                    ? node.children.map((childNode) => buildTreeItems(childNode.id))
+                    : ""}
+            </CustomTreeItem>
+        );
     };
+
+    useEffect(() => {
+        const rootNode = nodeHierarchy[1];
+        if (rootNode) {
+            setTreeItems(buildTreeItems(rootNode.id));
+        }
+    }, [nodeHierarchy, nodes, edges]);
 
     const makeNodeSnapshot = (node, snapShotForFile) => {
         const nodeInfo = {
@@ -176,45 +225,16 @@ const GraphToMarkdown = ({
         element.click();
     };
 
-    const displayMarkdown = () => {
-        return markdownForDisplay.map((lineObj, index) => (
-            <ListItem
-                button
-                key={index}
-                onClick={() => handleFocusButtonClick(lineObj.x, lineObj.y)}
-                style={{
-                    whiteSpace: "pre",
-                    padding: "1px",
-                    minHeight: "fit-content",
-                    paddingLeft: "10px",
-                }}
-            >
-                <Typography
-                    style={{
-                        fontSize:
-                            lineObj.depth === 0 ? "1.4em" : lineObj.depth === 1 ? "1.2em" : "1em",
-                        display: "inline-block",
-                        lineHeight: "1em",
-                    }}
-                >
-                    {lineObj.line}
-                </Typography>
-            </ListItem>
-        ));
-    };
-
     const handleMarkdownVisible = () => {
         setIsMarkdownVisible(false);
     };
 
     useEffect(() => {
-        // window.addEventListener("makeMarkdown", handleDownload);
-        window.addEventListener("makeMarkdown", handleDownloadSnapshot);
+        window.addEventListener("downloadSnapshot", handleDownloadSnapshot);
         return () => {
-            // window.removeEventListener("makeMarkdown", handleDownload);
-            window.removeEventListener("makeMarkdown", handleDownloadSnapshot);
+            window.removeEventListener("downloadSnapshot", handleDownloadSnapshot);
         };
-    }, [markdownForFile]);
+    }, []);
 
     return (
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
@@ -224,7 +244,14 @@ const GraphToMarkdown = ({
                         <ArrowBackRoundedIcon sx={styles.closeButton} />
                     </IconButton>
                 </div>
-                <List>{displayMarkdown()}</List>
+                <TreeView
+                    aria-label="icon expansion"
+                    defaultCollapseIcon={<ExpandMoreIcon />}
+                    defaultExpandIcon={<ChevronRightIcon />}
+                    sx={{ height: "fill", flexGrow: 1, maxWidth: 300 }}
+                >
+                    {treeItems}
+                </TreeView>
             </Box>
         </Slide>
     );
