@@ -799,41 +799,49 @@ const MindMap = ({
         textField.focus();
     };
 
+    const proxyServerUrl = "http://localhost:3030";
+
     const handleCreateImage = (url, searchWord) => {
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
 
-        const image = new Image();
-        image.crossOrigin = "Anonymous";
-        image.onload = function () {
-            const aspectRatio = image.width / image.height;
-            const newWidth = 250;
-            const newHeight = newWidth / aspectRatio;
-            const canvas = document.createElement("canvas");
-            canvas.width = newWidth;
-            canvas.height = newHeight;
-            const ctx = canvas.getContext("2d");
+        if (url.includes("data:image")) {
+            // data URL인 경우에는 그냥 이미지 URL로 넣어줍니다.
+            createNodeWithImage(url, searchWord, nodeId);
+        } else {
+            fetch(`${proxyServerUrl}/api/proxyImage?url=${encodeURIComponent(url)}`)
+                .then((response) => response.blob())
+                .then((imageBlob) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const dataURL = reader.result;
+                        createNodeWithImage(dataURL, searchWord, nodeId);
+                    };
+                    reader.readAsDataURL(imageBlob);
+                })
+                .catch((error) => {
+                    console.error("이미지 다운로드 및 전달 중 에러:", error);
+                    createNodeWithImage(url, searchWord, nodeId);
+                });
+        }
+    };
 
-            ctx.drawImage(image, 0, 0, newWidth, newHeight);
-
-            const dataURL = canvas.toDataURL();
-            const coord = networkRef.current.DOMtoCanvas({
-                x: window.innerWidth / 2,
-                y: window.innerHeight / 2,
-            });
-            const newNode = {
-                id: nodeId,
-                label: searchWord,
-                shape: "image",
-                image: dataURL,
-                x: coord.x,
-                y: coord.y,
-                physics: false,
-                size: 20,
-            };
-
-            ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
+    const createNodeWithImage = (imageUrl, searchWord, nodeId) => {
+        const coord = networkRef.current.DOMtoCanvas({
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2,
+        });
+        const newNode = {
+            id: nodeId,
+            label: searchWord,
+            shape: "image",
+            image: imageUrl,
+            x: coord.x,
+            y: coord.y,
+            physics: false,
+            size: 20,
         };
-        image.src = url;
+
+        ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
     };
 
     const closeNodeContextMenu = () => {

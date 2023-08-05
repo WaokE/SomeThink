@@ -56,7 +56,7 @@ const ImageSearch = ({ style, ...props }) => {
     const submit = () => {
         searchWordRef.current = img;
 
-        if (img.includes("http")) {
+        if (img.includes("http") || img.includes("data:image")) {
             props.createImage(img, "");
         } else {
             fetchRequest();

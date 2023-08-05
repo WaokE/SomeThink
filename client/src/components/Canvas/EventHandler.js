@@ -299,24 +299,6 @@ export const handleAddTextNode = (
     document.addEventListener("mousedown", handleOutside); // Add the event listener to detect clicks outside the textField
 };
 
-export const handleAddImageNode =
-    ({ imageUrl, ymapRef }) =>
-    () => {
-        const nodeCount = ymapRef.current.get("Counter");
-        const newNode = {
-            id: nodeCount,
-            shape: "image",
-            image: imageUrl,
-            x: 0,
-            y: 0,
-            physics: false,
-            size: 50,
-        };
-
-        ymapRef.current.set(`Node ${nodeCount}`, JSON.stringify(newNode));
-        ymapRef.current.set("Counter", nodeCount + 1);
-    };
-
 export const makeHandleMemoChange = (ymapRef, setMemo) => (event) => {
     const newMemo = event.target.value;
     ymapRef.current.set("Memo", newMemo);
