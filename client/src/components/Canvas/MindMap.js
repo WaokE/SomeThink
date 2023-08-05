@@ -591,6 +591,27 @@ const MindMap = ({
                 id: `${fromNode} to ${toNode}`,
             })
         );
+        setUserActionStack((prev) => {
+            if (prev.length >= MAX_STACK_LENGTH) {
+                setUserActionStackPointer(prev.length - 1);
+                return [
+                    ...prev.slice(1),
+                    {
+                        action: "create",
+                        createdEdge: [`Edge ${fromNode} to ${toNode}`],
+                    },
+                ];
+            } else {
+                setUserActionStackPointer(prev.length);
+                return [
+                    ...prev,
+                    {
+                        action: "create",
+                        createdEdge: [`Edge ${fromNode} to ${toNode}`],
+                    },
+                ];
+            }
+        });
     };
 
     const sortEdgesCorrectly = (edges, createdEdge) => {
@@ -635,6 +656,28 @@ const MindMap = ({
             const from = splitedEdge[0];
             const to = splitedEdge[2];
             ymapRef.current.delete(`Edge ${from} to ${to}`);
+
+            setUserActionStack((prev) => {
+                if (prev.length >= MAX_STACK_LENGTH) {
+                    setUserActionStackPointer(prev.length - 1);
+                    return [
+                        ...prev.slice(1),
+                        {
+                            action: "delete",
+                            deletedEdge: [edge],
+                        },
+                    ];
+                } else {
+                    setUserActionStackPointer(prev.length);
+                    return [
+                        ...prev,
+                        {
+                            action: "delete",
+                            deletedEdge: [edge],
+                        },
+                    ];
+                }
+            });
         });
         setIsEdgeContextMenuVisible(false);
     };
@@ -756,41 +799,49 @@ const MindMap = ({
         textField.focus();
     };
 
+    const proxyServerUrl = "http://localhost:3030";
+
     const handleCreateImage = (url, searchWord) => {
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
 
-        const image = new Image();
-        image.crossOrigin = "Anonymous";
-        image.onload = function () {
-            const aspectRatio = image.width / image.height;
-            const newWidth = 250;
-            const newHeight = newWidth / aspectRatio;
-            const canvas = document.createElement("canvas");
-            canvas.width = newWidth;
-            canvas.height = newHeight;
-            const ctx = canvas.getContext("2d");
+        if (url.includes("data:image")) {
+            // data URL인 경우에는 그냥 이미지 URL로 넣어줍니다.
+            createNodeWithImage(url, searchWord, nodeId);
+        } else {
+            fetch(`${proxyServerUrl}/api/proxyImage?url=${encodeURIComponent(url)}`)
+                .then((response) => response.blob())
+                .then((imageBlob) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const dataURL = reader.result;
+                        createNodeWithImage(dataURL, searchWord, nodeId);
+                    };
+                    reader.readAsDataURL(imageBlob);
+                })
+                .catch((error) => {
+                    console.error("이미지 다운로드 및 전달 중 에러:", error);
+                    createNodeWithImage(url, searchWord, nodeId);
+                });
+        }
+    };
 
-            ctx.drawImage(image, 0, 0, newWidth, newHeight);
-
-            const dataURL = canvas.toDataURL();
-            const coord = networkRef.current.DOMtoCanvas({
-                x: window.innerWidth / 2,
-                y: window.innerHeight / 2,
-            });
-            const newNode = {
-                id: nodeId,
-                label: searchWord,
-                shape: "image",
-                image: dataURL,
-                x: coord.x,
-                y: coord.y,
-                physics: false,
-                size: 20,
-            };
-
-            ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
+    const createNodeWithImage = (imageUrl, searchWord, nodeId) => {
+        const coord = networkRef.current.DOMtoCanvas({
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2,
+        });
+        const newNode = {
+            id: nodeId,
+            label: searchWord,
+            shape: "image",
+            image: imageUrl,
+            x: coord.x,
+            y: coord.y,
+            physics: false,
+            size: 20,
         };
-        image.src = url;
+
+        ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
     };
 
     const closeNodeContextMenu = () => {
@@ -844,6 +895,35 @@ const MindMap = ({
     const bookMarkNode = () => {
         const nodeKey = `Node ${selectedNode}`;
         let selectedNodeObject = JSON.parse(ymapRef.current.get(nodeKey));
+
+        setUserActionStack((prev) => {
+            // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
+            if (prev.length >= MAX_STACK_LENGTH) {
+                setUserActionStackPointer(prev.length - 1);
+                return [
+                    ...prev.slice(1),
+                    {
+                        action: "bookmark",
+                        nodeId: selectedNode,
+                        prevBookMarked: selectedNodeObject.bookMarked,
+                        newBookMarked: !selectedNodeObject.bookMarked,
+                    },
+                ];
+            }
+            // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+            else {
+                setUserActionStackPointer(prev.length);
+                return [
+                    ...prev,
+                    {
+                        action: "bookmark",
+                        nodeId: selectedNode,
+                        prevBookMarked: selectedNodeObject.bookMarked,
+                        newBookMarked: !selectedNodeObject.bookMarked,
+                    },
+                ];
+            }
+        });
 
         // 북마크 상태 토글
         selectedNodeObject.bookMarked = !selectedNodeObject.bookMarked;
