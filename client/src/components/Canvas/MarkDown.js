@@ -118,6 +118,13 @@ const GraphToMarkdown = ({
     useEffect(() => {
         let newHierarchy = {};
         let markdownLinesForDisplay = [];
+        const rootNode = nodes.find((node) => node.id === 1);
+        if (rootNode) {
+            newHierarchy[rootNode.id] = {
+                ...rootNode,
+                children: [],
+            };
+        }
 
         edges.forEach((edge) => {
             const parent = nodes.find((node) => node.id === edge.from);
