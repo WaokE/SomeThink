@@ -34,6 +34,7 @@ const styles = {
         left: "50%",
         transform: "translateX(-50%)", // 가운데 정렬
         padding: "0px 20px", // 좌우 간격 조정
+        zIndex: "10",
     },
     action: {
         borderRadius: "100px", // 테두리를 둥글게 만듦
