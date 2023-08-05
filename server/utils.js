@@ -107,7 +107,11 @@ const generateClientId = (length) => {
  */
 
 const deletemember = (map, roomName, clientId) => {
-    map.get(roomName).delete(clientId);
+    try {
+        map.get(roomName).delete(clientId);
+    } catch (err) {
+        console.log(err);
+    }
 };
 
 /**
@@ -134,12 +138,16 @@ const addDataToRoom = (map, roomName, data) => {
 const removeDoc = (doc, map, mapkey, roomName) => {
     if (map.get(roomName).size === 0 && doc.awareness) {
         console.log("delete all");
-        map.delete(roomName);
-        doc.share.get(mapkey)._map.forEach((value, key) => {
-            doc.share.get(mapkey)._map.delete(key);
-        });
-        doc.awareness.meta.clear();
-        doc.store.clients.clear();
+        try {
+            map.delete(roomName);
+            doc.share.get(mapkey)._map.forEach((value, key) => {
+                doc.share.get(mapkey)._map.delete(key);
+            });
+            doc.awareness.meta.clear();
+            doc.store.clients.clear();
+        } catch (err) {
+            console.log(err);
+        }
     }
 };
 
