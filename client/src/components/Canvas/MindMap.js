@@ -591,6 +591,27 @@ const MindMap = ({
                 id: `${fromNode} to ${toNode}`,
             })
         );
+        setUserActionStack((prev) => {
+            if (prev.length >= MAX_STACK_LENGTH) {
+                setUserActionStackPointer(prev.length - 1);
+                return [
+                    ...prev.slice(1),
+                    {
+                        action: "create",
+                        createdEdge: [`Edge ${fromNode} to ${toNode}`],
+                    },
+                ];
+            } else {
+                setUserActionStackPointer(prev.length);
+                return [
+                    ...prev,
+                    {
+                        action: "create",
+                        createdEdge: [`Edge ${fromNode} to ${toNode}`],
+                    },
+                ];
+            }
+        });
     };
 
     const sortEdgesCorrectly = (edges, createdEdge) => {
@@ -635,6 +656,28 @@ const MindMap = ({
             const from = splitedEdge[0];
             const to = splitedEdge[2];
             ymapRef.current.delete(`Edge ${from} to ${to}`);
+
+            setUserActionStack((prev) => {
+                if (prev.length >= MAX_STACK_LENGTH) {
+                    setUserActionStackPointer(prev.length - 1);
+                    return [
+                        ...prev.slice(1),
+                        {
+                            action: "delete",
+                            deletedEdge: [edge],
+                        },
+                    ];
+                } else {
+                    setUserActionStackPointer(prev.length);
+                    return [
+                        ...prev,
+                        {
+                            action: "delete",
+                            deletedEdge: [edge],
+                        },
+                    ];
+                }
+            });
         });
         setIsEdgeContextMenuVisible(false);
     };
@@ -844,6 +887,35 @@ const MindMap = ({
     const bookMarkNode = () => {
         const nodeKey = `Node ${selectedNode}`;
         let selectedNodeObject = JSON.parse(ymapRef.current.get(nodeKey));
+
+        setUserActionStack((prev) => {
+            // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
+            if (prev.length >= MAX_STACK_LENGTH) {
+                setUserActionStackPointer(prev.length - 1);
+                return [
+                    ...prev.slice(1),
+                    {
+                        action: "bookmark",
+                        nodeId: selectedNode,
+                        prevBookMarked: selectedNodeObject.bookMarked,
+                        newBookMarked: !selectedNodeObject.bookMarked,
+                    },
+                ];
+            }
+            // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+            else {
+                setUserActionStackPointer(prev.length);
+                return [
+                    ...prev,
+                    {
+                        action: "bookmark",
+                        nodeId: selectedNode,
+                        prevBookMarked: selectedNodeObject.bookMarked,
+                        newBookMarked: !selectedNodeObject.bookMarked,
+                    },
+                ];
+            }
+        });
 
         // 북마크 상태 토글
         selectedNodeObject.bookMarked = !selectedNodeObject.bookMarked;

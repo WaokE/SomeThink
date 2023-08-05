@@ -391,20 +391,27 @@ export const handleUndo = (
     }
     // 이전 동작이 create 인 경우
     if (action === "create") {
-        const ymapValue = ymapRef.current.get(
-            `Node ${userActionStack[userActionStackPointer].nodeId}`
-        );
-        // ymap에서 해당 노드를 찾을 수 있다면
-        if (ymapValue !== undefined) {
-            ymapRef.current.delete(`Node ${userActionStack[userActionStackPointer].nodeId}`);
-            // 스택 포인터를 하나 줄임
-            setUserActionStackPointer((prev) => prev - 1);
-        }
-        // ymap에서 해당 노드를 찾을 수 없다면
-        else {
-            setAlertMessage("되돌리려는 노드를 찾을 수 없습니다!");
-            setIsAlertMessageVisible(true);
-            // 스택 포인터를 하나 줄임
+        if (userActionStack[userActionStackPointer].nodeId) {
+            const ymapValue = ymapRef.current.get(
+                `Node ${userActionStack[userActionStackPointer].nodeId}`
+            );
+            // ymap에서 해당 노드를 찾을 수 있다면
+            if (ymapValue !== undefined) {
+                ymapRef.current.delete(`Node ${userActionStack[userActionStackPointer].nodeId}`);
+                // 스택 포인터를 하나 줄임
+                setUserActionStackPointer((prev) => prev - 1);
+            }
+            // ymap에서 해당 노드를 찾을 수 없다면
+            else {
+                setAlertMessage("되돌리려는 노드를 찾을 수 없습니다!");
+                setIsAlertMessageVisible(true);
+                // 스택 포인터를 하나 줄임
+                setUserActionStackPointer((prev) => prev - 1);
+            }
+        } else if (userActionStack[userActionStackPointer].createdEdge) {
+            userActionStack[userActionStackPointer].createdEdge.forEach((edge) => {
+                ymapRef.current.delete(edge);
+            });
             setUserActionStackPointer((prev) => prev - 1);
         }
     }
@@ -438,11 +445,29 @@ export const handleUndo = (
         setUserActionStackPointer((prev) => prev - 1);
     }
     if (action === "delete") {
-        const deletedNodes = userActionStack[userActionStackPointer].deletedNodes;
-        deletedNodes.forEach((node) => {
-            ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
-        });
-        setUserActionStackPointer((prev) => prev - 1);
+        if (userActionStack[userActionStackPointer].deletedNodes) {
+            const deletedNodes = userActionStack[userActionStackPointer].deletedNodes;
+            deletedNodes.forEach((node) => {
+                ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
+            });
+            setUserActionStackPointer((prev) => prev - 1);
+        } else if (userActionStack[userActionStackPointer].deletedEdge) {
+            const deletedEdges = userActionStack[userActionStackPointer].deletedEdge;
+            deletedEdges.forEach((edge) => {
+                const splitedEdge = edge.split(" ");
+                const from = splitedEdge[0];
+                const to = splitedEdge[2];
+                ymapRef.current.set(
+                    `Edge ${edge}`,
+                    JSON.stringify({
+                        from: from,
+                        to: to,
+                        id: `${from} ${to}`,
+                    })
+                );
+            });
+            setUserActionStackPointer((prev) => prev - 1);
+        }
     }
     if (action === "modify") {
         const node = JSON.parse(
@@ -452,6 +477,35 @@ export const handleUndo = (
         ymapRef.current.set(
             `Node ${userActionStack[userActionStackPointer].nodeId}`,
             JSON.stringify(node)
+        );
+        setUserActionStackPointer((prev) => prev - 1);
+    }
+    if (action === "bookmark") {
+        let selectedNodeObject = JSON.parse(
+            ymapRef.current.get(`Node ${userActionStack[userActionStackPointer].nodeId}`)
+        );
+
+        // 북마크 상태에 따라 라벨과 폰트 설정 변경
+        const isImageShape = selectedNodeObject.shape === "image";
+        const bookmarkIconLabel = `${BOOKMARK_ICON}\n`;
+
+        if (userActionStack[userActionStackPointer].prevBookMarked) {
+            selectedNodeObject.label =
+                (isImageShape ? BOOKMARK_ICON : bookmarkIconLabel) +
+                selectedNodeObject.label +
+                "\n ";
+            selectedNodeObject.font = { multi: true };
+        } else {
+            const regex = isImageShape
+                ? new RegExp(`${BOOKMARK_ICON}|(\\n\\s)`, "g")
+                : new RegExp(`${BOOKMARK_ICON}\\n|(\\n\\s)`, "g");
+            selectedNodeObject.label = selectedNodeObject.label.replace(regex, "");
+            selectedNodeObject.font = { multi: false };
+        }
+
+        ymapRef.current.set(
+            `Node ${userActionStack[userActionStackPointer].nodeId}`,
+            JSON.stringify(selectedNodeObject)
         );
         setUserActionStackPointer((prev) => prev - 1);
     }
@@ -501,21 +555,38 @@ export const handleRedo = (
     }
     // 이전 동작이 create 인 경우
     if (action === "create") {
-        const ymapValue = ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`);
-        // ymap에서 해당 노드를 찾을 수 있다면
-        if (ymapValue !== undefined) {
-            setAlertMessage("복구할 노드가 이미 존재합니다!");
-            setIsAlertMessageVisible(true);
-            // 스택 포인터를 하나 늘림
-            setUserActionStackPointer((prev) => prev + 1);
-        }
-        // ymap에서 해당 노드를 찾을 수 없다면
-        else {
-            ymapRef.current.set(
-                `Node ${userActionStack[prevPointer].nodeId}`,
-                JSON.stringify(userActionStack[prevPointer].newNode)
-            );
-            // 스택 포인터를 하나 늘림
+        console.log("redo create");
+        if (userActionStack[prevPointer].nodeId) {
+            const ymapValue = ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`);
+            // ymap에서 해당 노드를 찾을 수 있다면
+            if (ymapValue !== undefined) {
+                setAlertMessage("복구할 노드가 이미 존재합니다!");
+                setIsAlertMessageVisible(true);
+                // 스택 포인터를 하나 늘림
+                setUserActionStackPointer((prev) => prev + 1);
+            }
+            // ymap에서 해당 노드를 찾을 수 없다면
+            else {
+                ymapRef.current.set(
+                    `Node ${userActionStack[prevPointer].nodeId}`,
+                    JSON.stringify(userActionStack[prevPointer].newNode)
+                );
+                // 스택 포인터를 하나 늘림
+                setUserActionStackPointer((prev) => prev + 1);
+            }
+        } else if (userActionStack[prevPointer].createdEdge) {
+            userActionStack[prevPointer].createdEdge.forEach((edge) => {
+                const from = edge.split(" ")[1];
+                const to = edge.split(" ")[3];
+                ymapRef.current.set(
+                    edge,
+                    JSON.stringify({
+                        from: from,
+                        to: to,
+                        id: `${from} ${to}`,
+                    })
+                );
+            });
             setUserActionStackPointer((prev) => prev + 1);
         }
     }
@@ -546,16 +617,54 @@ export const handleRedo = (
     }
     // 이전 동작이 delete 인 경우
     if (action === "delete") {
-        const deletedNodes = userActionStack[prevPointer].deletedNodes;
-        deletedNodes.forEach((node) => {
-            ymapRef.current.delete(`Node ${node.id}`);
-        });
-        setUserActionStackPointer((prev) => prev + 1);
+        if (userActionStack[prevPointer].deletedNods) {
+            const deletedNodes = userActionStack[prevPointer].deletedNodes;
+            deletedNodes.forEach((node) => {
+                ymapRef.current.delete(`Node ${node.id}`);
+            });
+            setUserActionStackPointer((prev) => prev + 1);
+        } else if (userActionStack[prevPointer].deletedEdge) {
+            const deletedEdges = userActionStack[prevPointer].deletedEdge;
+            deletedEdges.forEach((edge) => {
+                ymapRef.current.delete(`Edge ${edge}`);
+            });
+            setUserActionStackPointer((prev) => prev + 1);
+        }
     }
     if (action === "modify") {
         const node = JSON.parse(ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`));
         node.label = userActionStack[prevPointer].newLabel;
         ymapRef.current.set(`Node ${userActionStack[prevPointer].nodeId}`, JSON.stringify(node));
+        setUserActionStackPointer((prev) => prev + 1);
+    }
+
+    if (action === "bookmark") {
+        let selectedNodeObject = JSON.parse(
+            ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`)
+        );
+
+        // 북마크 상태에 따라 라벨과 폰트 설정 변경
+        const isImageShape = selectedNodeObject.shape === "image";
+        const bookmarkIconLabel = `${BOOKMARK_ICON}\n`;
+
+        if (userActionStack[prevPointer].newBookMarked) {
+            selectedNodeObject.label =
+                (isImageShape ? BOOKMARK_ICON : bookmarkIconLabel) +
+                selectedNodeObject.label +
+                "\n ";
+            selectedNodeObject.font = { multi: true };
+        } else {
+            const regex = isImageShape
+                ? new RegExp(`${BOOKMARK_ICON}|(\\n\\s)`, "g")
+                : new RegExp(`${BOOKMARK_ICON}\\n|(\\n\\s)`, "g");
+            selectedNodeObject.label = selectedNodeObject.label.replace(regex, "");
+            selectedNodeObject.font = { multi: false };
+        }
+
+        ymapRef.current.set(
+            `Node ${userActionStack[prevPointer].nodeId}`,
+            JSON.stringify(selectedNodeObject)
+        );
         setUserActionStackPointer((prev) => prev + 1);
     }
 };
