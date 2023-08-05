@@ -438,11 +438,29 @@ export const handleUndo = (
         setUserActionStackPointer((prev) => prev - 1);
     }
     if (action === "delete") {
-        const deletedNodes = userActionStack[userActionStackPointer].deletedNodes;
-        deletedNodes.forEach((node) => {
-            ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
-        });
-        setUserActionStackPointer((prev) => prev - 1);
+        if (userActionStack[userActionStackPointer].deletedNodes) {
+            const deletedNodes = userActionStack[userActionStackPointer].deletedNodes;
+            deletedNodes.forEach((node) => {
+                ymapRef.current.set(`Node ${node.id}`, JSON.stringify(node));
+            });
+            setUserActionStackPointer((prev) => prev - 1);
+        } else if (userActionStack[userActionStackPointer].deletedEdge) {
+            const deletedEdges = userActionStack[userActionStackPointer].deletedEdge;
+            deletedEdges.forEach((edge) => {
+                const splitedEdge = edge.split(" ");
+                const from = splitedEdge[0];
+                const to = splitedEdge[2];
+                ymapRef.current.set(
+                    `Edge ${edge}`,
+                    JSON.stringify({
+                        from: from,
+                        to: to,
+                        id: `${from} ${to}`,
+                    })
+                );
+            });
+            setUserActionStackPointer((prev) => prev - 1);
+        }
     }
     if (action === "modify") {
         const node = JSON.parse(
@@ -546,11 +564,19 @@ export const handleRedo = (
     }
     // 이전 동작이 delete 인 경우
     if (action === "delete") {
-        const deletedNodes = userActionStack[prevPointer].deletedNodes;
-        deletedNodes.forEach((node) => {
-            ymapRef.current.delete(`Node ${node.id}`);
-        });
-        setUserActionStackPointer((prev) => prev + 1);
+        if (userActionStack[prevPointer].deletedNods) {
+            const deletedNodes = userActionStack[prevPointer].deletedNodes;
+            deletedNodes.forEach((node) => {
+                ymapRef.current.delete(`Node ${node.id}`);
+            });
+            setUserActionStackPointer((prev) => prev + 1);
+        } else if (userActionStack[prevPointer].deletedEdge) {
+            const deletedEdges = userActionStack[prevPointer].deletedEdge;
+            deletedEdges.forEach((edge) => {
+                ymapRef.current.delete(`Edge ${edge}`);
+            });
+            setUserActionStackPointer((prev) => prev + 1);
+        }
     }
     if (action === "modify") {
         const node = JSON.parse(ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`));

@@ -635,6 +635,28 @@ const MindMap = ({
             const from = splitedEdge[0];
             const to = splitedEdge[2];
             ymapRef.current.delete(`Edge ${from} to ${to}`);
+
+            setUserActionStack((prev) => {
+                if (prev.length >= MAX_STACK_LENGTH) {
+                    setUserActionStackPointer(prev.length - 1);
+                    return [
+                        ...prev.slice(1),
+                        {
+                            action: "delete",
+                            deletedEdge: [edge],
+                        },
+                    ];
+                } else {
+                    setUserActionStackPointer(prev.length);
+                    return [
+                        ...prev,
+                        {
+                            action: "delete",
+                            deletedEdge: [edge],
+                        },
+                    ];
+                }
+            });
         });
         setIsEdgeContextMenuVisible(false);
     };
