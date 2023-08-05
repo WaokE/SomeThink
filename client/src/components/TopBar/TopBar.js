@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import clipboardCopy from "clipboard-copy";
 import "./TopBar.css";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
@@ -34,6 +35,8 @@ function TopBar({
     speakingUserName,
     ymapRef,
     isLoading,
+    setInfoMessage,
+    setIsInfoMessageVisible,
 }) {
     // userName과 일치하는 아바타를 찾아서 따로 저장합니다.
     const userAvatar = userList.find((user) => user === userName);
@@ -52,6 +55,18 @@ function TopBar({
 
     const [currentTime, setCurrentTime] = useState(getCurrentTime());
     const [prevUserListLength, setPrevUserListLength] = useState(userList.length);
+
+    const handleRoomCodeClick = () => {
+        clipboardCopy(sessionId)
+            .then(() => {
+                setInfoMessage("방 코드가 복사되었습니다.");
+                setIsInfoMessageVisible(true);
+            })
+            .catch((err) => {
+                setInfoMessage("복사 중 에러가 발생했습니다.", err);
+                setIsInfoMessageVisible(true);
+            });
+    };
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -84,7 +99,9 @@ function TopBar({
             <AppBar position="static" style={{ backgroundColor: "#FBEEAC", marginBottom: "10px" }}>
                 <Toolbar className="top-bar-container">
                     <div className="topbar-menu">
-                        <p className="code">#{sessionId}</p>
+                        <p className="code" onClick={handleRoomCodeClick}>
+                            #{sessionId}
+                        </p>
                     </div>
                     <div style={{ margin: "0 10px" }}></div>
                     <div className="avatar-group-container" style={{ display: "flex", gap: "8px" }}>
