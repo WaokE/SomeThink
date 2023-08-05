@@ -53,9 +53,12 @@ class App extends Component {
     }
 
     handleChangeSessionId(e) {
-        this.setState({
-            mySessionId: e.target.value,
-        });
+        const sessionId = e.target.value.replace(/#/g, "");
+        if (sessionId.match(/^[a-zA-Z0-9]+$/)) {
+            this.setState({
+                mySessionId: sessionId,
+            });
+        }
     }
 
     makeid(length) {
@@ -79,6 +82,11 @@ class App extends Component {
 
     handleJoinSession() {
         const mySessionId = this.state.mySessionId;
+        if (mySessionId === undefined || mySessionId === "" || mySessionId === "code") {
+            alert("존재하지 않는 방입니다.");
+            return;
+        }
+
         this.validateSessionId(mySessionId).then((response) => {
             if (response === true) {
                 this.joinSession();
@@ -360,7 +368,7 @@ class App extends Component {
                                                 id="sessionId"
                                                 onChange={this.handleChangeSessionId}
                                                 style={{ pointerEvents: "auto" }}
-                                                pattern="[0-9A-Za-z]+"
+                                                // pattern="[0-9A-Za-z]+"
                                                 title="영어나 숫자만 입력해주세요"
                                                 placeholder="#INVITE CODE"
                                             />
