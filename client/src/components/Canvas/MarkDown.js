@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import Slide from "@mui/material/Slide";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -31,18 +31,10 @@ const styles = {
     },
 };
 
+const TreeItemContext = createContext();
+
 const CustomContent = React.forwardRef(function CustomContent(props, ref) {
-    const {
-        nodeId,
-        classes,
-        className,
-        label,
-        icon: iconProp,
-        expansionIcon,
-        displayIcon,
-        nodeHierarchy,
-        handleFocusButtonClick,
-    } = props;
+    const { nodeId, classes, className, label, icon: iconProp, expansionIcon, displayIcon } = props;
 
     const {
         disabled,
@@ -54,10 +46,9 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
         preventSelection,
     } = useTreeItem(nodeId);
 
-    console.log(nodeId);
-    console.log("nodeH1", nodeHierarchy);
+    const { nodeHierarchy, handleFocusButtonClick } = useContext(TreeItemContext);
 
-    // const node = nodeHierarchy[nodeId];
+    const node = nodeHierarchy[nodeId];
     const icon = iconProp || expansionIcon || displayIcon;
 
     const handleMouseDown = (event) => {
@@ -70,7 +61,7 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
 
     const handleSelectionClick = (event) => {
         handleSelection(event);
-        // handleFocusButtonClick(node.x, node.y);
+        handleFocusButtonClick(node.x, node.y);
     };
 
     return (
@@ -97,39 +88,18 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
 function CustomTreeItem(props) {
     const { nodeId, label, nodeHierarchy, handleFocusButtonClick, ...other } = props;
     return (
-        <TreeItem
-            ContentComponent={CustomContent}
-            ContentComponentProps={{
-                nodeId: nodeId,
-                label: label,
-                // nodeHierarchy: nodeHierarchy,
-                handleFocusButtonClick: handleFocusButtonClick,
-            }}
-            nodeId={nodeId}
-            nodeHierarchy={nodeHierarchy}
-            label={label}
-            {...other}
-        />
-    );
-}
-
-function CustomTreeItem1(props) {
-    const { nodeId, label, nodeHierarchy, handleFocusButtonClick, ...other } = props;
-    return (
-        <TreeItem
-            ContentComponent={(props) => (
-                <CustomContent
-                    {...props}
-                    nodeId={nodeId}
-                    label={label}
-                    nodeHierarchy={nodeHierarchy}
-                    handleFocusButtonClick={handleFocusButtonClick}
-                />
-            )}
-            nodeId={nodeId}
-            label={label}
-            {...other}
-        />
+        <TreeItemContext.Provider value={{ nodeHierarchy, handleFocusButtonClick }}>
+            <TreeItem
+                ContentComponent={CustomContent}
+                ContentComponentProps={{
+                    nodeId: nodeId,
+                    label: label,
+                }}
+                nodeId={nodeId}
+                label={label}
+                {...other}
+            />
+        </TreeItemContext.Provider>
     );
 }
 
@@ -224,7 +194,7 @@ const GraphToMarkdown = ({
         if (rootNode) {
             setTreeItems(buildTreeItems(rootNode.id));
         }
-    }, [nodeHierarchy]);
+    }, [nodeHierarchy, nodes, edges]);
 
     const makeNodeSnapshot = (node, snapShotForFile) => {
         const nodeInfo = {
