@@ -22,16 +22,43 @@ body {
     width: 100%;
     display: flex;
     flex-direction: column;
-    /* justify-content: center; */
     align-items: center;
     text-align: center;
-    z-index: 2; /* Add a higher z-index to the join-dialog */
+
+    /* flex-direction: row; */
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
+#join-dialog-content {
+    display: flex;
+    width: 100%;
+}
+
+#join-dialog-content > div {
+    width: 50%;
+    flex: 1;
+}
+.create {
+    margin: 22px 0 0 0;
+}
+.first {
+    border-right: 1px solid rgb(222, 214, 214);
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+#label-create {
+    margin-right: 15px;
+}
 .form-group {
     /* width: 45%; */
-    margin: 10px;
+    width: 100%;
+    margin: 10px auto;
     display: flex;
+    align-items: center;
+    flex-direction: column;
 }
 .form-group p {
     margin: 0 10px;
@@ -47,12 +74,6 @@ h1.logo {
     margin-bottom: 20px;
 }
 
-.btn-success {
-    background-color: #fbd85d;
-    /* margin-top: 30px; */
-    color: black;
-}
-
 p {
     font-size: 20px;
     color: black;
@@ -64,6 +85,38 @@ p {
     font-size: 16px;
     border-radius: 5px;
     border: 1px solid #ccc;
+    margin-left: 20px;
+}
+
+.btn-success {
+    font-weight: bold;
+    font-size: 24px;
+    padding: 15px 30px;
+    border-radius: 50px;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+
+    margin: 10px 0px 10px 20px;
+    background-color: #fbd85d;
+    color: black;
+    display: block;
+}
+
+.btn-success.create {
+    font-weight: bold;
+    font-size: 24px;
+    padding: 15px 30px;
+    border-radius: 50px;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+
+    margin: 15px 15px 10px 0px;
+    background-color: #fbd85d;
+    color: black;
+    display: block;
+}
+
+.btn-success:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease-in-out;
 }
 
 /* .circle {
@@ -161,6 +214,7 @@ p {
     width: 100%;
     height: 100%;
     animation: infinite-rotation 125s infinite;
+    z-index: -2;
 }
 .big-circle {
     position: inherit;
@@ -257,44 +311,31 @@ p {
     }
 }
 
-.btn-success {
-    font-weight: bold;
-    font-size: 24px;
-    padding: 15px 30px;
-    border-radius: 50px;
-    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
-    display: block;
-    margin: 0 auto;
-}
-
-.btn-success:hover {
-    transform: scale(1.05);
-    transition: transform 0.2s ease-in-out;
-}
-
 /* Media queries for responsive design */
 @media (max-width: 768px) {
     #join-dialog {
-        width: 100%;
-        left: 50%;
-        z-index: -1;
+        width: 50%;
+        z-index: 1;
+        padding: 0;
     }
 
     .form-control {
-        width: 30%;
-        left: 50%;
-        z-index: -1;
+        width: 70%;
+        margin: 0;
+        z-index: 1;
+    }
+    .big-circles {
+        display: none;
+    }
+    .smallcircles {
+        size: 40%;
     }
 }
 
 @media (max-width: 480px) {
     #join-dialog {
         width: 100%;
-        left: 50%;
-        z-index: -1;
-    }
-
-    .big-circle {
-        display: none;
+        padding: 0;
+        z-index: 1;
     }
 }
