@@ -35,6 +35,8 @@ function TopBar({
     speakingUserName,
     ymapRef,
     isLoading,
+    setInfoMessage,
+    setIsInfoMessageVisible,
 }) {
     // userName과 일치하는 아바타를 찾아서 따로 저장합니다.
     const userAvatar = userList.find((user) => user === userName);
@@ -57,10 +59,12 @@ function TopBar({
     const handleRoomCodeClick = () => {
         clipboardCopy(sessionId)
             .then(() => {
-                alert("텍스트가 복사되었습니다.");
+                setInfoMessage("방 코드가 복사되었습니다.");
+                setIsInfoMessageVisible(true);
             })
             .catch((err) => {
-                console.error("복사 중 에러가 발생했습니다:", err);
+                setInfoMessage("복사 중 에러가 발생했습니다.", err);
+                setIsInfoMessageVisible(true);
             });
     };
 
