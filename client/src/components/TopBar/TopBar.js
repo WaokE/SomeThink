@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import clipboardCopy from "clipboard-copy";
 import "./TopBar.css";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
@@ -53,6 +54,16 @@ function TopBar({
     const [currentTime, setCurrentTime] = useState(getCurrentTime());
     const [prevUserListLength, setPrevUserListLength] = useState(userList.length);
 
+    const handleRoomCodeClick = () => {
+        clipboardCopy(sessionId)
+            .then(() => {
+                alert("텍스트가 복사되었습니다.");
+            })
+            .catch((err) => {
+                console.error("복사 중 에러가 발생했습니다:", err);
+            });
+    };
+
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentTime(getCurrentTime());
@@ -84,7 +95,9 @@ function TopBar({
             <AppBar position="static" style={{ backgroundColor: "#FBEEAC", marginBottom: "10px" }}>
                 <Toolbar className="top-bar-container">
                     <div className="topbar-menu">
-                        <p className="code">#{sessionId}</p>
+                        <p className="code" onClick={handleRoomCodeClick}>
+                            #{sessionId}
+                        </p>
                     </div>
                     <div style={{ margin: "0 10px" }}></div>
                     <div className="avatar-group-container" style={{ display: "flex", gap: "8px" }}>
