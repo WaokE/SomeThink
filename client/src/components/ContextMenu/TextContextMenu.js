@@ -12,7 +12,7 @@ const TextContextMenu = ({ selectedText, onClose, deleteNode }) => {
     };
 
     return (
-        <Paper sx={{ width: 140, maxWidth: "100%" }}>
+        <Paper sx={{ width: 140, maxWidth: "100%", zIndex: 15, position: "fixed" }}>
             <MenuList>
                 <MenuItem onClick={handleDeleteNode}>
                     <ListItemIcon>
