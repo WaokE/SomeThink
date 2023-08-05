@@ -756,7 +756,7 @@ const MindMap = ({
         textField.focus();
     };
 
-    const proxyServerUrl = "http://localhost:3001";
+    const proxyServerUrl = "http://localhost:3030";
 
     const handleCreateImage = (url, searchWord) => {
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
