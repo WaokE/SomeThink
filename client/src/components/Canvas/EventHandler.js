@@ -391,20 +391,27 @@ export const handleUndo = (
     }
     // 이전 동작이 create 인 경우
     if (action === "create") {
-        const ymapValue = ymapRef.current.get(
-            `Node ${userActionStack[userActionStackPointer].nodeId}`
-        );
-        // ymap에서 해당 노드를 찾을 수 있다면
-        if (ymapValue !== undefined) {
-            ymapRef.current.delete(`Node ${userActionStack[userActionStackPointer].nodeId}`);
-            // 스택 포인터를 하나 줄임
-            setUserActionStackPointer((prev) => prev - 1);
-        }
-        // ymap에서 해당 노드를 찾을 수 없다면
-        else {
-            setAlertMessage("되돌리려는 노드를 찾을 수 없습니다!");
-            setIsAlertMessageVisible(true);
-            // 스택 포인터를 하나 줄임
+        if (userActionStack[userActionStackPointer].nodeId) {
+            const ymapValue = ymapRef.current.get(
+                `Node ${userActionStack[userActionStackPointer].nodeId}`
+            );
+            // ymap에서 해당 노드를 찾을 수 있다면
+            if (ymapValue !== undefined) {
+                ymapRef.current.delete(`Node ${userActionStack[userActionStackPointer].nodeId}`);
+                // 스택 포인터를 하나 줄임
+                setUserActionStackPointer((prev) => prev - 1);
+            }
+            // ymap에서 해당 노드를 찾을 수 없다면
+            else {
+                setAlertMessage("되돌리려는 노드를 찾을 수 없습니다!");
+                setIsAlertMessageVisible(true);
+                // 스택 포인터를 하나 줄임
+                setUserActionStackPointer((prev) => prev - 1);
+            }
+        } else if (userActionStack[userActionStackPointer].createdEdge) {
+            userActionStack[userActionStackPointer].createdEdge.forEach((edge) => {
+                ymapRef.current.delete(edge);
+            });
             setUserActionStackPointer((prev) => prev - 1);
         }
     }
@@ -519,21 +526,38 @@ export const handleRedo = (
     }
     // 이전 동작이 create 인 경우
     if (action === "create") {
-        const ymapValue = ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`);
-        // ymap에서 해당 노드를 찾을 수 있다면
-        if (ymapValue !== undefined) {
-            setAlertMessage("복구할 노드가 이미 존재합니다!");
-            setIsAlertMessageVisible(true);
-            // 스택 포인터를 하나 늘림
-            setUserActionStackPointer((prev) => prev + 1);
-        }
-        // ymap에서 해당 노드를 찾을 수 없다면
-        else {
-            ymapRef.current.set(
-                `Node ${userActionStack[prevPointer].nodeId}`,
-                JSON.stringify(userActionStack[prevPointer].newNode)
-            );
-            // 스택 포인터를 하나 늘림
+        console.log("redo create");
+        if (userActionStack[prevPointer].nodeId) {
+            const ymapValue = ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`);
+            // ymap에서 해당 노드를 찾을 수 있다면
+            if (ymapValue !== undefined) {
+                setAlertMessage("복구할 노드가 이미 존재합니다!");
+                setIsAlertMessageVisible(true);
+                // 스택 포인터를 하나 늘림
+                setUserActionStackPointer((prev) => prev + 1);
+            }
+            // ymap에서 해당 노드를 찾을 수 없다면
+            else {
+                ymapRef.current.set(
+                    `Node ${userActionStack[prevPointer].nodeId}`,
+                    JSON.stringify(userActionStack[prevPointer].newNode)
+                );
+                // 스택 포인터를 하나 늘림
+                setUserActionStackPointer((prev) => prev + 1);
+            }
+        } else if (userActionStack[prevPointer].createdEdge) {
+            userActionStack[prevPointer].createdEdge.forEach((edge) => {
+                const from = edge.split(" ")[1];
+                const to = edge.split(" ")[3];
+                ymapRef.current.set(
+                    edge,
+                    JSON.stringify({
+                        from: from,
+                        to: to,
+                        id: `${from} ${to}`,
+                    })
+                );
+            });
             setUserActionStackPointer((prev) => prev + 1);
         }
     }

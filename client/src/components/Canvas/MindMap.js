@@ -591,6 +591,27 @@ const MindMap = ({
                 id: `${fromNode} to ${toNode}`,
             })
         );
+        setUserActionStack((prev) => {
+            if (prev.length >= MAX_STACK_LENGTH) {
+                setUserActionStackPointer(prev.length - 1);
+                return [
+                    ...prev.slice(1),
+                    {
+                        action: "create",
+                        createdEdge: [`Edge ${fromNode} to ${toNode}`],
+                    },
+                ];
+            } else {
+                setUserActionStackPointer(prev.length);
+                return [
+                    ...prev,
+                    {
+                        action: "create",
+                        createdEdge: [`Edge ${fromNode} to ${toNode}`],
+                    },
+                ];
+            }
+        });
     };
 
     const sortEdgesCorrectly = (edges, createdEdge) => {
