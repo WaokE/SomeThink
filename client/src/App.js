@@ -320,7 +320,7 @@ class App extends Component {
                                 <div id="join-dialog" className="jumbotron vertical-center">
                                     <h1 className="logo"></h1>
                                     <form
-                                        className="form-group"
+                                        className="form-group name"
                                         onSubmit={this.handleCreateSession}
                                     >
                                         <p>
@@ -377,7 +377,7 @@ class App extends Component {
                                                         style={{ pointerEvents: "auto" }}
                                                         // pattern="[0-9A-Za-z]+"
                                                         title="영어나 숫자만 입력해주세요"
-                                                        placeholder="#INVITE CODE"
+                                                        placeholder="   # INVITE CODE"
                                                     />
                                                 </p>
                                                 <p className="text-center">
