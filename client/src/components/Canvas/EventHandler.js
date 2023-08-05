@@ -480,6 +480,35 @@ export const handleUndo = (
         );
         setUserActionStackPointer((prev) => prev - 1);
     }
+    if (action === "bookmark") {
+        let selectedNodeObject = JSON.parse(
+            ymapRef.current.get(`Node ${userActionStack[userActionStackPointer].nodeId}`)
+        );
+
+        // 북마크 상태에 따라 라벨과 폰트 설정 변경
+        const isImageShape = selectedNodeObject.shape === "image";
+        const bookmarkIconLabel = `${BOOKMARK_ICON}\n`;
+
+        if (userActionStack[userActionStackPointer].prevBookMarked) {
+            selectedNodeObject.label =
+                (isImageShape ? BOOKMARK_ICON : bookmarkIconLabel) +
+                selectedNodeObject.label +
+                "\n ";
+            selectedNodeObject.font = { multi: true };
+        } else {
+            const regex = isImageShape
+                ? new RegExp(`${BOOKMARK_ICON}|(\\n\\s)`, "g")
+                : new RegExp(`${BOOKMARK_ICON}\\n|(\\n\\s)`, "g");
+            selectedNodeObject.label = selectedNodeObject.label.replace(regex, "");
+            selectedNodeObject.font = { multi: false };
+        }
+
+        ymapRef.current.set(
+            `Node ${userActionStack[userActionStackPointer].nodeId}`,
+            JSON.stringify(selectedNodeObject)
+        );
+        setUserActionStackPointer((prev) => prev - 1);
+    }
 };
 
 export const handleRedo = (
@@ -606,6 +635,36 @@ export const handleRedo = (
         const node = JSON.parse(ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`));
         node.label = userActionStack[prevPointer].newLabel;
         ymapRef.current.set(`Node ${userActionStack[prevPointer].nodeId}`, JSON.stringify(node));
+        setUserActionStackPointer((prev) => prev + 1);
+    }
+
+    if (action === "bookmark") {
+        let selectedNodeObject = JSON.parse(
+            ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`)
+        );
+
+        // 북마크 상태에 따라 라벨과 폰트 설정 변경
+        const isImageShape = selectedNodeObject.shape === "image";
+        const bookmarkIconLabel = `${BOOKMARK_ICON}\n`;
+
+        if (userActionStack[prevPointer].newBookMarked) {
+            selectedNodeObject.label =
+                (isImageShape ? BOOKMARK_ICON : bookmarkIconLabel) +
+                selectedNodeObject.label +
+                "\n ";
+            selectedNodeObject.font = { multi: true };
+        } else {
+            const regex = isImageShape
+                ? new RegExp(`${BOOKMARK_ICON}|(\\n\\s)`, "g")
+                : new RegExp(`${BOOKMARK_ICON}\\n|(\\n\\s)`, "g");
+            selectedNodeObject.label = selectedNodeObject.label.replace(regex, "");
+            selectedNodeObject.font = { multi: false };
+        }
+
+        ymapRef.current.set(
+            `Node ${userActionStack[prevPointer].nodeId}`,
+            JSON.stringify(selectedNodeObject)
+        );
         setUserActionStackPointer((prev) => prev + 1);
     }
 };
