@@ -117,7 +117,7 @@ const GraphToMarkdown = ({
 
     useEffect(() => {
         let newHierarchy = {};
-        let markdownLinesForDisplay = [];
+
         const rootNode = nodes.find((node) => node.id === 1);
         if (rootNode) {
             newHierarchy[rootNode.id] = {
@@ -149,30 +149,6 @@ const GraphToMarkdown = ({
             newHierarchy[parent.id].children.push(newHierarchy[child.id]);
         });
 
-        function buildMarkdownStringForDisplay(node, depth = 0) {
-            const markdownLine = {
-                line: `${node.label}`,
-                x: node.x,
-                y: node.y,
-                depth: depth,
-            };
-
-            markdownLinesForDisplay.push(markdownLine);
-
-            const parentNode = newHierarchy[node.id];
-            if (parentNode && parentNode.children) {
-                parentNode.children.forEach((childNode, idx) => {
-                    childNode.isLastChild = idx === parentNode.children.length - 1;
-                    buildMarkdownStringForDisplay(childNode, depth + 1);
-                });
-            }
-        }
-
-        const rootNode = nodes.find((node) => node.id === 1);
-        if (rootNode) {
-            buildMarkdownStringForDisplay(rootNode);
-        }
-
         setNodeHierarchy(newHierarchy);
     }, [nodes, edges]);
 
@@ -191,7 +167,7 @@ const GraphToMarkdown = ({
             >
                 {node.children
                     ? node.children.map((childNode) => buildTreeItems(childNode.id))
-                    : null}
+                    : ""}
             </CustomTreeItem>
         );
     };
