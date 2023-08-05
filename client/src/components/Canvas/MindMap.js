@@ -761,20 +761,25 @@ const MindMap = ({
     const handleCreateImage = (url, searchWord) => {
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
 
-        fetch(`${proxyServerUrl}/api/proxyImage?url=${encodeURIComponent(url)}`)
-            .then((response) => response.blob())
-            .then((imageBlob) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    const dataURL = reader.result;
-                    createNodeWithImage(dataURL, searchWord, nodeId);
-                };
-                reader.readAsDataURL(imageBlob);
-            })
-            .catch((error) => {
-                console.error("이미지 다운로드 및 전달 중 에러:", error);
-                createNodeWithImage(url, searchWord, nodeId);
-            });
+        if (url.includes("data:image")) {
+            // data URL인 경우에는 그냥 이미지 URL로 넣어줍니다.
+            createNodeWithImage(url, searchWord, nodeId);
+        } else {
+            fetch(`${proxyServerUrl}/api/proxyImage?url=${encodeURIComponent(url)}`)
+                .then((response) => response.blob())
+                .then((imageBlob) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const dataURL = reader.result;
+                        createNodeWithImage(dataURL, searchWord, nodeId);
+                    };
+                    reader.readAsDataURL(imageBlob);
+                })
+                .catch((error) => {
+                    console.error("이미지 다운로드 및 전달 중 에러:", error);
+                    createNodeWithImage(url, searchWord, nodeId);
+                });
+        }
     };
 
     const createNodeWithImage = (imageUrl, searchWord, nodeId) => {
