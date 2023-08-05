@@ -799,8 +799,6 @@ const MindMap = ({
         textField.focus();
     };
 
-    const proxyServerUrl = "http://localhost:3030";
-
     const handleCreateImage = (url, searchWord) => {
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
 
@@ -808,7 +806,7 @@ const MindMap = ({
             // data URL인 경우에는 그냥 이미지 URL로 넣어줍니다.
             createNodeWithImage(url, searchWord, nodeId);
         } else {
-            fetch(`${proxyServerUrl}/api/proxyImage?url=${encodeURIComponent(url)}`)
+            fetch(`/api/proxyImage?url=${encodeURIComponent(url)}`)
                 .then((response) => response.blob())
                 .then((imageBlob) => {
                     const reader = new FileReader();
