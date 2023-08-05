@@ -1109,6 +1109,8 @@ const MindMap = ({
                 speakingUserName={speakingUserName}
                 ymapRef={ymapRef}
                 isLoading={isLoading}
+                setInfoMessage={setInfoMessage}
+                setIsInfoMessageVisible={setIsInfoMessageVisible}
             />
             <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
                 <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
