@@ -140,9 +140,11 @@ const removeDoc = (doc, map, mapkey, roomName) => {
         console.log("delete all");
         try {
             map.delete(roomName);
-            doc.share.get(mapkey)._map.forEach((value, key) => {
-                doc.share.get(mapkey)._map.delete(key);
-            });
+            if (doc.share.get(mapkey)) {
+                doc.share.get(mapkey)._map.forEach((value, key) => {
+                    doc.share.get(mapkey)._map.delete(key);
+                });
+            }
             doc.awareness.meta.clear();
             doc.store.clients.clear();
         } catch (err) {
