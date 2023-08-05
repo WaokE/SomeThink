@@ -39,9 +39,7 @@ body {
     width: 50%;
     flex: 1;
 }
-.create {
-    margin: 22px 0 0 0;
-}
+
 .first {
     border-right: 1px solid rgb(222, 214, 214);
     align-items: center;
@@ -64,6 +62,10 @@ body {
     margin: 0 10px;
 }
 
+.form-group.name {
+    padding-bottom: 30px;
+}
+
 h1.logo {
     background-image: url("./img/icon/logo.png");
     background-size: contain;
@@ -71,7 +73,7 @@ h1.logo {
     background-position: center;
     width: 100%;
     height: 120px;
-    margin-bottom: 20px;
+    margin-top: 0;
 }
 
 p {
@@ -108,7 +110,7 @@ p {
     border-radius: 50px;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
 
-    margin: 15px 15px 10px 0px;
+    margin: 15px 15px 0px 0px;
     background-color: #fbd85d;
     color: black;
     display: block;
