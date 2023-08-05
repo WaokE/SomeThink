@@ -324,7 +324,7 @@ class App extends Component {
                                         onSubmit={this.handleCreateSession}
                                     >
                                         <p>
-                                            <label> 이름 </label>
+                                            <label> NAME </label>
                                             <input
                                                 className="form-control"
                                                 type="text"
@@ -334,65 +334,74 @@ class App extends Component {
                                                 required
                                             />
                                         </p>
-                                        <p>
-                                            <input
-                                                onClick={() => {
-                                                    this.setState(
-                                                        {
-                                                            isLoading: true,
-                                                        },
-                                                        () => {
-                                                            this.forceUpdate();
-                                                        }
-                                                    );
-                                                }}
-                                                className="btn btn-lg btn-success"
-                                                name="commit"
-                                                type="submit"
-                                                value="생성"
-                                            />
-                                        </p>
                                     </form>
-                                    <form
-                                        className="form-group"
-                                        onSubmit={(event) => {
-                                            event.preventDefault();
-                                            this.handleJoinSession();
-                                        }}
-                                    >
-                                        <p>
-                                            <label> 코드 </label>
-                                            <input
-                                                className="form-control"
-                                                type="text"
-                                                id="sessionId"
-                                                onChange={this.handleChangeSessionId}
-                                                style={{ pointerEvents: "auto" }}
-                                                // pattern="[0-9A-Za-z]+"
-                                                title="영어나 숫자만 입력해주세요"
-                                                placeholder="#INVITE CODE"
-                                            />
-                                        </p>
-                                        <p className="text-center">
-                                            <input
-                                                onClick={() => {
-                                                    this.setState(
-                                                        {
-                                                            isLoading: true,
-                                                        },
-                                                        () => {
-                                                            this.forceUpdate();
-                                                        }
-                                                    );
-                                                    console.log(mySessionId);
+                                    <div id="join-dialog-content">
+                                        <div className="first">
+                                            <p className="create">
+                                                <label id="label-create"> NEW ROOM </label>
+                                                <input
+                                                    onClick={() => {
+                                                        this.setState(
+                                                            {
+                                                                isLoading: true,
+                                                            },
+                                                            () => {
+                                                                this.forceUpdate();
+                                                            }
+                                                        );
+                                                        this.handleCreateSession();
+                                                    }}
+                                                    className="btn btn-lg btn-success create"
+                                                    name="commit"
+                                                    type="submit"
+                                                    value="CREATE"
+                                                />
+                                            </p>
+                                        </div>
+                                        {/* </form> */}
+                                        <div>
+                                            <form
+                                                className="form-group"
+                                                onSubmit={(event) => {
+                                                    event.preventDefault();
+                                                    this.handleJoinSession();
                                                 }}
-                                                className="btn btn-lg btn-success"
-                                                name="commit"
-                                                type="submit"
-                                                value="참가"
-                                            />
-                                        </p>
-                                    </form>
+                                            >
+                                                <p>
+                                                    {/* <label> 코드 </label> */}
+                                                    <input
+                                                        className="form-control"
+                                                        type="text"
+                                                        id="sessionId"
+                                                        onChange={this.handleChangeSessionId}
+                                                        style={{ pointerEvents: "auto" }}
+                                                        // pattern="[0-9A-Za-z]+"
+                                                        title="영어나 숫자만 입력해주세요"
+                                                        placeholder="#INVITE CODE"
+                                                    />
+                                                </p>
+                                                <p className="text-center">
+                                                    <input
+                                                        onClick={() => {
+                                                            this.setState(
+                                                                {
+                                                                    isLoading: true,
+                                                                },
+                                                                () => {
+                                                                    this.forceUpdate();
+                                                                }
+                                                            );
+                                                            console.log(mySessionId);
+                                                        }}
+                                                        className="btn btn-lg btn-success"
+                                                        name="commit"
+                                                        type="submit"
+                                                        value="JOIN"
+                                                    />
+                                                </p>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </section>
