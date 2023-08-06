@@ -164,7 +164,7 @@ function CustomTreeItem(props) {
                 {...other}
                 sx={{
                     "& .MuiTreeItem-label": {
-                        fontSize: "20px", // Set the desired font size here
+                        fontSize: "100px", // Set the desired font size here
                     },
                 }}
             />
