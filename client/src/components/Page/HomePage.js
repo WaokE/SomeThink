@@ -19,16 +19,13 @@ function HomePage(props) {
     const redirectToSessionPage = () => {
         // isLoading(true);
         handleCreateSession();
-        navigate("/sessions/"); // SessionPage로 이동
+        navigate("/session"); // SessionPage로 이동
     };
 
     const redirectToSessionPage2 = () => {
-        handleJoinSession(() => {
-            console.log("redirection", isTrue);
-            if (isTrue) {
-                navigate("/sessions/"); // SessionPage로 이동
-            } else {
-                navigate("/"); // HomePage로 이동
+        handleJoinSession((response) => {
+            if (response) {
+                navigate("/session"); // SessionPage로 이동
             }
         });
     };

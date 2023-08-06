@@ -26,7 +26,6 @@ class App extends Component {
             audioEnabled: false,
             speakingUserName: [],
             isLoading: false,
-            isTrue: false,
         };
 
         this.joinSession = this.joinSession.bind(this);
@@ -41,10 +40,10 @@ class App extends Component {
     }
 
     onbeforeunload(event) {
-        this.setState({
-            mySessionId: undefined,
-            myUserName: "User" + Math.floor(Math.random() * 200),
-        });
+        // this.setState({
+        //     mySessionId: undefined,
+        //     myUserName: "User" + Math.floor(Math.random() * 200),
+        // });
     }
     componentDidMount() {
         const storedSessionId = sessionStorage.getItem("sessionId");
@@ -96,36 +95,23 @@ class App extends Component {
         this.joinSession();
     }
 
-    handleJoinSession = (callback) => {
+    handleJoinSession(callback) {
         const mySessionId = this.state.mySessionId;
         if (mySessionId === undefined || mySessionId === "") {
             alert("존재하지 않는 방입니다.");
-            return;
+            callback(false);
         }
 
         this.validateSessionId(mySessionId).then((response) => {
             if (response === true) {
-                this.setState(
-                    {
-                        isTrue: true,
-                    },
-                    () => {
-                        console.log(this.state.isTrue);
-                        this.joinSession();
-                        callback();
-                    }
-                );
+                this.joinSession();
+                callback(true);
             } else {
                 alert("존재하지 않는 방입니다.");
-                this.setState(
-                    {
-                        isTrue: false,
-                    },
-                    callback
-                );
+                callback(false);
             }
         });
-    };
+    }
 
     handleChangeUserName(e) {
         this.setState({
@@ -353,13 +339,12 @@ class App extends Component {
                                 isLoading={isLoading}
                                 mySessionId={mySessionId}
                                 handleChangeSessionId={this.handleChangeSessionId}
-                                isTrue={this.state.isTrue}
                             />
                         }
                     />
                     <Route
                         exact
-                        path="/sessions/"
+                        path="/session"
                         element={
                             <SessionPage
                                 session={this.state.session}

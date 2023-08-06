@@ -86,7 +86,7 @@ const MindMap = ({
     speakingUserName,
     isLoading,
 }) => {
-    const ydocRef = useRef(null);
+    const ydocRef = useRef(new Y.Doc());
     const ymapRef = useRef(null);
     const networkRef = useRef(null);
     const mindMapRef = useRef(null);
@@ -221,15 +221,22 @@ const MindMap = ({
     }, []);
 
     useEffect(() => {
-        ydocRef.current = new Y.Doc();
+        // ydocRef.current = new Y.Doc();
+
+        const storedSessionId = sessionStorage.getItem("sessionId");
+        const newsessionId = storedSessionId ? storedSessionId : sessionId;
+        sessionStorage.setItem("sessionId", newsessionId);
+        // const provider = new WebsocketProvider(
+        //     "wss://somethink.online/room",
+        //     sessionId,
+        //     ydocRef.current
+        // );
         const provider = new WebsocketProvider(
-            "wss://somethink.online/room",
-            sessionId,
+            "ws://localhost:1234",
+            newsessionId,
             ydocRef.current
         );
-        // const provider = new WebsocketProvider("ws://localhost:1234", sessionId, ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
-
         ymapRef.current.observe((event) => {
             const updatedGraph = {
                 nodes: [],

@@ -23,7 +23,6 @@ function SessionPage(props) {
     return (
         <div>
             <div id="session-header">
-                {/* SessionPage에서 사용할 UI 컴포넌트 (예: MindMap 컴포넌트 등) */}
                 <MindMap
                     sessionId={mySessionId}
                     leaveSession={leaveSession}
@@ -48,7 +47,6 @@ function SessionPage(props) {
                 ))}
             </div>
             {isLoading && <LoadingBox roomNumb={mySessionId} />}
-            {/* 세션 페이지 내용 및 로직 작성 */}
         </div>
     );
 }
