@@ -803,7 +803,6 @@ const MindMap = ({
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
 
         if (url.includes("data:image")) {
-            // data URL인 경우에는 그냥 이미지 URL로 넣어줍니다.
             createNodeWithImage(url, searchWord, nodeId);
         } else {
             fetch(`/api/proxyImage?url=${encodeURIComponent(url)}`)
@@ -828,18 +827,37 @@ const MindMap = ({
             x: window.innerWidth / 2,
             y: window.innerHeight / 2,
         });
-        const newNode = {
-            id: nodeId,
-            label: searchWord,
-            shape: "image",
-            image: imageUrl,
-            x: coord.x,
-            y: coord.y,
-            physics: false,
-            size: 20,
+
+        const image = new Image();
+        image.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            const targetWidth = 250;
+            const scaleFactor = targetWidth / image.width;
+            const targetHeight = image.height * scaleFactor;
+
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+
+            ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+
+            const reducedDataURL = canvas.toDataURL();
+            const newNode = {
+                id: nodeId,
+                label: searchWord,
+                shape: "image",
+                image: reducedDataURL,
+                x: coord.x,
+                y: coord.y,
+                physics: false,
+                size: 20,
+            };
+
+            ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
         };
 
-        ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
+        image.src = imageUrl;
     };
 
     const closeNodeContextMenu = () => {
