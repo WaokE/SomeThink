@@ -136,21 +136,27 @@ const addDataToRoom = (map, roomName, data) => {
  * @param {string} roomName
  */
 const removeDoc = (doc, map, mapkey, roomName) => {
-    if (map.get(roomName).size === 0 && doc.awareness) {
-        console.log("delete all");
-        try {
-            map.delete(roomName);
-            if (doc.share.get(mapkey)) {
-                doc.share.get(mapkey)._map.forEach((value, key) => {
-                    doc.share.get(mapkey)._map.delete(key);
-                });
+    setTimeout(() => {
+        if (map.get(roomName)) {
+            try {
+                if (map.get(roomName).size === 0 && doc.awareness) {
+                    console.log("delete all");
+
+                    map.delete(roomName);
+
+                    doc.share.get(mapkey)._map.forEach((value, key) => {
+                        doc.share.get(mapkey)._map.delete(key);
+                    });
+
+                    doc.awareness.meta.clear();
+
+                    doc.store.clients.clear();
+                }
+            } catch (err) {
+                console.log(err);
             }
-            doc.awareness.meta.clear();
-            doc.store.clients.clear();
-        } catch (err) {
-            console.log(err);
         }
-    }
+    }, pingTimeout);
 };
 
 class WSSharedDoc extends Y.Doc {
