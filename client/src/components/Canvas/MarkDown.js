@@ -245,6 +245,7 @@ const GraphToMarkdown = ({
     setIsMarkdownVisible,
     networkRef,
     handleFocusButtonClick,
+    ymapRef,
 }) => {
     const [nodeHierarchy, setNodeHierarchy] = useState({});
     const [treeItems, setTreeItems] = useState([]);
@@ -363,6 +364,19 @@ const GraphToMarkdown = ({
 
     const handleDownloadSnapshot = () => {
         let snapshotForFile = [];
+        let nodes = [];
+        let edges = [];
+
+        ymapRef.current.forEach((value, key) => {
+            if (key.startsWith("Node")) {
+                nodes.push(JSON.parse(value));
+            } else if (key.startsWith("Edge")) {
+                edges.push(JSON.parse(value));
+            }
+        });
+
+        console.log(nodes);
+        console.log(edges);
 
         snapshotForFile.push("nodes");
         nodes.forEach((node) => {
