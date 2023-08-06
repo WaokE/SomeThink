@@ -3,7 +3,6 @@ import { handleUndo, handleRedo } from "../Canvas/EventHandler";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import ContentPasteRoundedIcon from "@mui/icons-material/ContentPasteRounded";
 import EditNoteRoundedIcon from "@mui/icons-material/EditNoteRounded";
 import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
@@ -25,7 +24,7 @@ import FileUploader from "../Canvas/SnapshotUpload";
 
 const styles = {
     bottomNav: {
-        width: "575px", // 너비 조정
+        width: "555px", // 너비 조정
         height: "50px", // 높이 조정
         borderRadius: "100px", // 라운드를 위한 값
         border: "2px solid #d9d9d9", // 테두리 설정
@@ -56,10 +55,6 @@ export default function LowToolBar(props) {
     };
     const makeText = () => {
         props.TextButton();
-    };
-    const makeImage = () => {
-        if (!props.isImageSearchVisible) props.setIsImageSearchVisible(true);
-        else props.setIsImageSearchVisible(false);
     };
     const switchMemo = () => {
         window.dispatchEvent(new CustomEvent("switchMemo"));
@@ -252,14 +247,6 @@ export default function LowToolBar(props) {
                         icon={<EditNoteRoundedIcon sx={styles.icon} />}
                         sx={styles.action}
                         onClick={makeText}
-                    />
-                </Tooltip>
-                <Tooltip title="이미지 생성" placement="top" sx={styles.tooltip}>
-                    <BottomNavigationAction
-                        value="image"
-                        icon={<AddPhotoAlternateIcon sx={styles.icon} />}
-                        sx={styles.action}
-                        onClick={makeImage}
                     />
                 </Tooltip>
                 <Tooltip title="포커스" placement="top" sx={styles.tooltip}>
