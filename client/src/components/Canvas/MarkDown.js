@@ -79,15 +79,14 @@ const boyerMooreSearch = (text, pattern) => {
     const n = text.length;
     const m = pattern.length;
 
-    let i = m - 1; // Index for pattern
-    let j = m - 1; // Index for text
+    let i = m - 1;
+    let j = m - 1;
 
     while (j >= 0 && i < n) {
         if (text[i].toLowerCase() === pattern[j].toLowerCase()) {
             i--;
             j--;
         } else {
-            // Apply the Boyer-Moore heuristic to jump the index
             const k = m - 1;
             const badCharacter = pattern[j].toLowerCase();
             let found = false;
