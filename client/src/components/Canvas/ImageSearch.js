@@ -58,6 +58,7 @@ const ImageSearch = ({ style, ...props }) => {
 
         if (img.includes("http") || img.includes("data:image")) {
             props.createImage(img, "");
+            handleHideImageSearch();
         } else {
             fetchRequest();
         }
@@ -65,6 +66,7 @@ const ImageSearch = ({ style, ...props }) => {
     };
 
     const handleCreateImage = (url, searchWord) => {
+        handleHideImageSearch();
         props.createImage(url, searchWord);
     };
 
@@ -78,6 +80,8 @@ const ImageSearch = ({ style, ...props }) => {
     };
 
     const handleHideImageSearch = () => {
+        setRes([]);
+        setImg("");
         props.setIsImageSearchVisible(false);
     };
 
