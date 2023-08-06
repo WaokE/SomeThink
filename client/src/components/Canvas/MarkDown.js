@@ -4,13 +4,11 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import IconButton from "@mui/material/IconButton";
-
 import TreeView from "@mui/lab/TreeView";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import TreeItem, { useTreeItem } from "@mui/lab/TreeItem";
 import clsx from "clsx";
-
 import { styled, alpha } from "@mui/material/styles";
 import InputBase from "@mui/material/InputBase";
 import SearchIcon from "@mui/icons-material/Search";
@@ -73,7 +71,7 @@ const styles = {
         rotate: "180deg",
     },
     buttonContainer: {
-        margin_right: "10px",
+        marginRight: "10px",
     },
 };
 
@@ -166,6 +164,14 @@ const GraphToMarkdown = ({
     const [nodeHierarchy, setNodeHierarchy] = useState({});
     const [treeItems, setTreeItems] = useState([]);
 
+    // State to hold the search query
+    const [searchQuery, setSearchQuery] = useState("");
+
+    // Function to handle changes in the search input
+    const handleSearchInputChange = (event) => {
+        setSearchQuery(event.target.value);
+    };
+
     useEffect(() => {
         let newHierarchy = {};
 
@@ -226,9 +232,24 @@ const GraphToMarkdown = ({
     useEffect(() => {
         const rootNode = nodeHierarchy[1];
         if (rootNode) {
-            setTreeItems(buildTreeItems(rootNode.id));
+            setTreeItems([buildTreeItems(rootNode.id)]);
         }
     }, [nodeHierarchy, nodes, edges]);
+
+    // Function to filter tree items based on the search query
+    useEffect(() => {
+        const filterTreeItems = (node) => {
+            const includesLabel = node.label.toLowerCase().includes(searchQuery.toLowerCase());
+            const includesChild = node.children.some((childNode) => filterTreeItems(childNode));
+            return includesLabel || includesChild;
+        };
+
+        const filteredItems = treeItems.filter((item) =>
+            filterTreeItems(item.props.nodeHierarchy[item.props.nodeId])
+        );
+
+        setFilteredTreeItems(filteredItems);
+    }, [searchQuery, treeItems]);
 
     const makeNodeSnapshot = (node, snapShotForFile) => {
         const nodeInfo = {
@@ -298,6 +319,8 @@ const GraphToMarkdown = ({
                         <StyledInputBase
                             placeholder="Search..."
                             inputProps={{ "aria-label": "search" }}
+                            value={searchQuery}
+                            onChange={handleSearchInputChange}
                         />
                     </Search>
                     <IconButton onClick={handleMarkdownVisible}>
@@ -310,7 +333,11 @@ const GraphToMarkdown = ({
                     defaultExpandIcon={<ChevronRightIcon />}
                     sx={{ height: "fill", flexGrow: 1, maxWidth: 300 }}
                 >
-                    {treeItems}
+                    {filteredTreeItems.length > 0 ? (
+                        filteredTreeItems
+                    ) : (
+                        <Typography>No matching items found.</Typography>
+                    )}
                 </TreeView>
             </Box>
         </Slide>
