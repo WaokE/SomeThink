@@ -1358,6 +1358,7 @@ const MindMap = ({
                 setIsMarkdownVisible={setIsMarkdownVisible}
                 networkRef={networkRef}
                 handleFocusButtonClick={handleFocusButtonClick}
+                ymapRef={ymapRef}
             />
             <ImageSearch
                 style={{ height: isTimerVisible ? "calc(80% - 13%)" : "80%" }}
