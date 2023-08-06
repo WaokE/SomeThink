@@ -98,6 +98,11 @@ function CustomTreeItem(props) {
                 nodeId={nodeId}
                 label={label}
                 {...other}
+                sx={{
+                    "& .MuiTreeItem-label": {
+                        fontSize: "1.7rem",
+                    },
+                }}
             />
         </TreeItemContext.Provider>
     );
