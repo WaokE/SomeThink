@@ -156,6 +156,9 @@ export default function LowToolBar(props) {
                 x: content.x,
                 y: content.y,
                 color: "#FBD85D",
+                bookMarked: content.bookMarked,
+                widthConstraint: { minimum: 50, maximum: 100 },
+                heightConstraint: { minimum: 50, maximum: 100 },
             };
         }
 

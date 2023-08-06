@@ -193,6 +193,10 @@ const GraphToMarkdown = ({
             shape: node.shape,
             image: node.image,
             size: node.size,
+            color: "#FBD85D",
+            bookMarked: node.bookMarked,
+            widthConstraint: { minimum: 50, maximum: 100 },
+            heightConstraint: { minimum: 50, maximum: 100 },
         };
         snapShotForFile.push(nodeInfo);
     };
