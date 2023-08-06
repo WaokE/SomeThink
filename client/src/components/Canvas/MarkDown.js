@@ -90,7 +90,7 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
         preventSelection,
     } = useTreeItem(nodeId);
 
-    const { nodeHierarchy, handleFocusButtonClick } = useContext(TreeItemContext);
+    const { nodeHierarchy, handleFocusButtonClick, searchQuery } = useContext(TreeItemContext);
 
     const node = nodeHierarchy[nodeId];
     const icon = iconProp || expansionIcon || displayIcon;
@@ -108,6 +108,26 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
         handleFocusButtonClick(node.x, node.y);
     };
 
+    const highlightLabel = (label) => {
+        if (!searchQuery) {
+            return label;
+        }
+
+        const index = label.toLowerCase().indexOf(searchQuery.toLowerCase());
+        if (index !== -1) {
+            return (
+                <>
+                    {label.substring(0, index)}
+                    <span style={{ backgroundColor: "#76b5c5", color: "white" }}>
+                        {label.substring(index, index + searchQuery.length)}
+                    </span>
+                    {label.substring(index + searchQuery.length)}
+                </>
+            );
+        }
+        return label;
+    };
+
     return (
         <div
             className={clsx(className, classes.root, {
@@ -123,16 +143,16 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
                 {icon}
             </div>
             <Typography onClick={handleSelectionClick} component="div" className={classes.label}>
-                {label}
+                {highlightLabel(label)}
             </Typography>
         </div>
     );
 });
 
 function CustomTreeItem(props) {
-    const { nodeId, label, nodeHierarchy, handleFocusButtonClick, ...other } = props;
+    const { nodeId, label, nodeHierarchy, handleFocusButtonClick, searchQuery, ...other } = props;
     return (
-        <TreeItemContext.Provider value={{ nodeHierarchy, handleFocusButtonClick }}>
+        <TreeItemContext.Provider value={{ nodeHierarchy, handleFocusButtonClick, searchQuery }}>
             <TreeItem
                 ContentComponent={CustomContent}
                 ContentComponentProps={{
@@ -144,7 +164,7 @@ function CustomTreeItem(props) {
                 {...other}
                 sx={{
                     "& .MuiTreeItem-label": {
-                        fontSize: "1.7rem",
+                        fontSize: "20px", // Set the desired font size here
                     },
                 }}
             />
@@ -164,10 +184,9 @@ const GraphToMarkdown = ({
     const [nodeHierarchy, setNodeHierarchy] = useState({});
     const [treeItems, setTreeItems] = useState([]);
 
-    // State to hold the search query
     const [searchQuery, setSearchQuery] = useState("");
+    const [filteredTreeItems, setFilteredTreeItems] = useState([]);
 
-    // Function to handle changes in the search input
     const handleSearchInputChange = (event) => {
         setSearchQuery(event.target.value);
     };
@@ -221,6 +240,7 @@ const GraphToMarkdown = ({
                 key={node.id}
                 nodeHierarchy={nodeHierarchy}
                 handleFocusButtonClick={handleFocusButtonClick}
+                searchQuery={searchQuery}
             >
                 {node.children
                     ? node.children.map((childNode) => buildTreeItems(childNode.id))
@@ -234,7 +254,7 @@ const GraphToMarkdown = ({
         if (rootNode) {
             setTreeItems([buildTreeItems(rootNode.id)]);
         }
-    }, [nodeHierarchy, nodes, edges]);
+    }, [nodeHierarchy, nodes, edges, searchQuery]);
 
     // Function to filter tree items based on the search query
     useEffect(() => {
@@ -336,7 +356,10 @@ const GraphToMarkdown = ({
                     {filteredTreeItems.length > 0 ? (
                         filteredTreeItems
                     ) : (
-                        <Typography>No matching items found.</Typography>
+                        <Typography sx={{ textAlign: "center" }}>
+                            {" "}
+                            검색 결과가 없습니다.{" "}
+                        </Typography>
                     )}
                 </TreeView>
             </Box>
