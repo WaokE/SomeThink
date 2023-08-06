@@ -75,6 +75,41 @@ const styles = {
     },
 };
 
+const boyerMooreSearch = (text, pattern) => {
+    const n = text.length;
+    const m = pattern.length;
+
+    let i = m - 1;
+    let j = m - 1;
+
+    while (j >= 0 && i < n) {
+        if (text[i].toLowerCase() === pattern[j].toLowerCase()) {
+            i--;
+            j--;
+        } else {
+            const k = m - 1;
+            const badCharacter = pattern[j].toLowerCase();
+            let found = false;
+
+            for (let l = k - 1; l >= 0; l--) {
+                if (pattern[l].toLowerCase() === badCharacter) {
+                    i += k - l;
+                    j = k;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                i += m;
+                j = m - 1;
+            }
+        }
+    }
+
+    return j < 0; // If the pattern was found, return true
+};
+
 const TreeItemContext = createContext();
 
 const CustomContent = React.forwardRef(function CustomContent(props, ref) {
@@ -113,15 +148,45 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
             return label;
         }
 
-        const index = label.toLowerCase().indexOf(searchQuery.toLowerCase());
-        if (index !== -1) {
+        const n = label.length;
+        const m = searchQuery.length;
+
+        let i = m - 1;
+        let j = m - 1;
+
+        while (j >= 0 && i < n) {
+            if (label[i].toLowerCase() === searchQuery[j].toLowerCase()) {
+                i--;
+                j--;
+            } else {
+                const k = m - 1;
+                const badCharacter = searchQuery[j].toLowerCase();
+                let found = false;
+
+                for (let l = k - 1; l >= 0; l--) {
+                    if (searchQuery[l].toLowerCase() === badCharacter) {
+                        i += k - l;
+                        j = k;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    i += m;
+                    j = m - 1;
+                }
+            }
+        }
+
+        if (j < 0) {
             return (
                 <>
-                    {label.substring(0, index)}
+                    {label.substring(0, i + 1)}
                     <span style={{ backgroundColor: "#76b5c5", color: "white" }}>
-                        {label.substring(index, index + searchQuery.length)}
+                        {label.substring(i + 1, i + m + 1)}
                     </span>
-                    {label.substring(index + searchQuery.length)}
+                    {label.substring(i + m + 1)}
                 </>
             );
         }
@@ -259,7 +324,7 @@ const GraphToMarkdown = ({
     // Function to filter tree items based on the search query
     useEffect(() => {
         const filterTreeItems = (node) => {
-            const includesLabel = node.label.toLowerCase().includes(searchQuery.toLowerCase());
+            const includesLabel = boyerMooreSearch(node.label, searchQuery);
             const includesChild = node.children.some((childNode) => filterTreeItems(childNode));
             return includesLabel || includesChild;
         };
