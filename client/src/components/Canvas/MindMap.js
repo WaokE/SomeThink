@@ -805,7 +805,7 @@ const MindMap = ({
         if (url.includes("data:image")) {
             createNodeWithImage(url, searchWord, nodeId);
         } else {
-            fetch(`/proxyImage?url=${encodeURIComponent(url)}`)
+            fetch(`/api/proxyImage?url=${encodeURIComponent(url)}`)
                 .then((response) => response.blob())
                 .then((imageBlob) => {
                     const reader = new FileReader();
