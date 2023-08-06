@@ -1177,7 +1177,6 @@ const MindMap = ({
 
     return (
         <div
-            onKeyDown={handleKeyPress}
             onMouseMove={(e) => handleMouseMove(e)}
             style={{
                 position: "absolute",
@@ -1208,7 +1207,11 @@ const MindMap = ({
                 setInfoMessage={setInfoMessage}
                 setIsInfoMessageVisible={setIsInfoMessageVisible}
             />
-            <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
+            <div
+                ref={captureRef}
+                style={{ width: "100%", height: "100%" }}
+                onKeyDown={handleKeyPress}
+            >
                 <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
                 <div
                     className={`
@@ -1220,7 +1223,6 @@ const MindMap = ({
                         setIsTimerRunning={setIsTimerRunning}
                     />
                 </div>
-                {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
                 <Graph
                     graph={MindMap.graph}
                     options={options}
@@ -1326,6 +1328,7 @@ const MindMap = ({
                     </div>
                 )}
             </div>
+            {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
             <LowToolBar
                 FocusButton={handleFocusButtonClick}
                 NodeButton={createNode}
