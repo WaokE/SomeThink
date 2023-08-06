@@ -99,7 +99,11 @@ function TopBar({
             <AppBar position="static" style={{ backgroundColor: "#FBEEAC", marginBottom: "10px" }}>
                 <Toolbar className="top-bar-container">
                     <div className="topbar-menu">
-                        <p className="code" onClick={handleRoomCodeClick}>
+                        <p
+                            className="code"
+                            onClick={handleRoomCodeClick}
+                            style={{ cursor: "pointer" }}
+                        >
                             #{sessionId}
                         </p>
                     </div>
