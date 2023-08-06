@@ -4,12 +4,56 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import IconButton from "@mui/material/IconButton";
-
 import TreeView from "@mui/lab/TreeView";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import TreeItem, { useTreeItem } from "@mui/lab/TreeItem";
 import clsx from "clsx";
+import { styled, alpha } from "@mui/material/styles";
+import InputBase from "@mui/material/InputBase";
+import SearchIcon from "@mui/icons-material/Search";
+
+const Search = styled("div")(({ theme }) => ({
+    position: "relative",
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: alpha(theme.palette.common.white, 0.15),
+    "&:hover": {
+        backgroundColor: alpha(theme.palette.common.white, 0.25),
+    },
+    marginLeft: 0,
+    width: "100%",
+    [theme.breakpoints.up("sm")]: {
+        marginLeft: theme.spacing(1),
+        width: "auto",
+    },
+}));
+
+const SearchIconWrapper = styled("div")(({ theme }) => ({
+    padding: theme.spacing(0, 2),
+    height: "100%",
+    position: "absolute",
+    pointerEvents: "none",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+    color: "inherit",
+    "& .MuiInputBase-input": {
+        padding: theme.spacing(1, 1, 1, 0),
+        // vertical padding + font size from searchIcon
+        paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+        transition: theme.transitions.create("width"),
+        width: "100%",
+        [theme.breakpoints.up("sm")]: {
+            width: "12ch",
+            "&:focus": {
+                width: "20ch",
+            },
+        },
+    },
+}));
 
 const styles = {
     markdown: {
@@ -27,7 +71,7 @@ const styles = {
         rotate: "180deg",
     },
     buttonContainer: {
-        margin_right: "10px",
+        marginRight: "10px",
     },
 };
 
@@ -46,7 +90,7 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
         preventSelection,
     } = useTreeItem(nodeId);
 
-    const { nodeHierarchy, handleFocusButtonClick } = useContext(TreeItemContext);
+    const { nodeHierarchy, handleFocusButtonClick, searchQuery } = useContext(TreeItemContext);
 
     const node = nodeHierarchy[nodeId];
     const icon = iconProp || expansionIcon || displayIcon;
@@ -64,6 +108,26 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
         handleFocusButtonClick(node.x, node.y);
     };
 
+    const highlightLabel = (label) => {
+        if (!searchQuery) {
+            return label;
+        }
+
+        const index = label.toLowerCase().indexOf(searchQuery.toLowerCase());
+        if (index !== -1) {
+            return (
+                <>
+                    {label.substring(0, index)}
+                    <span style={{ backgroundColor: "#76b5c5", color: "white" }}>
+                        {label.substring(index, index + searchQuery.length)}
+                    </span>
+                    {label.substring(index + searchQuery.length)}
+                </>
+            );
+        }
+        return label;
+    };
+
     return (
         <div
             className={clsx(className, classes.root, {
@@ -79,16 +143,16 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
                 {icon}
             </div>
             <Typography onClick={handleSelectionClick} component="div" className={classes.label}>
-                {label}
+                {highlightLabel(label)}
             </Typography>
         </div>
     );
 });
 
 function CustomTreeItem(props) {
-    const { nodeId, label, nodeHierarchy, handleFocusButtonClick, ...other } = props;
+    const { nodeId, label, nodeHierarchy, handleFocusButtonClick, searchQuery, ...other } = props;
     return (
-        <TreeItemContext.Provider value={{ nodeHierarchy, handleFocusButtonClick }}>
+        <TreeItemContext.Provider value={{ nodeHierarchy, handleFocusButtonClick, searchQuery }}>
             <TreeItem
                 ContentComponent={CustomContent}
                 ContentComponentProps={{
@@ -100,7 +164,7 @@ function CustomTreeItem(props) {
                 {...other}
                 sx={{
                     "& .MuiTreeItem-label": {
-                        fontSize: "1.7rem",
+                        fontSize: "20px", // Set the desired font size here
                     },
                 }}
             />
@@ -119,6 +183,13 @@ const GraphToMarkdown = ({
 }) => {
     const [nodeHierarchy, setNodeHierarchy] = useState({});
     const [treeItems, setTreeItems] = useState([]);
+
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filteredTreeItems, setFilteredTreeItems] = useState([]);
+
+    const handleSearchInputChange = (event) => {
+        setSearchQuery(event.target.value);
+    };
 
     useEffect(() => {
         let newHierarchy = {};
@@ -169,6 +240,7 @@ const GraphToMarkdown = ({
                 key={node.id}
                 nodeHierarchy={nodeHierarchy}
                 handleFocusButtonClick={handleFocusButtonClick}
+                searchQuery={searchQuery}
             >
                 {node.children
                     ? node.children.map((childNode) => buildTreeItems(childNode.id))
@@ -180,9 +252,24 @@ const GraphToMarkdown = ({
     useEffect(() => {
         const rootNode = nodeHierarchy[1];
         if (rootNode) {
-            setTreeItems(buildTreeItems(rootNode.id));
+            setTreeItems([buildTreeItems(rootNode.id)]);
         }
-    }, [nodeHierarchy, nodes, edges]);
+    }, [nodeHierarchy, nodes, edges, searchQuery]);
+
+    // Function to filter tree items based on the search query
+    useEffect(() => {
+        const filterTreeItems = (node) => {
+            const includesLabel = node.label.toLowerCase().includes(searchQuery.toLowerCase());
+            const includesChild = node.children.some((childNode) => filterTreeItems(childNode));
+            return includesLabel || includesChild;
+        };
+
+        const filteredItems = treeItems.filter((item) =>
+            filterTreeItems(item.props.nodeHierarchy[item.props.nodeId])
+        );
+
+        setFilteredTreeItems(filteredItems);
+    }, [searchQuery, treeItems]);
 
     const makeNodeSnapshot = (node, snapShotForFile) => {
         const nodeInfo = {
@@ -245,6 +332,17 @@ const GraphToMarkdown = ({
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
             <Box sx={{ ...styles.markdown, ...style }}>
                 <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: "0.5%" }}>
+                    <Search>
+                        <SearchIconWrapper>
+                            <SearchIcon />
+                        </SearchIconWrapper>
+                        <StyledInputBase
+                            placeholder="Search..."
+                            inputProps={{ "aria-label": "search" }}
+                            value={searchQuery}
+                            onChange={handleSearchInputChange}
+                        />
+                    </Search>
                     <IconButton onClick={handleMarkdownVisible}>
                         <ArrowBackRoundedIcon sx={styles.closeButton} />
                     </IconButton>
@@ -255,7 +353,14 @@ const GraphToMarkdown = ({
                     defaultExpandIcon={<ChevronRightIcon />}
                     sx={{ height: "fill", flexGrow: 1, maxWidth: 300 }}
                 >
-                    {treeItems}
+                    {filteredTreeItems.length > 0 ? (
+                        filteredTreeItems
+                    ) : (
+                        <Typography sx={{ textAlign: "center" }}>
+                            {" "}
+                            검색 결과가 없습니다.{" "}
+                        </Typography>
+                    )}
                 </TreeView>
             </Box>
         </Slide>
