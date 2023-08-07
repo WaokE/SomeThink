@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from "react";
+import React, { useState, useEffect, createContext, useContext, useCallback } from "react";
 import Slide from "@mui/material/Slide";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -387,11 +387,11 @@ const GraphToMarkdown = ({
     const [expanded, setExpanded] = useState([]);
 
     useEffect(() => {
-        const updatedNodeIds = nodes.map((node) => node.id.toString());
+        const updatedNodeIds = Object.keys(nodeHierarchy);
         setAllNodeIds(updatedNodeIds);
-        setExpanded(updatedNodeIds); // Set the expanded state to include all nodes
-        setIsAllExpanded(true); // Set the "isAllExpanded" state to true
-    }, [nodes.length]);
+        setExpanded(updatedNodeIds);
+        setIsAllExpanded(true);
+    }, [nodeHierarchy.length]);
 
     const handleExpandAll = () => {
         setExpanded(allNodeIds);
@@ -403,23 +403,26 @@ const GraphToMarkdown = ({
         setIsAllExpanded(false);
     };
 
-    const handleExpansions = (nodeId) => {
-        const isNodeExpanded = expanded.includes(nodeId.toString());
+    const handleExpansions = useCallback(
+        (nodeId) => {
+            setExpanded((prevExpanded) => {
+                const isNodeExpanded = prevExpanded.includes(nodeId.toString());
+                if (isNodeExpanded) {
+                    return prevExpanded.filter((id) => id !== nodeId.toString());
+                } else {
+                    return [...prevExpanded, nodeId.toString()];
+                }
+            });
 
-        if (isNodeExpanded) {
-            setExpanded((prevExpanded) => prevExpanded.filter((id) => id !== nodeId.toString()));
-        } else {
-            setExpanded((prevExpanded) => [...prevExpanded, nodeId.toString()]);
-        }
-
-        if (nodeId === "1") {
-            setIsAllExpanded(false);
-        } else {
-            const anyNodeExpanded = expanded.length > 0;
-            setIsAllExpanded(anyNodeExpanded);
-        }
-    };
-
+            if (nodeId === "1") {
+                setIsAllExpanded(false);
+            } else {
+                const anyNodeExpanded = expanded.length > 0;
+                setIsAllExpanded(anyNodeExpanded);
+            }
+        },
+        [expanded]
+    );
     return (
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
             <Box sx={{ ...styles.markdown, ...style }}>
