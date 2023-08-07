@@ -135,7 +135,12 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
             >
                 {icon}
             </div>
-            <Typography onClick={handleSelectionClick} component="div" className={classes.label}>
+            <Typography
+                onClick={handleSelectionClick}
+                component="div"
+                className={classes.label}
+                style={{ fontSize: "2rem" }}
+            >
                 {highlightLabel(label)}
             </Typography>
         </div>
@@ -165,11 +170,6 @@ function CustomTreeItem(props) {
                 nodeId={nodeId}
                 label={label}
                 {...other}
-                sx={{
-                    "& .MuiTreeItem-label": {
-                        fontSize: "100px",
-                    },
-                }}
             />
         </TreeItemContext.Provider>
     );
@@ -392,7 +392,13 @@ const GraphToMarkdown = ({
     return (
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
             <Box sx={{ ...styles.markdown, ...style }}>
-                <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: "0.5%" }}>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
                     <IconButton onClick={isAllExpanded ? handleCollapseAll : handleExpandAll}>
                         {isAllExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     </IconButton>
@@ -415,7 +421,7 @@ const GraphToMarkdown = ({
                     aria-label="icon expansion"
                     defaultCollapseIcon={<ExpandMoreIcon />}
                     defaultExpandIcon={<ChevronRightIcon />}
-                    sx={{ height: "fill", flexGrow: 1, maxWidth: 300 }}
+                    sx={{ height: "fill", flexGrow: 1, maxWidth: 400 }}
                     expanded={expanded}
                 >
                     {filteredTreeItems.length > 0 ? (
