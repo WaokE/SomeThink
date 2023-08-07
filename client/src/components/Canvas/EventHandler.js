@@ -67,8 +67,8 @@ export const handleDoubleClick = (
     }
 };
 
-let dragStartOffsetX = 0;
-let dragStartOffsetY = 0;
+const decimalPlaces = 0;
+let dragInfo = null;
 
 export const handleNodeDragStart = (
     event,
@@ -82,8 +82,11 @@ export const handleNodeDragStart = (
     const node = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
 
     const { x: mouseX, y: mouseY } = event.pointer.canvas;
-    dragStartOffsetX = mouseX - node.x;
-    dragStartOffsetY = mouseY - node.y;
+    dragInfo = {
+        node,
+        offsetX: parseFloat(mouseX - node.x).toFixed(decimalPlaces),
+        offsetY: parseFloat(mouseY - node.y).toFixed(decimalPlaces),
+    };
 
     setUserActionStack((prev) => {
         // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
@@ -123,15 +126,11 @@ export const handleNodeDragEnd = (event, ymapRef, setSelectedNode, setUserAction
 
     const nodeId = nodes[0];
     const { x: mouseX, y: mouseY } = pointer.canvas;
-    const newX = mouseX - dragStartOffsetX;
-    const newY = mouseY - dragStartOffsetY;
-
+    const newX = parseFloat((mouseX - dragInfo.offsetX).toFixed(decimalPlaces));
+    const newY = parseFloat((mouseY - dragInfo.offsetY).toFixed(decimalPlaces));
     const movedNode = ymapRef.current.get(`Node ${nodeId}`);
-    ymapRef.current.set(
-        `Node ${nodeId}`,
-        JSON.stringify({ ...JSON.parse(movedNode), x: newX, y: newY })
-    );
-
+    const updatedNode = { ...JSON.parse(movedNode), x: newX, y: newY };
+    ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(updatedNode));
     setUserActionStack((prev) => {
         // 드래그가 완료된 좌표를 스택에 추가 저장
         let lastAction = prev[prev.length - 1];
@@ -140,8 +139,8 @@ export const handleNodeDragEnd = (event, ymapRef, setSelectedNode, setUserAction
 
         return prevArray;
     });
-
     setSelectedNode(nodeId);
+    dragInfo = null;
 };
 
 export const handleNodeDragging = throttle((event, ymapRef, userName) => {
@@ -162,12 +161,13 @@ export const handleNodeDragging = throttle((event, ymapRef, userName) => {
     }
     const nodeId = nodes[0];
     const { x: mouseX, y: mouseY } = pointer.canvas;
-    const newX = mouseX - dragStartOffsetX;
-    const newY = mouseY - dragStartOffsetY;
+    const newX = parseFloat((mouseX - dragInfo.offsetX).toFixed(decimalPlaces));
+    const newY = parseFloat((mouseY - dragInfo.offsetY).toFixed(decimalPlaces));
 
     const movedNode = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));
-    ymapRef.current.set(`Node ${nodeId}`, JSON.stringify({ ...movedNode, x: newX, y: newY }));
-
+    const updatedNode = { ...movedNode, x: newX, y: newY };
+    ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(updatedNode));
+    console.log("newX", newX, "newY", newY);
     checkPrevSelected(userName, ymapRef);
     let selectedNode = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
     ymapRef.current.set(`User ${userName} selected`, `Node ${event.nodes[0]}`);
@@ -288,7 +288,8 @@ export const handleAddTextNode = (
 
     const handleOutside = (e) => {
         if (!textField.contains(e.target)) {
-            handleTextInputBlur(); // Call the handleTextInputBlur function when clicking outside the textField
+            handleTextInputBlur();
+            document.removeEventListener("mousedown", handleOutside); // Remove the event listener when text creation is canceled
         }
     };
 
