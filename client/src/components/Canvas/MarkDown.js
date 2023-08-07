@@ -78,7 +78,8 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
     const { disabled, expanded, selected, focused, handleSelection, preventSelection } =
         useTreeItem(nodeId);
 
-    const { nodeHierarchy, handleFocusButtonClick, searchQuery } = useContext(TreeItemContext);
+    const { nodeHierarchy, handleFocusButtonClick, searchQuery, handleExpansions } =
+        useContext(TreeItemContext);
 
     const node = nodeHierarchy[nodeId];
     const icon = iconProp || expansionIcon || displayIcon;
@@ -87,8 +88,9 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
         preventSelection(event);
     };
 
-    const handleExpansionClick = (event) => {
+    const handleExpansionClick = (event, nodeId) => {
         event.preventDefault();
+        handleExpansions(nodeId);
     };
 
     const handleSelectionClick = (event) => {
@@ -127,7 +129,10 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
             onMouseDown={handleMouseDown}
             ref={ref}
         >
-            <div onClick={(event) => handleExpansionClick(event)} className={classes.iconContainer}>
+            <div
+                onClick={(event) => handleExpansionClick(event, nodeId)}
+                className={classes.iconContainer}
+            >
                 {icon}
             </div>
             <Typography onClick={handleSelectionClick} component="div" className={classes.label}>
@@ -138,9 +143,19 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
 });
 
 function CustomTreeItem(props) {
-    const { nodeId, label, nodeHierarchy, handleFocusButtonClick, searchQuery, ...other } = props;
+    const {
+        nodeId,
+        label,
+        nodeHierarchy,
+        handleFocusButtonClick,
+        searchQuery,
+        handleExpansions,
+        ...other
+    } = props;
     return (
-        <TreeItemContext.Provider value={{ nodeHierarchy, handleFocusButtonClick, searchQuery }}>
+        <TreeItemContext.Provider
+            value={{ nodeHierarchy, handleFocusButtonClick, searchQuery, handleExpansions }}
+        >
             <TreeItem
                 ContentComponent={CustomContent}
                 ContentComponentProps={{
@@ -337,11 +352,11 @@ const GraphToMarkdown = ({
     const [expanded, setExpanded] = useState([]);
 
     useEffect(() => {
-        const updatedNodeIds = Object.keys(nodeHierarchy);
+        const updatedNodeIds = nodes.map((node) => node.id.toString());
         setAllNodeIds(updatedNodeIds);
         setExpanded(updatedNodeIds);
         setIsAllExpanded(true);
-    }, [nodeHierarchy.length]);
+    }, [nodes.length]);
 
     const handleExpandAll = () => {
         setExpanded(allNodeIds);
