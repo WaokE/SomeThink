@@ -86,7 +86,7 @@ const MindMap = ({
     speakingUserName,
     isLoading,
 }) => {
-    const ydocRef = useRef(null);
+    const ydocRef = useRef(new Y.Doc());
     const ymapRef = useRef(null);
     const networkRef = useRef(null);
     const mindMapRef = useRef(null);
@@ -221,13 +221,22 @@ const MindMap = ({
     }, []);
 
     useEffect(() => {
-        ydocRef.current = new Y.Doc();
+        // ydocRef.current = new Y.Doc();
+
+        const storedSessionId = sessionStorage.getItem("sessionId");
+        const newSessionId = storedSessionId ? storedSessionId : sessionId;
+        sessionStorage.setItem("sessionId", newSessionId);
+        // const provider = new WebsocketProvider(
+        //     "wss://somethink.online/room",
+        //     newSessionId,
+        //     ydocRef.current
+        // );
         const provider = new WebsocketProvider(
-            "wss://somethink.online/room",
-            sessionId,
+            "ws://localhost:1234",
+            newSessionId,
             ydocRef.current
         );
-        // const provider = new WebsocketProvider("ws://localhost:1234", sessionId, ydocRef.current);
+
         ymapRef.current = ydocRef.current.getMap("MindMap");
 
         ymapRef.current.observe((event) => {
@@ -273,6 +282,7 @@ const MindMap = ({
 
         return () => {
             window.removeEventListener("resetNode", handleResetNode);
+            // provider.disconnect();
         };
     }, []);
 
@@ -805,7 +815,7 @@ const MindMap = ({
         if (url.includes("data:image")) {
             createNodeWithImage(url, searchWord, nodeId);
         } else {
-            fetch(`/api/proxyImage?url=${encodeURIComponent(url)}`)
+            fetch(`http://localhost:3030/api/proxyImage?url=${encodeURIComponent(url)}`)
                 .then((response) => response.blob())
                 .then((imageBlob) => {
                     const reader = new FileReader();

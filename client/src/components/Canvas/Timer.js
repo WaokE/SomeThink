@@ -4,7 +4,7 @@ import * as Y from "yjs";
 import "./Timer.css";
 
 const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
-    const ydocRef = useRef(null);
+    const ydocRef = useRef(new Y.Doc());
     const ymapRef = useRef(null);
 
     const [startTime, setStartTime] = useState(Date.now());
@@ -39,10 +39,15 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
     };
 
     useEffect(() => {
-        ydocRef.current = new Y.Doc();
+        // ydocRef.current = new Y.Doc();
+        const storedSessionId = sessionStorage.getItem("sessionId");
+        const newSessionId = storedSessionId ? storedSessionId : sessionId;
+        sessionStorage.setItem("sessionId", newSessionId);
+
         const provider = new WebsocketProvider(
-            "wss://somethink.online/timer",
-            sessionId,
+            // "wss://somethink.online/timer",
+            "ws://localhost:2345",
+            newSessionId,
             ydocRef.current
         );
 
@@ -70,6 +75,9 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
                 setIsTimerRunning(newIsTimerRunning);
             }
         });
+        return () => {
+            provider.disconnect();
+        };
     }, []);
 
     useEffect(() => {
@@ -151,17 +159,26 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
                 )}
                 {isTimerRunning && (
                     <div>
-                        <span>
-                            {remainingSeconds === 60 ? 1 + remainingMinutes : remainingMinutes}
-                        </span>
-                        <span> : </span>
-                        <span>
-                            {remainingSeconds === 60
-                                ? "00"
-                                : remainingSeconds < 10
-                                ? "0" + remainingSeconds
-                                : remainingSeconds}
-                        </span>
+                        <div className="timer--clock">
+                            <div className="minutes-group clock-display-grp">
+                                {/* <span> */}
+                                {remainingSeconds === 60 ? 1 + remainingMinutes : remainingMinutes}
+                                {/* </span> */}
+                            </div>
+                            {/* <span> : </span> */}
+                            <div className="clock-separator">
+                                <p>:</p>
+                            </div>
+                            <div className="seconds-group clock-display-grp">
+                                {/* <span> */}
+                                {remainingSeconds === 60
+                                    ? "00"
+                                    : remainingSeconds < 10
+                                    ? "0" + remainingSeconds
+                                    : remainingSeconds}
+                                {/* </span> */}
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
