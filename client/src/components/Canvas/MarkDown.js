@@ -435,13 +435,19 @@ const GraphToMarkdown = ({
 
     const handleExpansions = (nodeId) => {
         const isNodeExpanded = expanded.includes(nodeId.toString());
+
         if (isNodeExpanded) {
             setExpanded((prevExpanded) => prevExpanded.filter((id) => id !== nodeId.toString()));
         } else {
             setExpanded((prevExpanded) => [...prevExpanded, nodeId.toString()]);
         }
-        const anyNodeExpanded = expanded.length >= 0;
-        setIsAllExpanded(anyNodeExpanded);
+
+        if (nodeId === "1") {
+            setIsAllExpanded(false);
+        } else {
+            const anyNodeExpanded = expanded.length > 0;
+            setIsAllExpanded(anyNodeExpanded);
+        }
     };
 
     return (
