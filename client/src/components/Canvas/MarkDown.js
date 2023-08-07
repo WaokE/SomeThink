@@ -401,7 +401,7 @@ const GraphToMarkdown = ({
                     defaultCollapseIcon={<ExpandMoreIcon />}
                     defaultExpandIcon={<ChevronRightIcon />}
                     sx={{ height: "fill", flexGrow: 1, maxWidth: 300 }}
-                    // expanded={expanded}
+                    expanded={expanded}
                 >
                     {filteredTreeItems.length > 0 ? (
                         filteredTreeItems
