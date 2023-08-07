@@ -156,7 +156,7 @@ const removeDoc = (doc, map, mapkey, roomName) => {
                 console.log(err);
             }
         }
-    }, pingTimeout);
+    }, removeTimeout);
 };
 
 class WSSharedDoc extends Y.Doc {
@@ -320,6 +320,7 @@ const send = (doc, conn, m) => {
 };
 
 const pingTimeout = 30000;
+const removeTimeout = 3000;
 
 /**
  * @param {any} conn

@@ -113,8 +113,7 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
     const { disabled, expanded, selected, focused, handleSelection, preventSelection } =
         useTreeItem(nodeId);
 
-    const { nodeHierarchy, handleFocusButtonClick, searchQuery, handleExpansions } =
-        useContext(TreeItemContext);
+    const { nodeHierarchy, handleFocusButtonClick, searchQuery } = useContext(TreeItemContext);
 
     const node = nodeHierarchy[nodeId];
     const icon = iconProp || expansionIcon || displayIcon;
@@ -123,9 +122,8 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
         preventSelection(event);
     };
 
-    const handleExpansionClick = (event, nodeId) => {
+    const handleExpansionClick = (event) => {
         event.preventDefault();
-        handleExpansions(nodeId);
     };
 
     const handleSelectionClick = (event) => {
@@ -164,10 +162,7 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
             onMouseDown={handleMouseDown}
             ref={ref}
         >
-            <div
-                onClick={(event) => handleExpansionClick(event, nodeId)}
-                className={classes.iconContainer}
-            >
+            <div onClick={(event) => handleExpansionClick(event)} className={classes.iconContainer}>
                 {icon}
             </div>
             <Typography onClick={handleSelectionClick} component="div" className={classes.label}>
@@ -178,19 +173,9 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
 });
 
 function CustomTreeItem(props) {
-    const {
-        nodeId,
-        label,
-        nodeHierarchy,
-        handleFocusButtonClick,
-        searchQuery,
-        handleExpansions,
-        ...other
-    } = props;
+    const { nodeId, label, nodeHierarchy, handleFocusButtonClick, searchQuery, ...other } = props;
     return (
-        <TreeItemContext.Provider
-            value={{ nodeHierarchy, handleFocusButtonClick, searchQuery, handleExpansions }}
-        >
+        <TreeItemContext.Provider value={{ nodeHierarchy, handleFocusButtonClick, searchQuery }}>
             <TreeItem
                 ContentComponent={CustomContent}
                 ContentComponentProps={{
@@ -280,7 +265,7 @@ const GraphToMarkdown = ({
                 nodeHierarchy={nodeHierarchy}
                 handleFocusButtonClick={handleFocusButtonClick}
                 searchQuery={searchQuery}
-                handleExpansions={handleExpansions}
+                // handleExpansions={handleExpansions}
             >
                 {node.children
                     ? node.children.map((childNode) => buildTreeItems(childNode.id))
@@ -382,6 +367,7 @@ const GraphToMarkdown = ({
         };
     }, []);
 
+
     const [allNodeIds, setAllNodeIds] = useState([]);
     const [isAllExpanded, setIsAllExpanded] = useState(false);
     const [expanded, setExpanded] = useState([]);
@@ -423,13 +409,14 @@ const GraphToMarkdown = ({
         },
         [expanded]
     );
+
     return (
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
             <Box sx={{ ...styles.markdown, ...style }}>
                 <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: "0.5%" }}>
-                    <IconButton onClick={isAllExpanded ? handleCollapseAll : handleExpandAll}>
+                    {/* <IconButton onClick={isAllExpanded ? handleCollapseAll : handleExpandAll}>
                         {isAllExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                    </IconButton>
+                    </IconButton> */}
                     <Search>
                         <SearchIconWrapper>
                             <SearchIcon />
@@ -450,7 +437,7 @@ const GraphToMarkdown = ({
                     defaultCollapseIcon={<ExpandMoreIcon />}
                     defaultExpandIcon={<ChevronRightIcon />}
                     sx={{ height: "fill", flexGrow: 1, maxWidth: 300 }}
-                    expanded={expanded}
+                    // expanded={expanded}
                 >
                     {filteredTreeItems.length > 0 ? (
                         filteredTreeItems
