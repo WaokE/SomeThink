@@ -37,3 +37,13 @@ div.vis-network div.vis-manipulation {
 .hidden {
     visibility: hidden;
 }
+
+div.vis-network {
+    background-color: #ffffff;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 4px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.06) 1px, transparent 4px),
+        linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 4px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.06) 1px, transparent 4px);
+    background-size: 200px 200px, 200px 200px, 40px 40px, 40px 40px;
+    background-position: -2px -2px, -2px -2px, -1px -1px, -1px -1px;
+}
