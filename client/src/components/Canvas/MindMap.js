@@ -490,7 +490,7 @@ const MindMap = ({
         setHighLightPos({ x: x, y: y });
         networkRef.current.moveTo({
             position: { x: x, y: y },
-            scale: 1.3,
+            scale: 2.0,
             offset: { x: 0, y: 0 },
             animation: {
                 duration: 600,
