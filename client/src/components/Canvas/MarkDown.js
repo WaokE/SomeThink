@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from "react";
+import React, { useState, useEffect, createContext, useContext, useCallback } from "react";
 import Slide from "@mui/material/Slide";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -69,41 +69,6 @@ const styles = {
         marginRight: "10px",
     },
 };
-
-// const boyerMooreSearch = (text, pattern) => {
-//     const n = text.length;
-//     const m = pattern.length;
-
-//     let i = m - 1;
-//     let j = m - 1;
-
-//     while (j >= 0 && i < n) {
-//         if (text[i].toLowerCase() === pattern[j].toLowerCase()) {
-//             i--;
-//             j--;
-//         } else {
-//             const k = m - 1;
-//             const badCharacter = pattern[j].toLowerCase();
-//             let found = false;
-
-//             for (let l = k - 1; l >= 0; l--) {
-//                 if (pattern[l].toLowerCase() === badCharacter) {
-//                     i += k - l;
-//                     j = k;
-//                     found = true;
-//                     break;
-//                 }
-//             }
-
-//             if (!found) {
-//                 i += m;
-//                 j = m - 1;
-//             }
-//         }
-//     }
-
-//     return j < 0;
-// };
 
 const TreeItemContext = createContext();
 
@@ -403,22 +368,26 @@ const GraphToMarkdown = ({
         setIsAllExpanded(false);
     };
 
-    const handleExpansions = (nodeId) => {
-        const isNodeExpanded = expanded.includes(nodeId.toString());
+    const handleExpansions = useCallback(
+        (nodeId) => {
+            setExpanded((prevExpanded) => {
+                const isNodeExpanded = prevExpanded.includes(nodeId.toString());
+                if (isNodeExpanded) {
+                    return prevExpanded.filter((id) => id !== nodeId.toString());
+                } else {
+                    return [...prevExpanded, nodeId.toString()];
+                }
+            });
 
-        if (isNodeExpanded) {
-            setExpanded((prevExpanded) => prevExpanded.filter((id) => id !== nodeId.toString()));
-        } else {
-            setExpanded((prevExpanded) => [...prevExpanded, nodeId.toString()]);
-        }
-
-        if (nodeId === "1") {
-            setIsAllExpanded(false);
-        } else {
-            const anyNodeExpanded = expanded.length > 0;
-            setIsAllExpanded(anyNodeExpanded);
-        }
-    };
+            if (nodeId === "1") {
+                setIsAllExpanded(false);
+            } else {
+                const anyNodeExpanded = expanded.length > 0;
+                setIsAllExpanded(anyNodeExpanded);
+            }
+        },
+        [expanded]
+    );
 
     return (
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
