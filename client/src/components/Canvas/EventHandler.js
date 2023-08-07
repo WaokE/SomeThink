@@ -26,7 +26,6 @@ export const handleDoubleClick = (
             if (canvas) {
                 const node = JSON.parse(nodeData);
                 if (node.shape === "image") {
-                    console.log("image node");
                     label = node.label.replace(new RegExp(`${BOOKMARK_ICON}|(\\n\\s)`, "g"), "");
                 } else {
                     label = node.label.replace(new RegExp(`${BOOKMARK_ICON}\n|(\n\\s)`, "g"), "");

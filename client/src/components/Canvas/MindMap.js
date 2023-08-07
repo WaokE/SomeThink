@@ -487,7 +487,6 @@ const MindMap = ({
     };
 
     const handleFocusButtonClick = (x, y) => {
-        console.log("handleFocusButtonClick");
         setHighLightPos({ x: x, y: y });
         networkRef.current.moveTo({
             position: { x: x, y: y },
