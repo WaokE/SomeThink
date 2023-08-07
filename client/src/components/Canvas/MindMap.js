@@ -1175,218 +1175,231 @@ const MindMap = ({
     const { nodes, edges } = graph;
 
     return (
-        <div
-            onMouseMove={(e) => handleMouseMove(e)}
-            style={{
-                position: "absolute",
-                width: "100vw",
-                height: "100vh",
-                zIndex: 0,
-            }}
-            tabIndex={0}
-            ref={mindMapRef}
-        >
-            <UserMouseMove
-                userMouseData={mouseCoordinates}
-                networkRef={networkRef}
-                userName={userName}
-                userList={getUserListFromYMap()}
-            />
-            <TopBar
-                onExportClick={handleExportClick}
-                sessionId={sessionId}
-                leaveSession={leaveSession}
-                toggleAudio={toggleAudio}
-                audioEnabled={audioEnabled}
-                userList={getUserListFromYMap()}
-                userName={userName}
-                speakingUserName={speakingUserName}
-                ymapRef={ymapRef}
-                isLoading={isLoading}
-                setInfoMessage={setInfoMessage}
-                setIsInfoMessageVisible={setIsInfoMessageVisible}
-            />
+        <div className="mind-map-container">
             <div
-                ref={captureRef}
-                style={{ width: "100%", height: "100%" }}
-                onKeyDown={handleKeyPress}
+                onMouseMove={(e) => handleMouseMove(e)}
+                style={{
+                    position: "absolute",
+                    width: "100vw",
+                    height: "100vh",
+                    zIndex: 0,
+                }}
+                tabIndex={0}
+                ref={mindMapRef}
             >
-                <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
-                <div
-                    className={`
-                ${isTimerVisible ? "visible" : "hidden"}`}
-                >
-                    <Timer
-                        sessionId={sessionId}
-                        isTimerRunning={isTimerRunning}
-                        setIsTimerRunning={setIsTimerRunning}
-                    />
-                </div>
-                <Graph
-                    graph={MindMap.graph}
-                    options={options}
-                    events={{
-                        ...MindMap.events,
-                        dragStart: (events) =>
-                            handleNodeDragStart(
-                                events,
-                                ymapRef,
-                                setUserActionStack,
-                                setUserActionStackPointer
-                            ),
-                        dragging: (events) => handleNodeDragging(events, ymapRef, userName),
-                        dragEnd: (events) =>
-                            handleNodeDragEnd(events, ymapRef, setSelectedNode, setUserActionStack),
-                        drag: handleCanvasDrag,
-                        click: (events) => {
-                            handleAddTextNode(
-                                events,
-                                isCreatingText,
-                                ymapRef,
-                                setSelectedNode,
-                                setSelectedEdge,
-                                setIsCreatingText,
-                                networkRef
-                            );
-                        },
-                        select: handleUserSelect,
-                        oncontext: openNodeContextMenu,
-                        doubleClick: (events) =>
-                            handleDoubleClick(
-                                events,
-                                ymapRef,
-                                modifyNode,
-                                setAlertMessage,
-                                setIsAlertMessageVisible,
-                                networkRef
-                            ),
-                    }}
-                    style={{ height: "100%", width: "100%" }}
-                    getNetwork={(network) => {
-                        network.on("initRedraw", () => {
-                            networkRef.current = network;
-                        });
-                    }}
+                <UserMouseMove
+                    userMouseData={mouseCoordinates}
+                    networkRef={networkRef}
+                    userName={userName}
+                    userList={getUserListFromYMap()}
                 />
-                {isNodeContextMenuVisible && (
+                <TopBar
+                    onExportClick={handleExportClick}
+                    sessionId={sessionId}
+                    leaveSession={leaveSession}
+                    toggleAudio={toggleAudio}
+                    audioEnabled={audioEnabled}
+                    userList={getUserListFromYMap()}
+                    userName={userName}
+                    speakingUserName={speakingUserName}
+                    ymapRef={ymapRef}
+                    isLoading={isLoading}
+                    setInfoMessage={setInfoMessage}
+                    setIsInfoMessageVisible={setIsInfoMessageVisible}
+                />
+                <div
+                    ref={captureRef}
+                    style={{ width: "100%", height: "100%" }}
+                    onKeyDown={handleKeyPress}
+                >
                     <div
-                        ref={contextMenuRef}
-                        className="context-menu"
-                        style={{
-                            position: "absolute",
-                            left: contextMenuPos.xPos,
-                            top: contextMenuPos.yPos,
-                        }}
+                        type="text"
+                        value={sessionId}
+                        style={{ position: "absolute", zIndex: 1 }}
+                    />
+                    <div
+                        className={`
+                ${isTimerVisible ? "visible" : "hidden"}`}
                     >
-                        <NodeContextMenu
-                            selectedNode={selectedNode}
-                            onClose={closeNodeContextMenu}
-                            deleteNode={deleteNodes}
-                            createNode={createNode}
-                            bookMarkNode={bookMarkNode}
-                            setIsCreatingEdge={setIsCreatingEdge}
-                            setFromNode={setFromNode}
-                            handleNodeSelect={handleNodeSelect}
-                            setInfoMessage={setInfoMessage}
-                            setIsInfoMessageVisible={setIsInfoMessageVisible}
+                        <Timer
+                            sessionId={sessionId}
+                            isTimerRunning={isTimerRunning}
+                            setIsTimerRunning={setIsTimerRunning}
                         />
                     </div>
+                    <Graph
+                        graph={MindMap.graph}
+                        options={options}
+                        events={{
+                            ...MindMap.events,
+                            dragStart: (events) =>
+                                handleNodeDragStart(
+                                    events,
+                                    ymapRef,
+                                    setUserActionStack,
+                                    setUserActionStackPointer
+                                ),
+                            dragging: (events) => handleNodeDragging(events, ymapRef, userName),
+                            dragEnd: (events) =>
+                                handleNodeDragEnd(
+                                    events,
+                                    ymapRef,
+                                    setSelectedNode,
+                                    setUserActionStack
+                                ),
+                            drag: handleCanvasDrag,
+                            click: (events) => {
+                                handleAddTextNode(
+                                    events,
+                                    isCreatingText,
+                                    ymapRef,
+                                    setSelectedNode,
+                                    setSelectedEdge,
+                                    setIsCreatingText,
+                                    networkRef
+                                );
+                            },
+                            select: handleUserSelect,
+                            oncontext: openNodeContextMenu,
+                            doubleClick: (events) =>
+                                handleDoubleClick(
+                                    events,
+                                    ymapRef,
+                                    modifyNode,
+                                    setAlertMessage,
+                                    setIsAlertMessageVisible,
+                                    networkRef
+                                ),
+                        }}
+                        style={{ height: "100%", width: "100%" }}
+                        getNetwork={(network) => {
+                            network.on("initRedraw", () => {
+                                networkRef.current = network;
+                            });
+                        }}
+                    />
+                    {isNodeContextMenuVisible && (
+                        <div
+                            ref={contextMenuRef}
+                            className="context-menu"
+                            style={{
+                                position: "absolute",
+                                left: contextMenuPos.xPos,
+                                top: contextMenuPos.yPos,
+                            }}
+                        >
+                            <NodeContextMenu
+                                selectedNode={selectedNode}
+                                onClose={closeNodeContextMenu}
+                                deleteNode={deleteNodes}
+                                createNode={createNode}
+                                bookMarkNode={bookMarkNode}
+                                setIsCreatingEdge={setIsCreatingEdge}
+                                setFromNode={setFromNode}
+                                handleNodeSelect={handleNodeSelect}
+                                setInfoMessage={setInfoMessage}
+                                setIsInfoMessageVisible={setIsInfoMessageVisible}
+                            />
+                        </div>
+                    )}
+                    {isEdgeContextMenuVisible && (
+                        <div
+                            ref={contextMenuRef}
+                            className="context-menu"
+                            style={{
+                                position: "absolute",
+                                left: contextMenuPos.xPos,
+                                top: contextMenuPos.yPos,
+                            }}
+                        >
+                            <EdgeContextMenu
+                                selectedEdge={contextMenuPos.selectedEdge}
+                                onClose={closeEdgeContextMenu}
+                                deleteEdge={deleteEdge}
+                            />
+                        </div>
+                    )}
+                    {isTextContextMenuVisible && (
+                        <div
+                            ref={contextMenuRef}
+                            className="context-menu"
+                            style={{
+                                position: "absolute",
+                                left: contextMenuPos.xPos,
+                                top: contextMenuPos.yPos,
+                            }}
+                        >
+                            <TextContextMenu
+                                selectedText={selectedNode}
+                                onClose={closeTextContextMenu}
+                                deleteNode={deleteNodes}
+                            />
+                        </div>
+                    )}
+                </div>
+                {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
+                <LowToolBar
+                    FocusButton={handleFocusButtonClick}
+                    NodeButton={createNode}
+                    TextButton={handleTextButton}
+                    isImageSearchVisible={isImageSearchVisible}
+                    setIsImageSearchVisible={setIsImageSearchVisible}
+                    isMarkdownVisible={isMarkdownVisible}
+                    setIsMarkdownVisible={setIsMarkdownVisible}
+                    selectedNode={selectedNode}
+                    onExportClick={handleExportClick}
+                    setAlertMessage={setAlertMessage}
+                    setIsAlertMessageVisible={setIsAlertMessageVisible}
+                    userActionStack={userActionStack}
+                    setUserActionStack={setUserActionStack}
+                    userActionStackPointer={userActionStackPointer}
+                    setUserActionStackPointer={setUserActionStackPointer}
+                    setMindMap={setMindMap}
+                    setMemo={setMemo}
+                    setMouseCoordinates={setMouseCoordinates}
+                    ymapRef={ymapRef}
+                />
+                <GraphToMarkdown
+                    style={{ height: isMemoVisible ? "calc(80% - 23%)" : "80%" }}
+                    nodes={nodes}
+                    edges={edges}
+                    isMarkdownVisible={isMarkdownVisible}
+                    setIsMarkdownVisible={setIsMarkdownVisible}
+                    networkRef={networkRef}
+                    handleFocusButtonClick={handleFocusButtonClick}
+                    ymapRef={ymapRef}
+                />
+                <ImageSearch
+                    style={{ height: isTimerVisible ? "calc(80% - 13%)" : "80%" }}
+                    createImage={handleCreateImage}
+                    isImageSearchVisible={isImageSearchVisible}
+                    setIsImageSearchVisible={setIsImageSearchVisible}
+                />
+                <SnackbarProvider maxSnack={3}>
+                    <AlertToast
+                        message={alertMessage}
+                        open={isAlertMessageVisible}
+                        visible={setIsAlertMessageVisible}
+                    />
+                    <InformationToast
+                        message={infoMessage}
+                        open={isInfoMessageVisible}
+                        visible={setIsInfoMessageVisible}
+                    />
+                </SnackbarProvider>
+                {showPopup && (
+                    <NodeLabelsPopup
+                        newNodeLabels={newNodeLabels}
+                        onDelete={handleDeleteLabel}
+                        onCreate={handleCreate}
+                        onClose={handleClosePopup}
+                        onRestart={handleRestart}
+                    />
                 )}
-                {isEdgeContextMenuVisible && (
-                    <div
-                        ref={contextMenuRef}
-                        className="context-menu"
-                        style={{
-                            position: "absolute",
-                            left: contextMenuPos.xPos,
-                            top: contextMenuPos.yPos,
-                        }}
-                    >
-                        <EdgeContextMenu
-                            selectedEdge={contextMenuPos.selectedEdge}
-                            onClose={closeEdgeContextMenu}
-                            deleteEdge={deleteEdge}
-                        />
-                    </div>
-                )}
-                {isTextContextMenuVisible && (
-                    <div
-                        ref={contextMenuRef}
-                        className="context-menu"
-                        style={{
-                            position: "absolute",
-                            left: contextMenuPos.xPos,
-                            top: contextMenuPos.yPos,
-                        }}
-                    >
-                        <TextContextMenu
-                            selectedText={selectedNode}
-                            onClose={closeTextContextMenu}
-                            deleteNode={deleteNodes}
-                        />
-                    </div>
+                {highLightPos && (
+                    <HighLighter pos={highLightPos} setHighLightPos={setHighLightPos} />
                 )}
             </div>
-            {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
-            <LowToolBar
-                FocusButton={handleFocusButtonClick}
-                NodeButton={createNode}
-                TextButton={handleTextButton}
-                isImageSearchVisible={isImageSearchVisible}
-                setIsImageSearchVisible={setIsImageSearchVisible}
-                isMarkdownVisible={isMarkdownVisible}
-                setIsMarkdownVisible={setIsMarkdownVisible}
-                selectedNode={selectedNode}
-                onExportClick={handleExportClick}
-                setAlertMessage={setAlertMessage}
-                setIsAlertMessageVisible={setIsAlertMessageVisible}
-                userActionStack={userActionStack}
-                setUserActionStack={setUserActionStack}
-                userActionStackPointer={userActionStackPointer}
-                setUserActionStackPointer={setUserActionStackPointer}
-                setMindMap={setMindMap}
-                setMemo={setMemo}
-                setMouseCoordinates={setMouseCoordinates}
-                ymapRef={ymapRef}
-            />
-            <GraphToMarkdown
-                style={{ height: isMemoVisible ? "calc(80% - 23%)" : "80%" }}
-                nodes={nodes}
-                edges={edges}
-                isMarkdownVisible={isMarkdownVisible}
-                setIsMarkdownVisible={setIsMarkdownVisible}
-                networkRef={networkRef}
-                handleFocusButtonClick={handleFocusButtonClick}
-                ymapRef={ymapRef}
-            />
-            <ImageSearch
-                style={{ height: isTimerVisible ? "calc(80% - 13%)" : "80%" }}
-                createImage={handleCreateImage}
-                isImageSearchVisible={isImageSearchVisible}
-                setIsImageSearchVisible={setIsImageSearchVisible}
-            />
-            <SnackbarProvider maxSnack={3}>
-                <AlertToast
-                    message={alertMessage}
-                    open={isAlertMessageVisible}
-                    visible={setIsAlertMessageVisible}
-                />
-                <InformationToast
-                    message={infoMessage}
-                    open={isInfoMessageVisible}
-                    visible={setIsInfoMessageVisible}
-                />
-            </SnackbarProvider>
-            {showPopup && (
-                <NodeLabelsPopup
-                    newNodeLabels={newNodeLabels}
-                    onDelete={handleDeleteLabel}
-                    onCreate={handleCreate}
-                    onClose={handleClosePopup}
-                    onRestart={handleRestart}
-                />
-            )}
-            {highLightPos && <HighLighter pos={highLightPos} setHighLightPos={setHighLightPos} />}
         </div>
     );
 };
