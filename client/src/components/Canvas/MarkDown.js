@@ -12,6 +12,7 @@ import clsx from "clsx";
 import { styled, alpha } from "@mui/material/styles";
 import InputBase from "@mui/material/InputBase";
 import SearchIcon from "@mui/icons-material/Search";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 const Search = styled("div")(({ theme }) => ({
     position: "relative",
@@ -23,13 +24,13 @@ const Search = styled("div")(({ theme }) => ({
     marginLeft: 0,
     width: "100%",
     [theme.breakpoints.up("sm")]: {
-        marginLeft: theme.spacing(1),
+        // marginLeft: theme.spacing(1),
         width: "auto",
     },
 }));
 
 const SearchIconWrapper = styled("div")(({ theme }) => ({
-    padding: theme.spacing(0, 2),
+    // padding: theme.spacing(0, 2),
     height: "100%",
     position: "absolute",
     pointerEvents: "none",
@@ -46,12 +47,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
         paddingLeft: `calc(1em + ${theme.spacing(4)})`,
         transition: theme.transitions.create("width"),
         width: "100%",
-        [theme.breakpoints.up("sm")]: {
-            width: "12ch",
-            "&:focus": {
-                width: "20ch",
-            },
-        },
     },
 }));
 
@@ -115,17 +110,11 @@ const TreeItemContext = createContext();
 const CustomContent = React.forwardRef(function CustomContent(props, ref) {
     const { nodeId, classes, className, label, icon: iconProp, expansionIcon, displayIcon } = props;
 
-    const {
-        disabled,
-        expanded,
-        selected,
-        focused,
-        handleExpansion,
-        handleSelection,
-        preventSelection,
-    } = useTreeItem(nodeId);
+    const { disabled, expanded, selected, focused, handleSelection, preventSelection } =
+        useTreeItem(nodeId);
 
-    const { nodeHierarchy, handleFocusButtonClick, searchQuery } = useContext(TreeItemContext);
+    const { nodeHierarchy, handleFocusButtonClick, searchQuery, handleExpansions } =
+        useContext(TreeItemContext);
 
     const node = nodeHierarchy[nodeId];
     const icon = iconProp || expansionIcon || displayIcon;
@@ -134,8 +123,9 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
         preventSelection(event);
     };
 
-    const handleExpansionClick = (event) => {
-        handleExpansion(event);
+    const handleExpansionClick = (event, nodeId) => {
+        event.preventDefault();
+        handleExpansions(nodeId);
     };
 
     const handleSelectionClick = (event) => {
@@ -204,7 +194,10 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
             onMouseDown={handleMouseDown}
             ref={ref}
         >
-            <div onClick={handleExpansionClick} className={classes.iconContainer}>
+            <div
+                onClick={(event) => handleExpansionClick(event, nodeId)}
+                className={classes.iconContainer}
+            >
                 {icon}
             </div>
             <Typography onClick={handleSelectionClick} component="div" className={classes.label}>
@@ -215,9 +208,19 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
 });
 
 function CustomTreeItem(props) {
-    const { nodeId, label, nodeHierarchy, handleFocusButtonClick, searchQuery, ...other } = props;
+    const {
+        nodeId,
+        label,
+        nodeHierarchy,
+        handleFocusButtonClick,
+        searchQuery,
+        handleExpansions,
+        ...other
+    } = props;
     return (
-        <TreeItemContext.Provider value={{ nodeHierarchy, handleFocusButtonClick, searchQuery }}>
+        <TreeItemContext.Provider
+            value={{ nodeHierarchy, handleFocusButtonClick, searchQuery, handleExpansions }}
+        >
             <TreeItem
                 ContentComponent={CustomContent}
                 ContentComponentProps={{
@@ -229,7 +232,7 @@ function CustomTreeItem(props) {
                 {...other}
                 sx={{
                     "& .MuiTreeItem-label": {
-                        fontSize: "100px", // Set the desired font size here
+                        fontSize: "100px",
                     },
                 }}
             />
@@ -307,6 +310,7 @@ const GraphToMarkdown = ({
                 nodeHierarchy={nodeHierarchy}
                 handleFocusButtonClick={handleFocusButtonClick}
                 searchQuery={searchQuery}
+                handleExpansions={handleExpansions}
             >
                 {node.children
                     ? node.children.map((childNode) => buildTreeItems(childNode.id))
@@ -375,9 +379,6 @@ const GraphToMarkdown = ({
             }
         });
 
-        console.log(nodes);
-        console.log(edges);
-
         snapshotForFile.push("nodes");
         nodes.forEach((node) => {
             makeNodeSnapshot(node, snapshotForFile);
@@ -411,10 +412,45 @@ const GraphToMarkdown = ({
         };
     }, []);
 
+    const [allNodeIds, setAllNodeIds] = useState([]);
+    const [isAllExpanded, setIsAllExpanded] = useState(false);
+    const [expanded, setExpanded] = useState([]);
+
+    useEffect(() => {
+        const updatedNodeIds = nodes.map((node) => node.id.toString());
+        setAllNodeIds(updatedNodeIds);
+        setExpanded(updatedNodeIds); // Set the expanded state to include all nodes
+        setIsAllExpanded(true); // Set the "isAllExpanded" state to true
+    }, [nodes.length]);
+
+    const handleExpandAll = () => {
+        setExpanded(allNodeIds);
+        setIsAllExpanded(true);
+    };
+
+    const handleCollapseAll = () => {
+        setExpanded([]);
+        setIsAllExpanded(false);
+    };
+
+    const handleExpansions = (nodeId) => {
+        const isNodeExpanded = expanded.includes(nodeId.toString());
+        if (isNodeExpanded) {
+            setExpanded((prevExpanded) => prevExpanded.filter((id) => id !== nodeId.toString()));
+        } else {
+            setExpanded((prevExpanded) => [...prevExpanded, nodeId.toString()]);
+        }
+        const anyNodeExpanded = expanded.length >= 0;
+        setIsAllExpanded(anyNodeExpanded);
+    };
+
     return (
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
             <Box sx={{ ...styles.markdown, ...style }}>
                 <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: "0.5%" }}>
+                    <IconButton onClick={isAllExpanded ? handleCollapseAll : handleExpandAll}>
+                        {isAllExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                    </IconButton>
                     <Search>
                         <SearchIconWrapper>
                             <SearchIcon />
@@ -435,6 +471,7 @@ const GraphToMarkdown = ({
                     defaultCollapseIcon={<ExpandMoreIcon />}
                     defaultExpandIcon={<ChevronRightIcon />}
                     sx={{ height: "fill", flexGrow: 1, maxWidth: 300 }}
+                    expanded={expanded}
                 >
                     {filteredTreeItems.length > 0 ? (
                         filteredTreeItems

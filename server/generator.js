@@ -59,7 +59,6 @@ module.exports = async function (req, res) {
  * @param {String} allKeywords
  */
 const generatePrompt = (keyword, allKeywords) => {
-    console.log(keyword);
     return `I'd like to get a recommendation for a word that is a subnode of this ${
         keyword.split(", ")[0]
     } on the mind map. 
