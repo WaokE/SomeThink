@@ -136,16 +136,20 @@ const ImageSearch = ({ style, ...props }) => {
                 onClick={handleDrawerOpen}
                 edge="start"
                 sx={{
+                    width: "6vh",
+                    height: "10vh",
                     position: "fixed",
-                    left: 0, // 좌측 가운데로 이동하도록 설정합니다
+                    left: "0", // 좌측 가운데로 이동하도록 설정합니다
                     marginLeft: "2vh",
-                    bottom: "50%",
+                    bottom: "45%",
                     transform: "translateX(-50%)", // 가운데 정렬을 위해 왼쪽으로 이동합니다
                     ...(open && { display: "none" }),
                     border: "1px solid",
-                    borderColor: "#d9d9d9",
-                    borderRadius: "5%",
-                    color: "#FAE392",
+                    borderColor: "#999999",
+                    borderRadius: "0 50% 50% 0",
+                    backgroundColor: "#fffff6",
+                    color: "#F1C93B",
+                    zIndex: "9999",
                 }}
             >
                 <AddPhotoAlternateIcon />
