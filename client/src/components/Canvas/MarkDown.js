@@ -70,41 +70,6 @@ const styles = {
     },
 };
 
-// const boyerMooreSearch = (text, pattern) => {
-//     const n = text.length;
-//     const m = pattern.length;
-
-//     let i = m - 1;
-//     let j = m - 1;
-
-//     while (j >= 0 && i < n) {
-//         if (text[i].toLowerCase() === pattern[j].toLowerCase()) {
-//             i--;
-//             j--;
-//         } else {
-//             const k = m - 1;
-//             const badCharacter = pattern[j].toLowerCase();
-//             let found = false;
-
-//             for (let l = k - 1; l >= 0; l--) {
-//                 if (pattern[l].toLowerCase() === badCharacter) {
-//                     i += k - l;
-//                     j = k;
-//                     found = true;
-//                     break;
-//                 }
-//             }
-
-//             if (!found) {
-//                 i += m;
-//                 j = m - 1;
-//             }
-//         }
-//     }
-
-//     return j < 0;
-// };
-
 const TreeItemContext = createContext();
 
 const CustomContent = React.forwardRef(function CustomContent(props, ref) {
