@@ -230,7 +230,7 @@ const GraphToMarkdown = ({
                 nodeHierarchy={nodeHierarchy}
                 handleFocusButtonClick={handleFocusButtonClick}
                 searchQuery={searchQuery}
-                // handleExpansions={handleExpansions}
+                handleExpansions={handleExpansions}
             >
                 {node.children
                     ? node.children.map((childNode) => buildTreeItems(childNode.id))
@@ -332,7 +332,6 @@ const GraphToMarkdown = ({
         };
     }, []);
 
-
     const [allNodeIds, setAllNodeIds] = useState([]);
     const [isAllExpanded, setIsAllExpanded] = useState(false);
     const [expanded, setExpanded] = useState([]);
@@ -379,9 +378,9 @@ const GraphToMarkdown = ({
         <Slide direction="left" in={isMarkdownVisible} mountOnEnter unmountOnExit>
             <Box sx={{ ...styles.markdown, ...style }}>
                 <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: "0.5%" }}>
-                    {/* <IconButton onClick={isAllExpanded ? handleCollapseAll : handleExpandAll}>
+                    <IconButton onClick={isAllExpanded ? handleCollapseAll : handleExpandAll}>
                         {isAllExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                    </IconButton> */}
+                    </IconButton>
                     <Search>
                         <SearchIconWrapper>
                             <SearchIcon />
