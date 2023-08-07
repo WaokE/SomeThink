@@ -139,7 +139,7 @@ const CustomContent = React.forwardRef(function CustomContent(props, ref) {
                 onClick={handleSelectionClick}
                 component="div"
                 className={classes.label}
-                style={{ fontSize: "2rem" }}
+                style={{ fontSize: "1.6rem" }}
             >
                 {highlightLabel(label)}
             </Typography>
