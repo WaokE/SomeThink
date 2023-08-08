@@ -181,7 +181,6 @@ const GraphToMarkdown = ({
     edges,
     isMarkdownVisible,
     setIsMarkdownVisible,
-    networkRef,
     handleFocusButtonClick,
     ymapRef,
 }) => {
