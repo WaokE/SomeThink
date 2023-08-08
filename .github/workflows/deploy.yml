@@ -17,13 +17,13 @@ jobs:
             - name: Cache node modules
               uses: actions/cache@v2
               with:
-                  path: client/node_modules
-                  key: ${{ runner.os }}-build-client-${{ hashFiles('client/package-lock.json') }}
+                  path: ./client/node_modules
+                  key: ${{ runner.os }}-build-client-${{ hashFiles('**/package-lock.json') }}
                   restore-keys: |
                       ${{ runner.os }}-build-client-
 
             - name: Install Client Dependencies
-              run: npm ci
+              run: npm install
               working-directory: ./client
 
             - name: Build Client
