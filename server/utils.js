@@ -21,6 +21,7 @@ const wsReadyStateClosed = 3; // eslint-disable-line
 
 const rooms = new Map();
 const timers = new Map();
+const timeoutHandles = new Map();
 
 // disable gc when using snapshots!
 const gcEnabled = process.env.GC !== "false" && process.env.GC !== "0";
@@ -136,28 +137,31 @@ const addDataToRoom = (map, roomName, data) => {
  * @param {string} roomName
  */
 const removeDoc = (doc, map, mapkey, roomName) => {
-    if (map.get(roomName)) {
-        setTimeout(() => {
-            try {
-                if (map.get(roomName).size === 0 && doc.awareness) {
-                    console.log("delete all");
-                    map.delete(roomName);
-                    if (doc.share.get(mapkey)) {
-                        doc.share.get(mapkey)._map.forEach((value, key) => {
-                            doc.share.get(mapkey)._map.delete(key);
-                        });
-
-                        doc.store.clients.clear();
-                    }
-                    if (doc.awareness.meta) {
-                        doc.awareness.meta.clear();
-                    }
-                }
-            } catch (err) {
-                console.log(err);
-            }
-        }, removeTimeout);
+    if (timeoutHandles.has(roomName)) {
+        clearTimeout(timeoutHandles.get(roomName));
     }
+
+    const timeoutHandle = setTimeout(() => {
+        try {
+            if (map.get(roomName).size === 0 && doc.awareness.meta) {
+                console.log("delete all");
+                map.delete(roomName);
+                if (doc.share.get(mapkey)) {
+                    doc.share.get(mapkey)._map.forEach((value, key) => {
+                        doc.share.get(mapkey)._map.delete(key);
+                    });
+
+                    doc.awareness.meta.clear();
+
+                    doc.store.clients.clear();
+                }
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }, removeTimeout);
+
+    timeoutHandles.set(roomName, timeoutHandle);
 };
 
 class WSSharedDoc extends Y.Doc {
@@ -347,6 +351,7 @@ exports.ServersetupWSConnection = (
     conn.clientId = generateClientId(8);
     addDataToRoom(rooms, docName, conn.clientId);
     console.log(`Client ${conn.clientId} connected to room ${docName}`);
+    console.log(rooms.get(docName).size);
 
     // Check if connection is still alive
     let pongReceived = true;
