@@ -8,6 +8,7 @@ import {
     NORMAL_NODE_COLOR,
     BOOKMARK_ICON,
     throttle,
+    DECIMAL_PLACES,
 } from "../../Constant";
 
 import Graph from "react-graph-vis";
@@ -321,8 +322,8 @@ const MindMap = ({
                 x: e.clientX,
                 y: e.clientY,
             });
-            const nx = coord.x;
-            const ny = coord.y;
+            const nx = parseFloat(coord.x.toFixed(DECIMAL_PLACES));
+            const ny = parseFloat(coord.y.toFixed(DECIMAL_PLACES));
             ymapRef.current.set(
                 `Mouse ${userName}`,
                 JSON.stringify({ x: nx, y: ny, id: userName })

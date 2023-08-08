@@ -1,5 +1,5 @@
 import React from "react";
-import { colors } from "../../Constant";
+import { colors, DECIMAL_PLACES } from "../../Constant";
 
 const UserMouseMove = (props) => {
     const { userMouseData, networkRef, userName, userList } = props;
@@ -14,9 +14,8 @@ const UserMouseMove = (props) => {
         const userIndex = userList.indexOf(id);
         const color = colors[userIndex % colors.length];
         const coord = networkRef.current.canvasToDOM({ x: x, y: y });
-        const nx = coord.x;
-        const ny = coord.y;
-
+        const nx = parseFloat(coord.x.toFixed(DECIMAL_PLACES)); // 절삭된 X 좌표
+        const ny = parseFloat(coord.y.toFixed(DECIMAL_PLACES)); // 절삭된 Y 좌표
         // 만약 id가 userName과 일치하면 출력하지 않도록 처리합니다.
         if (id === userName) {
             return null;

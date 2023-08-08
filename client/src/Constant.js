@@ -76,3 +76,5 @@ export const throttle = (callback, delay) => {
 };
 
 export const BOOKMARK_ICON = "🔻";
+
+export const DECIMAL_PLACES = 0;
