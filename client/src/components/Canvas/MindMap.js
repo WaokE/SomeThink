@@ -787,6 +787,7 @@ const MindMap = ({
             size: 20,
         };
 
+        pushUserActionStack({ action: "create", nodeId: newNode.id, newNode: newNode });
         ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
         // };
 
