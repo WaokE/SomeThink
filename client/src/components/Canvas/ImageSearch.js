@@ -72,7 +72,6 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 
 const ImageSearch = ({ style, ...props }) => {
     const theme = useTheme();
-    const [open, setOpen] = React.useState(false);
     const [img, setImg] = useState("");
     const [res, setRes] = useState([]);
     const searchWordRef = useRef(null);
@@ -118,13 +117,13 @@ const ImageSearch = ({ style, ...props }) => {
     };
 
     const handleDrawerOpen = () => {
-        setOpen(true);
+        props.setIsImageSearchVisible(true);
     };
 
     const handleDrawerClose = () => {
         setRes([]);
         setImg("");
-        setOpen(false);
+        props.setIsImageSearchVisible(false);
     };
 
     return (
@@ -143,7 +142,10 @@ const ImageSearch = ({ style, ...props }) => {
                     marginLeft: "2vh",
                     bottom: "45%",
                     transform: "translateX(-50%)", // 가운데 정렬을 위해 왼쪽으로 이동합니다
-                    ...(open && { display: "none" }),
+                    ...(props.isImageSearchVisible && { display: "none" }),
+                    "&:hover": {
+                        backgroundColor: "white",
+                    },
                     border: "1px solid",
                     borderColor: "#999999",
                     borderRadius: "0 50% 50% 0",
@@ -165,7 +167,7 @@ const ImageSearch = ({ style, ...props }) => {
                 }}
                 variant="persistent"
                 anchor="left"
-                open={open}
+                open={props.isImageSearchVisible}
             >
                 <DrawerHeader>
                     <IconButton onClick={handleDrawerClose}>

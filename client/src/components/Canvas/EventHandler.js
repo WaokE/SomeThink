@@ -228,8 +228,12 @@ export const handleAddTextNode = (
     setSelectedNode,
     setSelectedEdge,
     setIsCreatingText,
+    setIsImageSearchVisible,
+    setIsMarkdownVisible,
     networkRef
 ) => {
+    setIsImageSearchVisible(false);
+    setIsMarkdownVisible(false);
     if (event.nodes.length === 0) setSelectedNode(null);
     if (event.edges.length === 0) setSelectedEdge(null);
     if (!isCreatingText) return;
