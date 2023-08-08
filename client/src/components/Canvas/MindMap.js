@@ -802,24 +802,24 @@ const MindMap = ({
     const handleCreateImage = (url, searchWord) => {
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
 
-        if (url.includes("data:image")) {
-            createNodeWithImage(url, searchWord, nodeId);
-        } else {
-            fetch(`/api/proxyImage?url=${encodeURIComponent(url)}`)
-                .then((response) => response.blob())
-                .then((imageBlob) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        const dataURL = reader.result;
-                        createNodeWithImage(dataURL, searchWord, nodeId);
-                    };
-                    reader.readAsDataURL(imageBlob);
-                })
-                .catch((error) => {
-                    console.error("이미지 다운로드 및 전달 중 에러:", error);
-                    createNodeWithImage(url, searchWord, nodeId);
-                });
-        }
+        // if (url.includes("data:image")) {
+        //     createNodeWithImage(url, searchWord, nodeId);
+        // } else {
+        // fetch(`/api/proxyImage?url=${encodeURIComponent(url)}`)
+        //     .then((response) => response.blob())
+        //     .then((imageBlob) => {
+        //         const reader = new FileReader();
+        //         reader.onloadend = () => {
+        //             const dataURL = reader.result;
+        //             createNodeWithImage(dataURL, searchWord, nodeId);
+        //         };
+        //         reader.readAsDataURL(imageBlob);
+        //     })
+        //     .catch((error) => {
+        //         console.error("이미지 다운로드 및 전달 중 에러:", error);
+        createNodeWithImage(url, searchWord, nodeId);
+        // });
+        // }
     };
 
     const createNodeWithImage = (imageUrl, searchWord, nodeId) => {
@@ -828,36 +828,36 @@ const MindMap = ({
             y: window.innerHeight / 2,
         });
 
-        const image = new Image();
-        image.onload = () => {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
+        // const image = new Image();
+        // image.onload = () => {
+        //     const canvas = document.createElement("canvas");
+        //     const ctx = canvas.getContext("2d");
 
-            const targetWidth = 250;
-            const scaleFactor = targetWidth / image.width;
-            const targetHeight = image.height * scaleFactor;
+        //     const targetWidth = 250;
+        //     const scaleFactor = targetWidth / image.width;
+        //     const targetHeight = image.height * scaleFactor;
 
-            canvas.width = targetWidth;
-            canvas.height = targetHeight;
+        //     canvas.width = targetWidth;
+        //     canvas.height = targetHeight;
 
-            ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+        //     ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
 
-            const reducedDataURL = canvas.toDataURL();
-            const newNode = {
-                id: nodeId,
-                label: searchWord,
-                shape: "image",
-                image: reducedDataURL,
-                x: coord.x,
-                y: coord.y,
-                physics: false,
-                size: 20,
-            };
-
-            ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
+        //     const reducedDataURL = canvas.toDataURL();
+        const newNode = {
+            id: nodeId,
+            label: searchWord,
+            shape: "image",
+            image: imageUrl,
+            x: coord.x,
+            y: coord.y,
+            physics: false,
+            size: 20,
         };
 
-        image.src = imageUrl;
+        ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
+        // };
+
+        // image.src = imageUrl;
     };
 
     const closeNodeContextMenu = () => {
