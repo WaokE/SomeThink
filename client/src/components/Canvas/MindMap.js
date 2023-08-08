@@ -223,12 +223,12 @@ const MindMap = ({
 
     useEffect(() => {
         ydocRef.current = new Y.Doc();
-        // const provider = new WebsocketProvider(
-        //     "wss://somethink.online/room",
-        //     sessionId,
-        //     ydocRef.current
-        // );
-        const provider = new WebsocketProvider("ws://localhost:1234", sessionId, ydocRef.current);
+        const provider = new WebsocketProvider(
+            "wss://somethink.online/room",
+            sessionId,
+            ydocRef.current
+        );
+        // const provider = new WebsocketProvider("ws://localhost:1234", sessionId, ydocRef.current);
         ymapRef.current = ydocRef.current.getMap("MindMap");
 
         ymapRef.current.observe((event) => {
