@@ -124,11 +124,9 @@ export const handleNodeDragEnd = (
     networkRef,
     setSelectedNode,
     setUserActionStack,
-    setZoomRandered,
     lastZoomPositionRef
 ) => {
     const { nodes, pointer } = event;
-    setZoomRandered(networkRef.current.getViewPosition());
     lastZoomPositionRef.current = networkRef.current.getViewPosition();
     if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
         return;

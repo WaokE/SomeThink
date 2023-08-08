@@ -1007,6 +1007,7 @@ const MindMap = ({
             setIsMemoVisible((prev) => !prev);
         };
         const __handleMouseWheel = (event) => {
+            setZoomRandered((prev) => !prev);
             if (selectedNode) {
                 handleMouseWheel(event, selectedNode, ymapRef);
             }
@@ -1271,7 +1272,6 @@ const MindMap = ({
                                     networkRef,
                                     setSelectedNode,
                                     setUserActionStack,
-                                    setZoomRandered,
                                     lastZoomPositionRef
                                 ),
                             drag: handleCanvasDrag,
