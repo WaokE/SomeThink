@@ -1284,6 +1284,30 @@ const MindMap = ({
                             network.on("initRedraw", () => {
                                 networkRef.current = network;
                             });
+                            network.on("beforeDrawing", (ctx) => {
+                                let patternCanvas = document.createElement("canvas");
+                                patternCanvas.width = 60; // 작은 점 이미지의 가로 크기
+                                patternCanvas.height = 60; // 작은 점 이미지의 세로 크기
+                                let patternCtx = patternCanvas.getContext("2d");
+
+                                // 작은 점 이미지 그리기
+                                patternCtx.fillStyle = "gray"; // 점의 색상
+                                patternCtx.fillRect(0, 0, 3, 3); // 점의 크기
+
+                                let pattern = ctx.createPattern(patternCanvas, "repeat");
+
+                                var domtocanvas = network.DOMtoCanvas({
+                                    x: window.screenX,
+                                    y: window.screenY,
+                                });
+                                ctx.fillStyle = pattern;
+                                ctx.fillRect(
+                                    domtocanvas.x * 10,
+                                    domtocanvas.y * 10,
+                                    -domtocanvas.x * 20,
+                                    -domtocanvas.y * 20
+                                );
+                            });
                         }}
                     />
                     {isNodeContextMenuVisible && (
