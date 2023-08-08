@@ -447,7 +447,7 @@ export const handleUndo = (
                     JSON.stringify({
                         from: from,
                         to: to,
-                        id: `${from} ${to}`,
+                        id: `${from} to ${to}`,
                     })
                 );
             });
