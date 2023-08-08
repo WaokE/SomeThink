@@ -87,7 +87,7 @@ const MindMap = ({
     speakingUserName,
     isLoading,
 }) => {
-    const ydocRef = useRef(null);
+    const ydocRef = useRef(new Y.Doc());
     const ymapRef = useRef(null);
     const networkRef = useRef(null);
     const mindMapRef = useRef(null);
@@ -222,13 +222,20 @@ const MindMap = ({
     }, []);
 
     useEffect(() => {
-        ydocRef.current = new Y.Doc();
+        // ydocRef.current = new Y.Doc();
+        const storedSessionId = sessionStorage.getItem("sessionId");
+        const newSessionId = storedSessionId ? storedSessionId : sessionId;
+        sessionStorage.setItem("sessionId", newSessionId);
         const provider = new WebsocketProvider(
             "wss://somethink.online/room",
-            sessionId,
+            newSessionId,
             ydocRef.current
         );
-        // const provider = new WebsocketProvider("ws://localhost:1234", sessionId, ydocRef.current);
+        // const provider = new WebsocketProvider(
+        //     "ws://localhost:1234",
+        //     newSessionId,
+        //     ydocRef.current
+        // );
         ymapRef.current = ydocRef.current.getMap("MindMap");
 
         ymapRef.current.observe((event) => {

@@ -11,6 +11,7 @@ import MicOffSharpIcon from "@mui/icons-material/MicOffSharp";
 import Switch from "@mui/material/Switch";
 import { ExitToApp } from "@mui/icons-material";
 import { rootNode } from "../../Constant";
+import { useNavigate } from "react-router-dom";
 
 const colors = [
     "#FF5733", // 빨간색
@@ -40,6 +41,12 @@ function TopBar({
 }) {
     // userName과 일치하는 아바타를 찾아서 따로 저장합니다.
     const userAvatar = userList.find((user) => user === userName);
+
+    const navigate = useNavigate();
+    const handleLeaveSession = () => {
+        leaveSession();
+        navigate("/");
+    };
 
     const getCurrentTime = () => {
         const date = new Date();
@@ -177,7 +184,11 @@ function TopBar({
                         {/* <IconButton aria-label="CameraAltIcon" size="large" onClick={onExportClick}>
                             <CameraAltIcon fontSize="inherit" />
                         </IconButton> */}
-                        <IconButton aria-label="ExitToApp" size="large" onClick={leaveSession}>
+                        <IconButton
+                            aria-label="ExitToApp"
+                            size="large"
+                            onClick={handleLeaveSession}
+                        >
                             <ExitToApp fontSize="inherit" />
                         </IconButton>
                     </div>

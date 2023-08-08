@@ -4,7 +4,7 @@ import * as Y from "yjs";
 import "./Timer.css";
 
 const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
-    const ydocRef = useRef(null);
+    const ydocRef = useRef(new Y.Doc());
     const ymapRef = useRef(null);
 
     const [startTime, setStartTime] = useState(Date.now());
@@ -39,10 +39,14 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
     };
 
     useEffect(() => {
-        ydocRef.current = new Y.Doc();
+        // ydocRef.current = new Y.Doc();
+        const storedSessionId = sessionStorage.getItem("sessionId");
+        const newSessionId = storedSessionId ? storedSessionId : sessionId;
+        sessionStorage.setItem("sessionId", newSessionId);
         const provider = new WebsocketProvider(
             "wss://somethink.online/timer",
-            sessionId,
+            // "ws://localhost:2345",
+            newSessionId,
             ydocRef.current
         );
 
