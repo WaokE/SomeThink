@@ -1264,6 +1264,8 @@ const MindMap = ({
                                     setSelectedNode,
                                     setSelectedEdge,
                                     setIsCreatingText,
+                                    setIsImageSearchVisible,
+                                    setIsMarkdownVisible,
                                     networkRef
                                 );
                             },
