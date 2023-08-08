@@ -7,6 +7,7 @@ import {
     ROOT_NODE_COLOR,
     throttle,
     BOOKMARK_ICON,
+    DECIMAL_PLACES,
 } from "../../Constant";
 
 export const handleDoubleClick = (
@@ -67,7 +68,6 @@ export const handleDoubleClick = (
     }
 };
 
-const decimalPlaces = 0;
 let dragInfo = null;
 
 export const handleNodeDragStart = (
@@ -84,8 +84,8 @@ export const handleNodeDragStart = (
     const { x: mouseX, y: mouseY } = event.pointer.canvas;
     dragInfo = {
         node,
-        offsetX: parseFloat(mouseX - node.x).toFixed(decimalPlaces),
-        offsetY: parseFloat(mouseY - node.y).toFixed(decimalPlaces),
+        offsetX: parseFloat((mouseX - node.x).toFixed(DECIMAL_PLACES)),
+        offsetY: parseFloat((mouseY - node.y).toFixed(DECIMAL_PLACES)),
     };
 
     setUserActionStack((prev) => {
@@ -126,8 +126,8 @@ export const handleNodeDragEnd = (event, ymapRef, setSelectedNode, setUserAction
 
     const nodeId = nodes[0];
     const { x: mouseX, y: mouseY } = pointer.canvas;
-    const newX = parseFloat((mouseX - dragInfo.offsetX).toFixed(decimalPlaces));
-    const newY = parseFloat((mouseY - dragInfo.offsetY).toFixed(decimalPlaces));
+    const newX = parseFloat((mouseX - dragInfo.offsetX).toFixed(DECIMAL_PLACES));
+    const newY = parseFloat((mouseY - dragInfo.offsetY).toFixed(DECIMAL_PLACES));
     const movedNode = ymapRef.current.get(`Node ${nodeId}`);
     const updatedNode = { ...JSON.parse(movedNode), x: newX, y: newY };
     ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(updatedNode));
@@ -161,13 +161,12 @@ export const handleNodeDragging = throttle((event, ymapRef, userName) => {
     }
     const nodeId = nodes[0];
     const { x: mouseX, y: mouseY } = pointer.canvas;
-    const newX = parseFloat((mouseX - dragInfo.offsetX).toFixed(decimalPlaces));
-    const newY = parseFloat((mouseY - dragInfo.offsetY).toFixed(decimalPlaces));
+    const newX = parseFloat((mouseX - dragInfo.offsetX).toFixed(DECIMAL_PLACES));
+    const newY = parseFloat((mouseY - dragInfo.offsetY).toFixed(DECIMAL_PLACES));
 
     const movedNode = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));
     const updatedNode = { ...movedNode, x: newX, y: newY };
     ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(updatedNode));
-    console.log("newX", newX, "newY", newY);
     checkPrevSelected(userName, ymapRef);
     let selectedNode = JSON.parse(ymapRef.current.get(`Node ${event.nodes[0]}`));
     ymapRef.current.set(`User ${userName} selected`, `Node ${event.nodes[0]}`);
