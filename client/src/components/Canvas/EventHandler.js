@@ -118,8 +118,16 @@ export const handleNodeDragStart = (
     });
 };
 
-export const handleNodeDragEnd = (event, ymapRef, setSelectedNode, setUserActionStack) => {
+export const handleNodeDragEnd = (
+    event,
+    ymapRef,
+    networkRef,
+    setSelectedNode,
+    setUserActionStack,
+    lastZoomPositionRef
+) => {
     const { nodes, pointer } = event;
+    lastZoomPositionRef.current = networkRef.current.getViewPosition();
     if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
         return;
     }
@@ -540,7 +548,6 @@ export const handleRedo = (
     }
     // 이전 동작이 create 인 경우
     if (action === "create") {
-        console.log("redo create");
         if (userActionStack[prevPointer].nodeId) {
             const ymapValue = ymapRef.current.get(`Node ${userActionStack[prevPointer].nodeId}`);
             // ymap에서 해당 노드를 찾을 수 있다면

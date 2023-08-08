@@ -136,6 +136,9 @@ const MindMap = ({
     const [allNodeLabels, setAllNodeLabels] = useState([]);
     const [highLightPos, setHighLightPos] = useState(false);
 
+    const [zoomRandered, setZoomRandered] = useState({ x: 0, y: 0 });
+    const lastZoomPositionRef = useRef({ x: 0, y: 0 });
+
     const memoizedHandleClickOutside = useCallback(
         handleClickOutside(
             contextMenuRef,
@@ -511,9 +514,10 @@ const MindMap = ({
 
     const handleFocusButtonClick = (x, y) => {
         setHighLightPos({ x: x, y: y });
+        lastZoomPositionRef.current = { x: x, y: y };
         networkRef.current.moveTo({
             position: { x: x, y: y },
-            scale: 2.0,
+            scale: 1.6,
             offset: { x: 0, y: 0 },
             animation: {
                 duration: 600,
@@ -855,6 +859,23 @@ const MindMap = ({
         ymapRef.current.set(nodeKey, JSON.stringify(selectedNodeObject));
     };
 
+    const handleZoomEvent = () => {
+        networkRef.current.on("zoom", function () {
+            if (networkRef.current.getScale() <= 0.5) {
+                networkRef.current.moveTo({
+                    scale: 0.5,
+                    position: lastZoomPositionRef.current,
+                });
+            }
+            if (networkRef.current.getScale() >= 1.6) {
+                networkRef.current.moveTo({
+                    scale: 1.6,
+                    position: lastZoomPositionRef.current,
+                });
+            }
+        });
+    };
+
     useEffect(() => {
         if (selectedNode !== null) {
             const node = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
@@ -876,6 +897,7 @@ const MindMap = ({
             setIsMemoVisible((prev) => !prev);
         };
         const __handleMouseWheel = (event) => {
+            setZoomRandered((prev) => !prev);
             if (selectedNode) {
                 handleMouseWheel(event, selectedNode, ymapRef);
             }
@@ -887,13 +909,15 @@ const MindMap = ({
         window.addEventListener("switchMemo", handleSwitchMemo);
         window.addEventListener("wheel", __handleMouseWheel);
         window.addEventListener("setTimer", __handleSetTimer);
+        networkRef.current && networkRef.current.on("zoom", handleZoomEvent);
         return () => {
             document.removeEventListener("click", handleClickOutside);
             window.removeEventListener("switchMemo", handleSwitchMemo);
             window.removeEventListener("wheel", __handleMouseWheel);
             window.removeEventListener("setTimer", __handleSetTimer);
+            networkRef.current && networkRef.current.off("zoom", handleZoomEvent);
         };
-    }, [selectedNode, memoizedHandleClickOutside, selectedImage]);
+    }, [selectedNode, memoizedHandleClickOutside, selectedImage, zoomRandered]);
 
     const deleteRecursion = (nodeId) => {
         const childNodes = Array.from(ymapRef.current.keys())
@@ -1111,8 +1135,10 @@ const MindMap = ({
                                 handleNodeDragEnd(
                                     events,
                                     ymapRef,
+                                    networkRef,
                                     setSelectedNode,
-                                    setUserActionStack
+                                    setUserActionStack,
+                                    lastZoomPositionRef
                                 ),
                             drag: handleCanvasDrag,
                             click: (events) => {
@@ -1258,7 +1284,6 @@ const MindMap = ({
                     edges={edges}
                     isMarkdownVisible={isMarkdownVisible}
                     setIsMarkdownVisible={setIsMarkdownVisible}
-                    networkRef={networkRef}
                     handleFocusButtonClick={handleFocusButtonClick}
                     ymapRef={ymapRef}
                 />
