@@ -254,6 +254,9 @@ export const handleAddTextNode = (
                 font: {
                     size: 15,
                 },
+                shadow: {
+                    enabled: false,
+                },
                 widthConstraint: false,
             };
 

@@ -26,6 +26,10 @@ export const mindMapOptions = {
         font: {
             face: "MainFont",
         },
+        shadow: {
+            enabled: true,
+            size: 1,
+        },
     },
     edges: {
         arrows: {
