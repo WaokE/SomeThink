@@ -9,7 +9,8 @@ import LoadingBox from "./components/LoadingScreen/LoadingBox";
 import "./App.css";
 import "./Fonts/Font.css";
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+// import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./components/Page/HomePage";
 import SessionPage from "./components/Page/SessionPage";
 
@@ -297,6 +298,9 @@ class App extends Component {
             mainStreamManager: undefined,
             publisher: undefined,
         });
+
+        sessionStorage.removeItem("sessionId");
+        sessionStorage.removeItem("userName");
     }
 
     toggleAudio() {
