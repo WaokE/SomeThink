@@ -812,7 +812,7 @@ const MindMap = ({
         if (url.includes("data:image")) {
             createNodeWithImage(url, searchWord, nodeId);
         } else {
-            fetch(`http://localhost:3030/api/proxyImage?url=${encodeURIComponent(url)}`)
+            fetch(`/api/proxyImage?url=${encodeURIComponent(url)}`)
                 .then((response) => response.json()) // JSON 형식으로 응답을 받음
                 .then((data) => {
                     const proxyImageUrl = data.imageUrl; // 프록시 서버에서 생성한 짧은 URL을 사용
