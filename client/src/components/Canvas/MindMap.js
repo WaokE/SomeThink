@@ -32,7 +32,6 @@ import {
     handleClickOutside,
     handleCanvasDrag,
     handleAddTextNode,
-    handleNodeContextMenu,
     handleNodeDragging,
     makeHandleMemoChange,
     handleMouseWheel,
@@ -885,13 +884,6 @@ const MindMap = ({
         } else {
             setSelectedImage(false);
         }
-
-        const handleAddNode = (event) => {
-            if (!selectedNode) {
-                return;
-            }
-            createNode(selectedNode);
-        };
 
         const handleSwitchMemo = (event) => {
             setIsMemoVisible((prev) => !prev);
