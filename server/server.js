@@ -24,7 +24,7 @@ const app = express();
 const OpenVidu = require("openvidu-node-client").OpenVidu;
 const audio_server = http.createServer(app);
 
-// const childProcess = require("child_process");
+const childProcess = require("child_process");
 
 // // Environment variable: PORT where the node server is listening
 let SERVER_PORT = process.env.SERVER_PORT || 5050;
@@ -99,24 +99,23 @@ app.get("/api/sessions/:sessionId/validate", (req, res) => {
 audio_server.listen(SERVER_PORT, () => {
     console.log("Application started on port: ", SERVER_PORT);
     console.warn("Application server connecting to OpenVidu at " + OPENVIDU_URL);
-    // startProxyServer();
+    startProxyServer();
 });
 
-// 프록시 서버 실행 함수
-// function startProxyServer() {
-//     const proxyServer = childProcess.spawn("node", ["proxy-server.js"]);
+function startProxyServer() {
+    const proxyServer = childProcess.spawn("node", ["proxy-server.js"]);
 
-//     proxyServer.stdout.on("data", (data) => {
-//         console.log(`프록시 서버: ${data}`);
-//     });
+    proxyServer.stdout.on("data", (data) => {
+        console.log(`프록시 서버: ${data}`);
+    });
 
-//     proxyServer.stderr.on("data", (data) => {
-//         console.error(`프록시 서버 에러: ${data}`);
-//     });
+    proxyServer.stderr.on("data", (data) => {
+        console.error(`프록시 서버 에러: ${data}`);
+    });
 
-//     proxyServer.on("close", (code) => {
-//         console.log(`프록시 서버 종료. 종료 코드: ${code}`);
-//     });
-// }
+    proxyServer.on("close", (code) => {
+        console.log(`프록시 서버 종료. 종료 코드: ${code}`);
+    });
+}
 
 process.on("uncaughtException", (err) => console.error(err));
