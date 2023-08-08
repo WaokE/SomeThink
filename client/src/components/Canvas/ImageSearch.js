@@ -144,6 +144,9 @@ const ImageSearch = ({ style, ...props }) => {
                     bottom: "45%",
                     transform: "translateX(-50%)", // 가운데 정렬을 위해 왼쪽으로 이동합니다
                     ...(open && { display: "none" }),
+                    "&:hover": {
+                        backgroundColor: "white",
+                    },
                     border: "1px solid",
                     borderColor: "#999999",
                     borderRadius: "0 50% 50% 0",
