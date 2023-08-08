@@ -890,6 +890,7 @@ const MindMap = ({
         };
         const __handleMouseWheel = (event) => {
             setZoomRandered((prev) => !prev);
+            lastZoomPositionRef.current = networkRef.current.getViewPosition();
             if (selectedNode) {
                 handleMouseWheel(event, selectedNode, ymapRef);
             }
@@ -1127,10 +1128,8 @@ const MindMap = ({
                                 handleNodeDragEnd(
                                     events,
                                     ymapRef,
-                                    networkRef,
                                     setSelectedNode,
-                                    setUserActionStack,
-                                    lastZoomPositionRef
+                                    setUserActionStack
                                 ),
                             drag: handleCanvasDrag,
                             click: (events) => {
