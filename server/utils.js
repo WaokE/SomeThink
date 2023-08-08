@@ -155,6 +155,7 @@ const removeDoc = (doc, map, mapkey, roomName) => {
 
                     doc.store.clients.clear();
                 }
+                timeoutHandles.clear(roomName);
             }
         } catch (err) {
             console.log(err);
