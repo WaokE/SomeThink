@@ -739,23 +739,23 @@ const MindMap = ({
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
 
         if (url.includes("data:image")) {
-            createNodeWithImage(url, searchWord, nodeId);
+            createNodeWithImage(nodeId, url, searchWord);
         } else {
             fetch(`/api/proxyImage?url=${encodeURIComponent(url)}`)
-                .then((response) => response.json()) // JSON 형식으로 응답을 받음
+                .then((response) => response.json())
                 .then((data) => {
-                    const proxyImageUrl = data.imageUrl; // 프록시 서버에서 생성한 짧은 URL을 사용
-                    createNodeWithImage(proxyImageUrl, searchWord, nodeId);
+                    const proxyDataUrl = data.dataUrl;
+                    createNodeWithImage(nodeId, searchWord, proxyDataUrl);
                 })
                 .catch((error) => {
                     console.error("이미지 다운로드 및 전달 중 에러:", error);
-                    createNodeWithImage(url, searchWord, nodeId);
+                    createNodeWithImage(nodeId, null, searchWord);
                 });
         }
     };
 
-    const createNodeWithImage = (imageUrl, searchWord, nodeId) => {
-        console.log("이미지 다운로드 및 전달 완료:", imageUrl);
+    const createNodeWithImage = (nodeId, searchWord, dataUrl) => {
+        console.log("이미지 다운로드 및 전달 완료:", dataUrl);
         const coord = networkRef.current.DOMtoCanvas({
             x: window.innerWidth / 2,
             y: window.innerHeight / 2,
@@ -764,7 +764,7 @@ const MindMap = ({
             id: nodeId,
             label: searchWord,
             shape: "image",
-            image: imageUrl, // 짧은 URL을 사용
+            image: dataUrl,
             x: coord.x,
             y: coord.y,
             physics: false,
