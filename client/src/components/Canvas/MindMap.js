@@ -1160,10 +1160,10 @@ const MindMap = ({
                                 });
                                 ctx.fillStyle = pattern;
                                 ctx.fillRect(
-                                    domtocanvas.x * 10,
-                                    domtocanvas.y * 10,
-                                    -domtocanvas.x * 20,
-                                    -domtocanvas.y * 20
+                                    domtocanvas.x * 100,
+                                    domtocanvas.y * 100,
+                                    -domtocanvas.x * 200,
+                                    -domtocanvas.y * 200
                                 );
                             });
                         }}
