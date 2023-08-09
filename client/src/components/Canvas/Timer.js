@@ -132,6 +132,12 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
         setCircleDasharray();
     }, [remainingTime]);
 
+    const maxLengthCheck = (object) => {
+        if (object.target.value.length > object.target.maxLength) {
+            object.target.value = object.target.value.slice(0, object.target.maxLength);
+        }
+    };
+    const timerColorClass = isTimerRunning ? (remainingTime <= 10000 ? "red" : "yellow") : "";
     return (
         <div className={`timer ${isTimerRunning && remainingTime <= 10000 ? "red" : ""}`}>
             <div className="base-timer">
@@ -145,9 +151,7 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
                         <path
                             id="base-timer-path-remaining"
                             strokeDasharray="283"
-                            className={`base-timer__path-remaining ${
-                                remainingTime <= 10000 ? "red" : "yellow"
-                            }`}
+                            className={`base-timer__path-remaining ${timerColorClass}`}
                             d="
                     M 50, 50
                     m -45, 0
@@ -164,6 +168,7 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
                             type="number"
                             min="0"
                             max="99"
+                            maxLength={2}
                             value={
                                 remainingMinutes < 10 ? "0" + remainingMinutes : remainingMinutes
                             }
@@ -172,6 +177,7 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
                                     e.target.value * 60 * 1000 + remainingSeconds * 1000
                                 )
                             }
+                            onInput={maxLengthCheck}
                         />
                         <span className="timer-input-separator">:</span>
                         <input
@@ -179,6 +185,7 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
                             type="number"
                             min="0"
                             max="59"
+                            maxLength={2}
                             value={
                                 remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds
                             }
