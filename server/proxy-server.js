@@ -1,7 +1,8 @@
 const express = require("express");
 const request = require("request");
 const cors = require("cors");
-const shortid = require("shortid"); // shortid 라이브러리 추가
+const sharp = require("sharp");
+
 const app = express();
 const PORT = 3030;
 
@@ -12,41 +13,60 @@ app.use(
     })
 );
 
-// URL 매핑을 위한 객체 생성
-const urlMap = {};
-
-app.get("/api/proxyImage", (req, res) => {
+app.get("/api/proxyImage", async (req, res) => {
     const imageUrl = req.query.url;
 
-    // 이미지 URL을 그대로 클라이언트에게 전달
-    const shortImageUrl = generateShortUrl(imageUrl);
-    res.json({ imageUrl: shortImageUrl });
+    try {
+        const imageBuffer = await downloadImage(imageUrl);
+        const optimizedBuffer = await optimizeImage(imageBuffer);
+        const dataUrl = createShortDataUrl(optimizedBuffer);
+
+        res.json({ dataUrl: dataUrl });
+    } catch (error) {
+        console.error("이미지 다운로드 및 변환 중 에러:", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
-app.get("/:shortId", (req, res) => {
-    const shortId = req.params.shortId;
-    const imageUrl = urlMap[shortId];
+async function downloadImage(imageUrl) {
+    return new Promise((resolve, reject) => {
+        request.get({ url: imageUrl, encoding: null }, (err, response, body) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(body);
+            }
+        });
+    });
+}
 
-    if (!imageUrl) {
-        res.status(404).send("Not Found");
-        return;
+async function optimizeImage(imageBuffer) {
+    const metadata = await sharp(imageBuffer).metadata();
+    let width = metadata.width;
+    let height = metadata.height;
+
+    let quality;
+    if (width <= 200) {
+        quality = 33;
+    } else if (width <= 400) {
+        quality = 20;
+    } else if (width <= 600) {
+
+        quality = 10;
+    } 
+    else if (width <= 800) {
+        quality = 5;
+    } else {
+        quality = 3;
     }
 
-    request.get({ url: imageUrl, encoding: null }, (err, response, body) => {
-        if (err) {
-            console.error("이미지 다운로드 에러:", err);
-            res.status(500).send("Internal Server Error");
-        } else {
-            res.set("Content-Type", response.headers["content-type"]);
-            res.send(body);
-        }
-    });
-});
+    return sharp(imageBuffer).webp({ quality: quality }).toBuffer();
+}
 
-function generateShortUrl(imageUrl) {
-    const shortId = shortid.generate();
-    urlMap[shortId] = imageUrl;
-    return `http://localhost:${PORT}/${shortId}`;
+function createShortDataUrl(imageBuffer) {
+    const base64Image = imageBuffer.toString("base64");
+    const contentType = "image/jpeg"; // 이미지 타입에 맞게 수정
+    return `data:${contentType};base64,${base64Image}`;
 }
 
 app.listen(PORT, () => {
