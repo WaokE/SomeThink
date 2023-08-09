@@ -843,14 +843,12 @@ const MindMap = ({
                     scale: 0.5,
                     position: lastZoomPositionRef.current,
                 });
-                console.log("zoom", lastZoomPositionRef.current);
             }
             if (networkRef.current.getScale() >= 1.6) {
                 networkRef.current.moveTo({
                     scale: 1.6,
                     position: lastZoomPositionRef.current,
                 });
-                console.log("zoom", lastZoomPositionRef.current);
             }
         });
     };
