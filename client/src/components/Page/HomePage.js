@@ -1,6 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Dialog, DialogTitle, DialogContent, TextField, Button, Slide } from "@mui/material";
 import "./HomePage.css";
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+    return <Slide direction="up" ref={ref} {...props} />;
+});
 
 function HomePage(props) {
     const {
@@ -12,13 +18,22 @@ function HomePage(props) {
         handleChangeSessionId,
         // handleSetisLoading,
     } = props;
+    const [showModal, setShowModal] = useState(false);
+    const [rootWord, setRootWord] = useState("");
 
     const navigate = useNavigate();
 
     const redirectToSessionPage = () => {
-        // handleSetisLoading(true);
-        handleCreateSession();
-        navigate("/session"); // SessionPage로 이동
+        if (!rootWord) {
+            alert("Please enter a keyword."); // 또는 원하는 경고 메시지를 표시
+            return;
+        }
+
+        openCreatePopup();
+        if (showModal) {
+            handleCreateSession();
+            navigate("/session", { state: { keyword: rootWord } });
+        }
     };
 
     const redirectToSessionPage2 = () => {
@@ -28,6 +43,14 @@ function HomePage(props) {
                 navigate("/session"); // SessionPage로 이동
             }
         });
+    };
+
+    const openCreatePopup = () => {
+        setShowModal(true);
+    };
+
+    const closeCreatePopup = () => {
+        setShowModal(false);
     };
 
     return (
@@ -67,10 +90,10 @@ function HomePage(props) {
                                 <p className="create">
                                     <label id="label-create"> NEW ROOM </label>
                                     <input
-                                        onClick={redirectToSessionPage}
+                                        onClick={openCreatePopup}
                                         className="btn btn-lg btn-success create"
                                         name="commit"
-                                        type="submit"
+                                        type="button"
                                         value="CREATE"
                                     />
                                 </p>
@@ -107,6 +130,43 @@ function HomePage(props) {
                     </div>
                 </div>
             </section>
+            {showModal && (
+                <Dialog
+                    open={showModal}
+                    onClose={closeCreatePopup}
+                    TransitionComponent={Transition}
+                    aria-labelledby="modal-title"
+                    aria-describedby="modal-description"
+                    BackdropProps={{
+                        onClick: (event) => {
+                            event.stopPropagation(); // 이벤트 전파 중지
+                        },
+                    }}
+                >
+                    <DialogTitle id="modal-title">새로운 주제를 생성하세요</DialogTitle>
+                    <DialogContent>
+                        <TextField
+                            label="keyword"
+                            variant="outlined"
+                            value={rootWord}
+                            onChange={(e) => setRootWord(e.target.value)}
+                            size="small"
+                            margin="dense"
+                        />
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "flex-end",
+                                marginTop: "16px",
+                            }}
+                        >
+                            <Button onClick={redirectToSessionPage} variant="outlined">
+                                start
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
         </div>
     );
 }
