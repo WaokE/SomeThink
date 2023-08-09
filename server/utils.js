@@ -35,6 +35,7 @@ const persistenceDir = process.env.YPERSISTENCE;
 /**
  * @type {{bindState: function(string,WSSharedDoc):void, writeState:function(string,WSSharedDoc):Promise<any>, provider: any}|null}
  */
+// 영속성을 위한 디스크에 저장 위치 -> 원하면 써라...
 let persistence = null;
 if (typeof persistenceDir === "string") {
     console.info('Persisting documents to "' + persistenceDir + '"');
