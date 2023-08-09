@@ -27,6 +27,8 @@ const timers = new Map();
 // 자원제거이벤트 함수
 const timeoutHandles = new Map();
 
+const IDLENGTH = 8;
+
 // disable gc when using snapshots!
 const gcEnabled = process.env.GC !== "false" && process.env.GC !== "0";
 
@@ -356,7 +358,7 @@ exports.ServersetupWSConnection = (
             messageListener(conn, doc, new Uint8Array(message))
     );
 
-    conn.clientId = generateClientId(8);
+    conn.clientId = generateClientId(IDLENGTH);
     addDataToRoom(rooms, docName, conn.clientId);
     console.log(`Client ${conn.clientId} connected to room ${docName}`);
 
@@ -438,7 +440,7 @@ exports.TimersetupWSConnection = (
     // Check if connection is still alive
     let pongReceived = true;
 
-    conn.clientId = generateClientId(8);
+    conn.clientId = generateClientId(IDLENGTH);
     addDataToRoom(timers, docName, conn.clientId);
 
     const pingInterval = setInterval(() => {
