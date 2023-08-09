@@ -768,7 +768,7 @@ const MindMap = ({
             x: coord.x,
             y: coord.y,
             physics: false,
-            size: 20,
+            size: 50,
         };
 
         pushUserActionStack({ action: "create", nodeId: newNode.id, newNode: newNode });
