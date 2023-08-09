@@ -182,7 +182,7 @@ export const handleNodeDragging = throttle((event, ymapRef, userName) => {
     if (selectedNode.id !== 1) {
         selectedNode.color = {
             border: colors[indexOfUser],
-            background: NORMAL_NODE_COLOR,
+            // background: NORMAL_NODE_COLOR,
         };
     }
     selectedNode.owner = userName;
@@ -201,7 +201,8 @@ const checkPrevSelected = (userId, ymapRef) => {
                 if (userData.id === 1) {
                     userData.color = ROOT_NODE_COLOR;
                 } else {
-                    userData.color = NORMAL_NODE_COLOR;
+                    // userData.color = NORMAL_NODE_COLOR;
+                    delete userData.color;
                 }
                 ymapRef.current.set(`Node ${userData.id}`, JSON.stringify(userData));
             }

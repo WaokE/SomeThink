@@ -188,7 +188,7 @@ const MindMap = ({
             } else {
                 selectedNodeObject.color = {
                     border: colors[indexOfUser],
-                    background: NORMAL_NODE_COLOR,
+                    // background: NORMAL_NODE_COLOR,
                 };
             }
             selectedNodeObject.owner = tempUserId;
@@ -430,7 +430,7 @@ const MindMap = ({
             } else {
                 selectedNode.color = {
                     border: colors[indexOfUser],
-                    background: NORMAL_NODE_COLOR,
+                    // background: NORMAL_NODE_COLOR,
                 };
             }
             selectedNode.owner = tempUserId;
@@ -463,7 +463,8 @@ const MindMap = ({
                     if (userData.id === 1) {
                         userData.color = ROOT_NODE_COLOR;
                     } else {
-                        userData.color = NORMAL_NODE_COLOR;
+                        // userData.color = NORMAL_NODE_COLOR;
+                        delete userData.color;
                     }
                     ymapRef.current.set(`Node ${userData.id}`, JSON.stringify(userData));
                 }
@@ -678,10 +679,13 @@ const MindMap = ({
                 removeTextInput();
             } else {
                 let quadrant = "";
+                let nodeGroup;
                 if (selectedNode.id === 1) {
+                    nodeGroup = ymapRef.current.get("GroupCount");
                     quadrant = (ymapRef.current.get("RootQuadrant") % 4) + 1;
                     ymapRef.current.set("RootQuadrant", ymapRef.current.get("RootQuadrant") + 1);
                 } else {
+                    nodeGroup = selectedNode.group;
                     quadrant = checkquadrant(selectedNode.x, selectedNode.y);
                 }
                 const newNode = {
@@ -689,7 +693,8 @@ const MindMap = ({
                     label: label,
                     x: selectedNode.x + nx[quadrant - 1],
                     y: selectedNode.y + ny[quadrant - 1],
-                    color: NORMAL_NODE_COLOR,
+                    // color: NORMAL_NODE_COLOR,
+                    group: nodeGroup,
                     widthConstraint: { minimum: 50, maximum: 100 },
                     heightConstraint: { minimum: 50, maximum: 100 },
                 };
@@ -704,6 +709,7 @@ const MindMap = ({
                         id: `${selectedNodeId} to ${nodeId}`,
                     })
                 );
+                ymapRef.current.set("GroupCount", nodeGroup + 1);
                 mindMapRef.current.focus();
 
                 removeTextInput();
@@ -802,6 +808,9 @@ const MindMap = ({
     };
 
     const bookMarkNode = () => {
+        ymapRef.current.forEach((value, key) => {
+            console.log(value);
+        });
         const nodeKey = `Node ${selectedNode}`;
         let selectedNodeObject = JSON.parse(ymapRef.current.get(nodeKey));
 
