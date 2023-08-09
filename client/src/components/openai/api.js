@@ -94,6 +94,14 @@ const addNewNodesAndEdges = (clickedNode, newNodeLabels, clickedNodeId, ymapRef)
         const x = clickedNode.x + distanceFromCenter * Math.cos(angle);
         const y = clickedNode.y + distanceFromCenter * Math.sin(angle);
 
+        let nodeGroup;
+        if (clickedNodeId === 1) {
+            nodeGroup = ymapRef.current.get("GroupCount");
+            ymapRef.current.set("GroupCount", nodeGroup + 1);
+        } else {
+            nodeGroup = JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`)).group;
+        }
+
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
         const newNode = {
             id: nodeId,
@@ -102,8 +110,7 @@ const addNewNodesAndEdges = (clickedNode, newNodeLabels, clickedNodeId, ymapRef)
             y: y,
             physics: false,
             // color: NORMAL_NODE_COLOR,
-            // NOTE: 루트 노드에 AI추천노드 요청 시의 예외처리 필요할듯?
-            group: JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`)).group,
+            group: nodeGroup,
             widthConstraint: { minimum: 50, maximum: 100 },
             heightConstraint: { minimum: 50, maximum: 100 },
         };
