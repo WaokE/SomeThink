@@ -1226,8 +1226,8 @@ const MindMap = ({
                             />
                         </div>
                     )}
+                    {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
                 </div>
-                {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
                 <LowToolBar
                     FocusButton={handleFocusButtonClick}
                     NodeButton={createNode}
