@@ -1,7 +1,7 @@
 .base-timer {
     position: fixed;
-    top: 9.5vh;
-    left: 2.5vh;
+    top: 11vh;
+    left: 2vw;
     height: 160px;
     width: 160px;
     z-index: 1;
