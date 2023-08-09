@@ -118,8 +118,16 @@ export const handleNodeDragStart = (
     });
 };
 
-export const handleNodeDragEnd = (event, ymapRef, setSelectedNode, setUserActionStack) => {
+export const handleNodeDragEnd = (
+    event,
+    ymapRef,
+    networkRef,
+    setSelectedNode,
+    setUserActionStack,
+    lastZoomPositionRef
+) => {
     const { nodes, pointer } = event;
+    lastZoomPositionRef.current = networkRef.current.getViewPosition();
     if (!nodes || nodes.length === 0 || event.nodes[0] === 1) {
         return;
     }
