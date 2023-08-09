@@ -266,7 +266,8 @@ class App extends Component {
 
     leaveSession() {
         // --- 7) Leave the session by calling 'disconnect' method over the Session object ---
-
+        sessionStorage.removeItem("sessionId");
+        sessionStorage.removeItem("userName");
         const mySession = this.state.session;
         document.body.style.backgroundColor = "#fbd85d";
         if (mySession) {
@@ -299,8 +300,7 @@ class App extends Component {
             publisher: undefined,
         });
 
-        sessionStorage.removeItem("sessionId");
-        sessionStorage.removeItem("userName");
+        window.location.href = "/";
     }
 
     toggleAudio() {
