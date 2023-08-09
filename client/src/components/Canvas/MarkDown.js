@@ -347,14 +347,14 @@ const GraphToMarkdown = ({
     }, []);
 
     const [allNodeIds, setAllNodeIds] = useState([]);
-    const [isAllExpanded, setIsAllExpanded] = useState(false);
+    const [isAllExpanded, setIsAllExpanded] = useState(true);
     const [expanded, setExpanded] = useState([]);
 
     useEffect(() => {
         const updatedNodeIds = nodes.map((node) => node.id.toString());
         setAllNodeIds(updatedNodeIds);
-        setExpanded(updatedNodeIds);
-        setIsAllExpanded(true);
+        // setExpanded(updatedNodeIds);
+        setIsAllExpanded(false);
     }, [nodes.length]);
 
     const handleExpandAll = () => {
@@ -379,7 +379,7 @@ const GraphToMarkdown = ({
             });
 
             if (nodeId === "1") {
-                setIsAllExpanded(false);
+                setIsAllExpanded((prevIsAllExpanded) => !prevIsAllExpanded); // 이 부분을 수정합니다.
             } else {
                 const anyNodeExpanded = expanded.length > 0;
                 setIsAllExpanded(anyNodeExpanded);
