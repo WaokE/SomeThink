@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import "./HomePage.css";
 
 function HomePage(props) {
@@ -12,13 +13,18 @@ function HomePage(props) {
         handleChangeSessionId,
         // handleSetisLoading,
     } = props;
+    const [showModal, setShowModal] = useState(false);
+    const [newRoomName, setNewRoomName] = useState("");
 
     const navigate = useNavigate();
 
     const redirectToSessionPage = () => {
         // handleSetisLoading(true);
-        handleCreateSession();
-        navigate("/session"); // SessionPage로 이동
+        openCreatePopup();
+        if (showModal) {
+            handleCreateSession();
+            navigate("/session"); // SessionPage로 이동
+        }
     };
 
     const redirectToSessionPage2 = () => {
@@ -28,6 +34,14 @@ function HomePage(props) {
                 navigate("/session"); // SessionPage로 이동
             }
         });
+    };
+
+    const openCreatePopup = () => {
+        setShowModal(true);
+    };
+
+    const closeCreatePopup = () => {
+        setShowModal(false);
     };
 
     return (
@@ -107,6 +121,22 @@ function HomePage(props) {
                     </div>
                 </div>
             </section>
+            {showModal && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <span className="close" onClick={closeCreatePopup}>
+                            &times;
+                        </span>
+                        <h2>Enter KeyWord</h2>
+                        <input
+                            type="text"
+                            value={newRoomName}
+                            onChange={(e) => setNewRoomName(e.target.value)}
+                        />
+                        <button onClick={handleCreateSession}>Create</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
