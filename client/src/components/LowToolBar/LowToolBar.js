@@ -142,6 +142,7 @@ export default function LowToolBar(props) {
                 x: content.x,
                 y: content.y,
                 shape: content.shape,
+                font: { size: 20 },
                 shadow: {
                     enabled: false,
                 },

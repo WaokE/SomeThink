@@ -260,7 +260,7 @@ export const handleAddTextNode = (
                 y: pointer.canvas.y,
                 physics: false,
                 font: {
-                    size: 15,
+                    size: 25,
                 },
                 shadow: {
                     enabled: false,
