@@ -13,7 +13,7 @@
 }
 
 .base-timer__path-elapsed {
-    stroke-width: 7px;
+    stroke-width: 9px;
     stroke: rgb(157, 156, 156);
 }
 
@@ -25,7 +25,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 50px;
+    font-size: 40px;
 }
 
 .timer-input-container {
@@ -39,15 +39,15 @@
 }
 
 .timer-input-separator {
-    font-size: 30px;
-    margin: 0 5px;
+    font-size: 40px;
+    /* margin: 0 5px; */
 }
 
 .timer-input {
     display: inline-block;
     width: 55px;
     height: 40px;
-    font-size: 30px;
+    font-size: 40px;
     text-align: center;
     border: none;
     background-color: transparent;
@@ -55,11 +55,12 @@
 }
 
 .base-timer__path-remaining {
-    stroke-width: 7px;
+    stroke-width: 9px;
     stroke-linecap: round;
     transform: rotate(90deg);
     transform-origin: center;
     transition: 1s linear all;
+    /* transition: stroke-dashoffset 1 linear all; */
     stroke: currentColor;
     fill-rule: nonzero;
 }
@@ -78,7 +79,7 @@
 
 .buttons {
     position: absolute;
-    bottom: 10%;
+    bottom: 15%;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -97,10 +98,10 @@
 
 /* input[type="number"] {
     -moz-appearance: textfield;
-}
+} */
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
-} */
+}
