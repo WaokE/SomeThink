@@ -1,16 +1,17 @@
 .memo {
     position: fixed;
-    top: 10vh;
+    top: 11vh;
     right: 2vh;
-    width: 250px;
-    height: 15%;
+    width: 22%;
+    height: 20%;
     background-color: #fbeeac;
     border: 2px solid #e8c55b;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     padding: 15px;
     font-family: "Noto Sans KR", sans-serif;
-    font-size: 16px;
+    font-size: 22px;
+    font-weight: bold;
     line-height: 1.6;
     color: #333;
     z-index: 1;

@@ -108,7 +108,7 @@ function TopBar({
                 style={{
                     backgroundColor: "#FBEEAC",
                     marginBottom: "10px",
-                    height: "10vh",
+                    height: "9vh",
                     justifyContent: "center",
                 }}
             >
@@ -139,10 +139,13 @@ function TopBar({
                                 }
                                 label={userAvatar}
                                 sx={{
+                                    padding: "8px",
+                                    height: "36px",
+                                    fontSize: "18px",
                                     boxShadow: speakingUserName.includes(userName)
-                                        ? `inset 0px 0px 0px 2px #76e465`
+                                        ? `inset 0px 0px 0px 4px #76e465`
                                         : `inset 0px 0px 0px 1px white`,
-                                    borderRadius: "15px", // Rounded border for the entire Chip
+                                    borderRadius: "23px", // Rounded border for the entire Chip
                                 }}
                             />
                         )}
@@ -161,14 +164,17 @@ function TopBar({
                                         }
                                         label={user}
                                         sx={{
+                                            padding: "8px",
+                                            height: "36px",
+                                            fontSize: "18px",
                                             boxShadow:
                                                 // if user in speakingUserName list
 
                                                 speakingUserName.includes(user)
-                                                    ? `inset 0px 0px 0px 2px #76e465`
+                                                    ? `inset 0px 0px 0px 4px #76e465`
                                                     : ``,
                                             borderRadius: speakingUserName.includes(user)
-                                                ? "15px"
+                                                ? "23px"
                                                 : "", // Rounded border for the entire Chip
                                         }}
                                     />
