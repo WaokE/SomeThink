@@ -71,7 +71,6 @@ app.post("/api/generate", generatorHandler);
 app.post("/api/sessions", async (req, res) => {
     var session = await openvidu.createSession(req.body);
     res.send(session.sessionId);
-    // wss.createConnection();
 });
 
 app.post("/api/sessions/:sessionId/connections", async (req, res) => {
