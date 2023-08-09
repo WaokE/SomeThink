@@ -140,7 +140,6 @@ const removeDoc = (doc, map, mapkey, roomName) => {
     if (timeoutHandles.has(roomName)) {
         clearTimeout(timeoutHandles.get(roomName));
     }
-
     const timeoutHandle = setTimeout(() => {
         try {
             if (map.get(roomName).size === 0 && doc.awareness.meta) {
@@ -352,7 +351,6 @@ exports.ServersetupWSConnection = (
     conn.clientId = generateClientId(8);
     addDataToRoom(rooms, docName, conn.clientId);
     console.log(`Client ${conn.clientId} connected to room ${docName}`);
-    console.log(rooms.get(docName).size);
 
     // Check if connection is still alive
     let pongReceived = true;
