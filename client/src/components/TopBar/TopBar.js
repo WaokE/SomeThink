@@ -11,7 +11,7 @@ import MicOffSharpIcon from "@mui/icons-material/MicOffSharp";
 import Switch from "@mui/material/Switch";
 import { ExitToApp } from "@mui/icons-material";
 import { rootNode } from "../../Constant";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const colors = [
     "#FF5733", // 빨간색
@@ -41,6 +41,11 @@ function TopBar({
 }) {
     // userName과 일치하는 아바타를 찾아서 따로 저장합니다.
     const userAvatar = userList.find((user) => user === userName);
+
+    const location = useLocation();
+    const { keyword } = location.state || {}; // location.state가 null일 경우를 대비하여 기본 객체를 생성
+
+    const updatedRootNode = { ...rootNode, label: keyword };
 
     const navigate = useNavigate();
     const handleLeaveSession = () => {
@@ -85,7 +90,7 @@ function TopBar({
     useEffect(() => {
         if (userList.length >= prevUserListLength) {
             if (!isLoading && userList.length === 1) {
-                ymapRef.current.set(`Node 1`, JSON.stringify(rootNode));
+                ymapRef.current.set(`Node 1`, JSON.stringify(updatedRootNode));
                 ymapRef.current.set("RootQuadrant", 0);
                 ymapRef.current.set("GroupCount", 0);
                 ymapRef.current.set(userName, true);

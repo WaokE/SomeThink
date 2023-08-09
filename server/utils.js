@@ -6,6 +6,7 @@ const encoding = require("lib0/dist/encoding.cjs");
 const decoding = require("lib0/dist/decoding.cjs");
 const map = require("lib0/dist/map.cjs");
 
+// 한번만 실행 시켜주는 함수 기능들
 const debounce = require("lodash.debounce");
 
 const callbackHandler = require("./callback.js").callbackHandler;
@@ -19,16 +20,22 @@ const wsReadyStateOpen = 1;
 const wsReadyStateClosing = 2; // eslint-disable-line
 const wsReadyStateClosed = 3; // eslint-disable-line
 
+// 방
 const rooms = new Map();
+// 타이머 관리
 const timers = new Map();
+// 자원제거이벤트 함수
 const timeoutHandles = new Map();
 
 // disable gc when using snapshots!
 const gcEnabled = process.env.GC !== "false" && process.env.GC !== "0";
+
+// 저장하고 싶으면 사용
 const persistenceDir = process.env.YPERSISTENCE;
 /**
  * @type {{bindState: function(string,WSSharedDoc):void, writeState:function(string,WSSharedDoc):Promise<any>, provider: any}|null}
  */
+// 영속성을 위한 디스크에 저장 위치 -> 원하면 써라...
 let persistence = null;
 if (typeof persistenceDir === "string") {
     console.info('Persisting documents to "' + persistenceDir + '"');
@@ -87,7 +94,7 @@ const updateHandler = (update, origin, doc) => {
     const message = encoding.toUint8Array(encoder);
     doc.conns.forEach((_, conn) => send(doc, conn, message));
 };
-/**
+/** Symbol 아이디 부여
  * @param {int} length
  */
 const generateClientId = (length) => {
@@ -101,7 +108,7 @@ const generateClientId = (length) => {
     return result;
 };
 
-/**
+/** 방 객체 삭제
  * @param {Map} map
  * @param {string} roomName
  * @param {string} clientId
@@ -115,7 +122,7 @@ const deletemember = (map, roomName, clientId) => {
     }
 };
 
-/**
+/** 방에 대한 인원 추가
  * @param {Map} map
  * @param {string} roomName
  * @param {string} data
@@ -130,7 +137,7 @@ const addDataToRoom = (map, roomName, data) => {
         map.set(roomName, newDataSet);
     }
 };
-/**
+/** 방에 관련된 콜백함수 실행하면서 조건에 맞게 자원 삭제
  * @param {WSSharedDoc} doc
  * @param {Map} map
  * @param {string} mapkey
@@ -163,7 +170,7 @@ const removeDoc = (doc, map, mapkey, roomName) => {
 
     timeoutHandles.set(roomName, timeoutHandle);
 };
-
+// 공유자원 클래스
 class WSSharedDoc extends Y.Doc {
     /**
      * @param {string} name
@@ -181,7 +188,7 @@ class WSSharedDoc extends Y.Doc {
          */
         this.awareness = new awarenessProtocol.Awareness(this);
         this.awareness.setLocalState(null);
-        /**
+        /** 상태가 변하면 상태자원을 관리하는곳에 변화한 상태를 알려주고 그것을 일정 청크사이즈만큼 인코딩과 디코딩하여 상태 지속적 업데이트
          * @param {{ added: Array<number>, updated: Array<number>, removed: Array<number> }} changes
          * @param {Object | null} conn Origin is the connection that made the change
          */
@@ -199,6 +206,7 @@ class WSSharedDoc extends Y.Doc {
                 }
             }
             // broadcast awareness update
+            //
             const encoder = encoding.createEncoder();
             encoding.writeVarUint(encoder, messageAwareness);
             encoding.writeVarUint8Array(
@@ -224,7 +232,7 @@ class WSSharedDoc extends Y.Doc {
 }
 /**
  * Gets a Y.Doc by name, whether in memory or on disk
- *
+ * Docs에서 방이름에 대해 바인딩하고 지속적으로 공유할 자원으로서 기록한다.
  * @param {string} docname - the name of the Y.Doc to find or create
  * @param {boolean} gc - whether to allow gc on the doc (applies only when created)
  * @return {WSSharedDoc}
@@ -242,7 +250,7 @@ const getYDoc = (docname, gc = true) =>
 
 exports.getYDoc = getYDoc;
 
-/**
+/** 프로토콜을 이용해 동기화를 잡는다. 메시지를 쏘고 encoding과 decoding을 반복하며 상태관리자원을 변화 시킨다.
  * @param {any} conn
  * @param {WSSharedDoc} doc
  * @param {Uint8Array} message
@@ -279,7 +287,7 @@ const messageListener = (conn, doc, message) => {
     }
 };
 
-/**
+/** // 해당 doc에 대한 커넥션닫기
  * @param {WSSharedDoc} doc
  * @param {any} conn
  */
@@ -355,6 +363,7 @@ exports.ServersetupWSConnection = (
     // Check if connection is still alive
     let pongReceived = true;
 
+    // 핑퐁 알고리즘 도입
     const pingInterval = setInterval(() => {
         if (!pongReceived) {
             if (doc.conns.has(conn)) {
@@ -381,10 +390,10 @@ exports.ServersetupWSConnection = (
     conn.on("pong", () => {
         pongReceived = true;
     });
-    // put the following in a variables in a block so the interval handlers don't keep in in
     // scope
     {
         // send sync step 1
+        // 외부에서 export될 함수이므로 따로 Sync를 맞추는 동기화 함수를 연속적으로 실행되게 해주고 상태를 관리해준다.
         const encoder = encoding.createEncoder();
         encoding.writeVarUint(encoder, messageSync);
         syncProtocol.writeSyncStep1(encoder, doc);
@@ -409,6 +418,8 @@ exports.ServersetupWSConnection = (
  * @param {any} req
  * @param {any} opts
  */
+
+// 타이머에 대한 자원관리는 따로 해준다.
 exports.TimersetupWSConnection = (
     conn,
     req,
