@@ -101,7 +101,9 @@ const addNewNodesAndEdges = (clickedNode, newNodeLabels, clickedNodeId, ymapRef)
             x: x,
             y: y,
             physics: false,
-            color: NORMAL_NODE_COLOR,
+            // color: NORMAL_NODE_COLOR,
+            // NOTE: 루트 노드에 AI추천노드 요청 시의 예외처리 필요할듯?
+            group: JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`)).group,
             widthConstraint: { minimum: 50, maximum: 100 },
             heightConstraint: { minimum: 50, maximum: 100 },
         };

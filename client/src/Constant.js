@@ -19,7 +19,7 @@ export const mindMapOptions = {
         shape: "circle",
         size: 30,
         mass: 1,
-        color: "#FBD85D",
+        // color: "#FBD85D",
         widthConstraint: {
             maximum: 100,
         },
