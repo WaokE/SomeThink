@@ -103,7 +103,15 @@ function TopBar({
 
     return (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1 }}>
-            <AppBar position="static" style={{ backgroundColor: "#FBEEAC", marginBottom: "10px" }}>
+            <AppBar
+                position="static"
+                style={{
+                    backgroundColor: "#FBEEAC",
+                    marginBottom: "10px",
+                    height: "10vh",
+                    justifyContent: "center",
+                }}
+            >
                 <Toolbar className="top-bar-container">
                     <div className="topbar-menu">
                         <p
