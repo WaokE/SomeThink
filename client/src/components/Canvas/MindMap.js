@@ -858,9 +858,9 @@ const MindMap = ({
 
     const handleZoomEvent = () => {
         networkRef.current.on("zoom", function () {
-            if (networkRef.current.getScale() <= 0.5) {
+            if (networkRef.current.getScale() <= 0.4) {
                 networkRef.current.moveTo({
-                    scale: 0.5,
+                    scale: 0.4,
                     position: lastZoomPositionRef.current,
                 });
             }
@@ -1189,6 +1189,15 @@ const MindMap = ({
                                     -domtocanvas.x * 200,
                                     -domtocanvas.y * 200
                                 );
+                            });
+                            network.once("afterDrawing", () => {
+                                network.focus("1", {
+                                    scale: 0.4,
+                                    animation: {
+                                        duration: 1000,
+                                        easingFunction: "easeInOutQuad",
+                                    },
+                                });
                             });
                         }}
                     />
