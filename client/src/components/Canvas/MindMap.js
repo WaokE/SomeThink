@@ -620,8 +620,8 @@ const MindMap = ({
         }
 
         newEdgeList.forEach((edge) => {
-            const from = edge.split(" ")[1];
-            const to = edge.split(" ")[3];
+            const from = Number(edge.split(" ")[1]);
+            const to = Number(edge.split(" ")[3]);
             ymapRef.current.set(
                 `Edge ${from} to ${to}`,
                 JSON.stringify({
@@ -920,8 +920,11 @@ const MindMap = ({
 
         setUserActionStack((prev) => {
             if (willDeleteNode) {
+                // 되돌리기 시 하이라이트된 노드들의 색상을 지우기 위해
+                let willDeleteNodeobject = JSON.parse(willDeleteNode);
+                delete willDeleteNodeobject.color;
                 let lastAction = prev[prev.length - 1];
-                lastAction.deletedNodes.push(JSON.parse(willDeleteNode));
+                lastAction.deletedNodes.push(willDeleteNodeobject);
                 prev[prev.length - 1] = lastAction;
                 return [...prev];
             } else {
