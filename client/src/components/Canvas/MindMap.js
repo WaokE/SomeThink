@@ -566,6 +566,7 @@ const MindMap = ({
 
             ymapRef.current.set(`Node 1`, JSON.stringify(rootNode));
             ymapRef.current.set("RootQuadrant", 0);
+            ymapRef.current.set("GroupCount", 0);
         }
     };
 
