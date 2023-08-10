@@ -1,13 +1,20 @@
-import React, { useState, useEffect, useRef } from "react";
+import * as React from "react";
+import { useState, useEffect, useRef } from "react";
+import { styled, useTheme } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import Drawer from "@mui/material/Drawer";
+import CssBaseline from "@mui/material/CssBaseline";
+import MuiAppBar from "@mui/material/AppBar";
+import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import Slide from "@mui/material/Slide";
 import ImageSearchIcon from "@mui/icons-material/ImageSearch";
-import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
-import IconButton from "@mui/material/IconButton";
 
 const styles = {
     ImageSearch: {
@@ -34,7 +41,37 @@ const styles = {
     },
 };
 
+const drawerWidth = "20%";
+const AppBar = styled(MuiAppBar, {
+    shouldForwardProp: (prop) => prop !== "open",
+})(({ theme, open }) => ({
+    backgroundColor: "transparent", // 배경 색상을 투명으로 설정합니다
+    boxShadow: "none", // 그림자를 없애줍니다
+    transition: theme.transitions.create(["margin", "width"], {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+    }),
+    ...(open && {
+        width: `calc(100% - ${drawerWidth})`,
+        marginLeft: `${drawerWidth}px`,
+        transition: theme.transitions.create(["margin", "width"], {
+            easing: theme.transitions.easing.easeOut,
+            duration: theme.transitions.duration.enteringScreen,
+        }),
+    }),
+}));
+
+const DrawerHeader = styled("div")(({ theme }) => ({
+    display: "flex",
+    alignItems: "center",
+    padding: theme.spacing(0, 1),
+    // necessary for content to be below app bar
+    ...theme.mixins.toolbar,
+    justifyContent: "flex-end",
+}));
+
 const ImageSearch = ({ style, ...props }) => {
+    const theme = useTheme();
     const [img, setImg] = useState("");
     const [res, setRes] = useState([]);
     const searchWordRef = useRef(null);
@@ -55,9 +92,10 @@ const ImageSearch = ({ style, ...props }) => {
 
     const submit = () => {
         searchWordRef.current = img;
-
-        if (img.includes("http")) {
+        if (img.includes("http") || img.includes("data:image")) {
             props.createImage(img, "");
+
+            handleDrawerClose();
         } else {
             fetchRequest();
         }
@@ -65,6 +103,7 @@ const ImageSearch = ({ style, ...props }) => {
     };
 
     const handleCreateImage = (url, searchWord) => {
+        handleDrawerClose();
         props.createImage(url, searchWord);
     };
 
@@ -77,16 +116,65 @@ const ImageSearch = ({ style, ...props }) => {
         }
     };
 
-    const handleHideImageSearch = () => {
+    const handleDrawerOpen = () => {
+        props.setIsImageSearchVisible(true);
+    };
+
+    const handleDrawerClose = () => {
+        setRes([]);
+        setImg("");
         props.setIsImageSearchVisible(false);
     };
 
     return (
-        <Slide direction="right" in={props.isImageSearchVisible} mountOnEnter unmountOnExit>
-            <Box sx={{ ...styles.ImageSearch, ...style }}>
-                <IconButton onClick={handleHideImageSearch}>
-                    <ArrowBackRoundedIcon />
-                </IconButton>
+        <Box sx={{ display: "flex" }}>
+            <CssBaseline />
+            <IconButton
+                color="primary" // 버튼의 색상을 기본 테마 색상으로 설정합니다 (파란색)
+                aria-label="open drawer"
+                onClick={handleDrawerOpen}
+                edge="start"
+                sx={{
+                    width: "6vh",
+                    height: "10vh",
+                    position: "fixed",
+                    left: "0", // 좌측 가운데로 이동하도록 설정합니다
+                    marginLeft: "2vh",
+                    bottom: "45%",
+                    transform: "translateX(-50%)", // 가운데 정렬을 위해 왼쪽으로 이동합니다
+                    ...(props.isImageSearchVisible && { display: "none" }),
+                    "&:hover": {
+                        backgroundColor: "white",
+                    },
+                    border: "1px solid",
+                    borderColor: "#999999",
+                    borderRadius: "0 50% 50% 0",
+                    backgroundColor: "#fffff6",
+                    color: "#F1C93B",
+                    zIndex: "9999",
+                }}
+            >
+                <AddPhotoAlternateIcon />
+            </IconButton>
+            <Drawer
+                sx={{
+                    width: drawerWidth,
+                    flexShrink: 0,
+                    "& .MuiDrawer-paper": {
+                        width: drawerWidth,
+                        boxSizing: "border-box",
+                    },
+                }}
+                variant="persistent"
+                anchor="left"
+                open={props.isImageSearchVisible}
+            >
+                <DrawerHeader>
+                    <IconButton onClick={handleDrawerClose}>
+                        {theme.direction === "ltr" ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+                    </IconButton>
+                </DrawerHeader>
+                <Divider />
                 <Box sx={styles.inputBox}>
                     <TextField
                         sx={{ width: "80%" }}
@@ -117,8 +205,8 @@ const ImageSearch = ({ style, ...props }) => {
                         );
                     })}
                 </ImageList>
-            </Box>
-        </Slide>
+            </Drawer>
+        </Box>
     );
 };
 

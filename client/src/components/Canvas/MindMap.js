@@ -1,4 +1,16 @@
 //  node ./node_modules/y-websocket/bin/server.js
+import {
+    colors,
+    mindMapOptions,
+    rootNode,
+    MAX_STACK_LENGTH,
+    ROOT_NODE_COLOR,
+    NORMAL_NODE_COLOR,
+    BOOKMARK_ICON,
+    throttle,
+    DECIMAL_PLACES,
+} from "../../Constant";
+
 import Graph from "react-graph-vis";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import TopBar from "../TopBar/TopBar";
@@ -20,7 +32,6 @@ import {
     handleClickOutside,
     handleCanvasDrag,
     handleAddTextNode,
-    handleNodeContextMenu,
     handleNodeDragging,
     makeHandleMemoChange,
     handleMouseWheel,
@@ -30,7 +41,6 @@ import {
 } from "./EventHandler";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
-import { BOOKMARK_OFFSET, BOOKMARK_SIZE } from "./EventHandler";
 
 import NodeContextMenu from "../ContextMenu/NodeContextMenu";
 import EdgeContextMenu from "../ContextMenu/EdgeContextMenu";
@@ -43,6 +53,8 @@ import AlertToast from "../ToastMessage/Alert";
 import InformationToast from "../ToastMessage/Information";
 import GraphToMarkdown from "./MarkDown";
 import { SnackbarProvider } from "notistack";
+import HighLighter from "./HighLighter";
+import { useLocation } from "react-router-dom";
 
 import "./MindMap.css";
 
@@ -75,123 +87,14 @@ const MindMap = ({
     speakingUserName,
     isLoading,
 }) => {
-    const ydocRef = useRef(null);
+    const ydocRef = useRef(new Y.Doc());
     const ymapRef = useRef(null);
     const networkRef = useRef(null);
     const mindMapRef = useRef(null);
 
     const [selectedImage, setSelectedImage] = useState(false);
 
-    const colors = [
-        "#FF5733", // 빨간색
-        "#33A7FF", // 파란색
-        "#9A33FF", // 보라색
-        "#FF33E4", // 분홍색
-        "#33FFC4", // 청록색
-        "#336DFF", // 하늘색
-        "#FF33A9", // 자홍색
-        "#33FF49", // 녹색
-        "#FF8C33", // 적갈색
-        "#9AFF33", // 연두색
-    ];
-
-    const MAX_STACK_LENGTH = 10;
-
-    let options = {
-        layout: {
-            hierarchical: false,
-        },
-        nodes: {
-            shape: "circle",
-            size: 30,
-            mass: 1,
-            color: "#FBD85D",
-            widthConstraint: {
-                maximum: 100,
-            },
-            font: {
-                face: "MainFont",
-            },
-        },
-        edges: {
-            arrows: {
-                to: {
-                    enabled: false,
-                },
-            },
-            width: 2,
-            color: "#000000",
-        },
-        physics: {
-            enabled: false,
-        },
-        interaction: {
-            multiselect: false,
-            zoomView: false,
-        },
-        manipulation: {
-            addEdge: (data, callback) => {},
-        },
-    };
-
-    const templateNodes = [
-        {
-            id: 1,
-            label: "start",
-            x: 0,
-            y: 0,
-            physics: false,
-            fixed: true,
-            color: "#f5b252",
-            widthConstraint: { minimum: 100, maximum: 200 }, // 너비를 100으로 고정
-            heightConstraint: { minimum: 100, maximum: 200 }, // 높이를 100으로 고정
-            font: { size: 30 },
-        },
-        {
-            id: 2,
-            label: "노드를 우클릭하여 메뉴를 열 수 있습니다.",
-            x: 100,
-            y: 100,
-            physics: false,
-            fixed: true,
-            color: "#FBD85D",
-            shape: "box",
-            widthConstraint: 100,
-        },
-        {
-            id: 3,
-            label: "노드를 더블클릭하여 키워드를 수정할 수 있습니다.",
-            x: -100,
-            y: 100,
-            physics: false,
-            fixed: true,
-            color: "#FBD85D",
-            shape: "box",
-            widthConstraint: 100,
-        },
-        {
-            id: 4,
-            label: "노드를 드래그하여 이동할 수 있습니다.",
-            x: 100,
-            y: -100,
-            physics: false,
-            fixed: true,
-            color: "#FBD85D",
-            shape: "box",
-            widthConstraint: 100,
-        },
-        {
-            id: 5,
-            label: "하단 메뉴를 통해 이미지와 텍스트, 노드를 쉽게 추가할 수 있습니다.",
-            x: -100,
-            y: -100,
-            physics: false,
-            fixed: true,
-            color: "#FBD85D",
-            shape: "box",
-            widthConstraint: 100,
-        },
-    ];
+    let options = { ...mindMapOptions };
 
     if (!selectedImage) {
         options = {
@@ -231,6 +134,10 @@ const MindMap = ({
     const [clickedNodeId, setClickedNodeId] = useState("");
     const [connectedNodeLabels, setConnectedNodeLabels] = useState([]);
     const [allNodeLabels, setAllNodeLabels] = useState([]);
+    const [highLightPos, setHighLightPos] = useState(false);
+
+    const [zoomRandered, setZoomRandered] = useState({ x: 0, y: 0 });
+    const lastZoomPositionRef = useRef({ x: 0, y: 0 });
 
     const memoizedHandleClickOutside = useCallback(
         handleClickOutside(
@@ -242,6 +149,11 @@ const MindMap = ({
         [contextMenuRef, setIsNodeContextMenuVisible]
     );
 
+    const location = useLocation();
+    const { keyword } = location.state || {}; // location.state가 null일 경우를 대비하여 기본 객체를 생성
+
+    rootNode.label = [keyword];
+
     const openNodeContextMenu = (event) => {
         const VisEvent = event;
         const DOMEvent = event.event;
@@ -250,11 +162,6 @@ const MindMap = ({
         const selectedNode = networkRef.current.getNodeAt(VisEvent.pointer.DOM);
         const selectedEdge = networkRef.current.getEdgeAt(VisEvent.pointer.DOM);
         DOMEvent.preventDefault();
-
-        // 북마크 위에서 우클릭 시
-        if (ymapRef.current.get(`BookMark ${selectedNode}`) !== undefined) {
-            return;
-        }
 
         // 노드 위에서 우클릭 시
         if (selectedNode !== undefined) {
@@ -287,7 +194,7 @@ const MindMap = ({
             } else {
                 selectedNodeObject.color = {
                     border: colors[indexOfUser],
-                    background: "#FBD85D",
+                    // background: NORMAL_NODE_COLOR,
                 };
             }
             selectedNodeObject.owner = tempUserId;
@@ -311,37 +218,39 @@ const MindMap = ({
         }
     };
 
-    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-    const [windowHeight, setWindowHeight] = useState(window.innerHeight);
-
     useEffect(() => {
         const handleResize = () => {
-            setWindowWidth(window.innerWidth);
-            setWindowHeight(window.innerHeight);
+            networkRef.current.redraw();
         };
-
-        // 컴포넌트가 마운트될 때와 사이즈 변경 시에 이벤트 핸들러를 등록합니다.
         window.addEventListener("resize", handleResize);
 
-        // 컴포넌트가 언마운트될 때 이벤트 핸들러를 해제합니다.
         return () => {
             window.removeEventListener("resize", handleResize);
         };
     }, []);
 
     useEffect(() => {
-        ydocRef.current = new Y.Doc();
+        // ydocRef.current = new Y.Doc();
+        const storedSessionId = sessionStorage.getItem("sessionId");
+        const newSessionId = storedSessionId ? storedSessionId : sessionId;
+        sessionStorage.setItem("sessionId", newSessionId);
         const provider = new WebsocketProvider(
             "wss://somethink.online/room",
-            sessionId,
+            newSessionId,
             ydocRef.current
         );
-        // const provider = new WebsocketProvider("ws://localhost:1234", sessionId, ydocRef.current);
+        // const provider = new WebsocketProvider(
+        //     "ws://localhost:1234",
+        //     newSessionId,
+        //     ydocRef.current
+        // );
         ymapRef.current = ydocRef.current.getMap("MindMap");
-        // ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
-        // ymapRef.current.set("RootQuadrant", 0);
 
         ymapRef.current.observe((event) => {
+            if (ymapRef.current.get(`Node 1`)) {
+                rootNode.label = JSON.parse(ymapRef.current.get(`Node 1`)).label;
+                console.log("rootNode label", rootNode.label);
+            }
             const updatedGraph = {
                 nodes: [],
                 edges: [],
@@ -360,9 +269,6 @@ const MindMap = ({
                 } else if (key.startsWith("Edge")) {
                     const edge = JSON.parse(value);
                     updatedGraph.edges.push(edge);
-                } else if (key.startsWith("BookMark")) {
-                    const bookMark = JSON.parse(value);
-                    updatedGraph.nodes.push(bookMark);
                 } else if (key === "Memo") {
                     updatedMemo.memo = value;
                 } else if (key.startsWith("Mouse")) {
@@ -394,14 +300,12 @@ const MindMap = ({
         if (userName && ymapRef.current && !ymapRef.current.has(userName)) {
             ymapRef.current.set(userName, true);
         }
-        console.log("handleSessionJoin");
     }, [userName]);
 
     const handleSessionLeave = useCallback(() => {
         if (userName && ymapRef.current && ymapRef.current.has(userName)) {
             ymapRef.current.delete(userName);
         }
-        console.log("handleSessionLeave");
     }, [userName]);
 
     useEffect(() => {
@@ -431,27 +335,14 @@ const MindMap = ({
         return userList;
     }, []);
 
-    const throttle = (callback, delay) => {
-        let previousCall = new Date().getTime();
-        return function () {
-            const time = new Date().getTime();
-
-            if (time - previousCall >= delay) {
-                previousCall = time;
-                callback.apply(null, arguments);
-            }
-        };
-    };
-
     const handleMouseMove = throttle((e) => {
-        console.log("event!!!");
         if (networkRef.current !== null) {
             const coord = networkRef.current.DOMtoCanvas({
                 x: e.clientX,
                 y: e.clientY,
             });
-            const nx = coord.x;
-            const ny = coord.y;
+            const nx = parseFloat(coord.x.toFixed(DECIMAL_PLACES));
+            const ny = parseFloat(coord.y.toFixed(DECIMAL_PLACES));
             ymapRef.current.set(
                 `Mouse ${userName}`,
                 JSON.stringify({ x: nx, y: ny, id: userName })
@@ -459,14 +350,25 @@ const MindMap = ({
         }
     }, 10);
 
+    const pushUserActionStack = (actionObject) => {
+        setUserActionStack((prev) => {
+            // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
+            if (prev.length >= MAX_STACK_LENGTH) {
+                setUserActionStackPointer(prev.length - 1);
+                return [...prev.slice(1), actionObject];
+            }
+            // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
+            else {
+                setUserActionStackPointer(prev.length);
+                return [...prev, actionObject];
+            }
+        });
+    };
+
     const handleUserSelect = (event) => {
         const tempUserId = userName;
         const indexOfUser = getUserListFromYMap().indexOf(tempUserId);
 
-        if (ymapRef.current.get(`BookMark ${event.nodes[0]}`) !== undefined) {
-            checkPrevSelected(tempUserId);
-            return;
-        }
         if (isCreatingEdge) {
             checkPrevSelected(tempUserId);
             if (event.nodes.length > 0) {
@@ -538,7 +440,7 @@ const MindMap = ({
             } else {
                 selectedNode.color = {
                     border: colors[indexOfUser],
-                    background: "#FBD85D",
+                    // background: NORMAL_NODE_COLOR,
                 };
             }
             selectedNode.owner = tempUserId;
@@ -569,9 +471,10 @@ const MindMap = ({
                 if (userData.label) {
                     userData.borderWidth = 1;
                     if (userData.id === 1) {
-                        userData.color = "#f5b252";
+                        userData.color = ROOT_NODE_COLOR;
                     } else {
-                        userData.color = "#FBD85D";
+                        // userData.color = NORMAL_NODE_COLOR;
+                        delete userData.color;
                     }
                     ymapRef.current.set(`Node ${userData.id}`, JSON.stringify(userData));
                 }
@@ -591,7 +494,6 @@ const MindMap = ({
             ((e.key === "z" || e.key === "Z") && e.ctrlKey && e.shiftKey) ||
             ((e.key === "z" || e.key === "Z") && e.metaKey && e.shiftKey)
         ) {
-            console.log("redo");
             handleRedo(
                 setAlertMessage,
                 setIsAlertMessageVisible,
@@ -605,7 +507,6 @@ const MindMap = ({
             ((e.key === "z" || e.key === "Z") && e.ctrlKey) ||
             (e.key === "z" && e.metaKey)
         ) {
-            console.log("undo");
             handleUndo(
                 setAlertMessage,
                 setIsAlertMessageVisible,
@@ -621,17 +522,37 @@ const MindMap = ({
         }
     };
 
-    const handleFocusButtonClick = () => {
+    const handleFocusButtonClick = (x, y) => {
+        setHighLightPos({ x: x, y: y });
+        lastZoomPositionRef.current = { x: x, y: y };
         networkRef.current.moveTo({
-            position: { x: 0, y: 0 },
-            scale: 1.0,
+            position: { x: x, y: y },
+            scale: 1.6,
             offset: { x: 0, y: 0 },
             animation: {
-                duration: 1000,
-                easingFunction: "easeInOutQuad",
+                duration: 600,
+                easingFunction: "easeOutCubic",
             },
         });
     };
+
+    useEffect(() => {
+        let showTimer = null;
+        let hideTimer = null;
+
+        if (highLightPos !== null) {
+            showTimer = setTimeout(() => {
+                hideTimer = setTimeout(() => {
+                    setHighLightPos(null);
+                }, 300);
+            }, 400);
+        }
+
+        return () => {
+            clearTimeout(showTimer);
+            if (hideTimer) clearTimeout(hideTimer);
+        };
+    }, [highLightPos]);
 
     const handleTextButton = () => {
         setIsCreatingText(true);
@@ -645,38 +566,17 @@ const MindMap = ({
             // Create a copy of currentUserData to preserve the original data
             const currentUserData = getUserListFromYMap();
 
-            setUserActionStack((prev) => {
-                // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
-                if (prev.length >= MAX_STACK_LENGTH) {
-                    setUserActionStackPointer(prev.length - 1);
-                    return [
-                        ...prev.slice(1),
-                        {
-                            action: "reset",
-                            prevYmap: ymapRef.current.toJSON(),
-                        },
-                    ];
-                }
-                // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
-                else {
-                    setUserActionStackPointer(prev.length);
-                    return [
-                        ...prev,
-                        {
-                            action: "reset",
-                            prevYmap: ymapRef.current.toJSON(),
-                        },
-                    ];
+            pushUserActionStack({ action: "reset", prevYmap: ymapRef.current.toJSON() });
+
+            ymapRef.current.forEach((value, key) => {
+                if (!currentUserData.includes(key)) {
+                    ymapRef.current.delete(key);
                 }
             });
 
-            ymapRef.current.clear();
-            ymapRef.current.set(`Node 1`, JSON.stringify(templateNodes[0]));
+            ymapRef.current.set(`Node 1`, JSON.stringify(rootNode));
             ymapRef.current.set("RootQuadrant", 0);
-
-            currentUserData.forEach((user) => {
-                ymapRef.current.set(user, true);
-            });
+            ymapRef.current.set("GroupCount", 0);
         }
     };
 
@@ -705,6 +605,7 @@ const MindMap = ({
                 id: `${fromNode} to ${toNode}`,
             })
         );
+        pushUserActionStack({ action: "create", createdEdge: [`Edge ${fromNode} to ${toNode}`] });
     };
 
     const sortEdgesCorrectly = (edges, createdEdge) => {
@@ -729,8 +630,8 @@ const MindMap = ({
         }
 
         newEdgeList.forEach((edge) => {
-            const from = edge.split(" ")[1];
-            const to = edge.split(" ")[3];
+            const from = Number(edge.split(" ")[1]);
+            const to = Number(edge.split(" ")[3]);
             ymapRef.current.set(
                 `Edge ${from} to ${to}`,
                 JSON.stringify({
@@ -745,12 +646,11 @@ const MindMap = ({
     const deleteEdge = () => {
         const selectedEdgeArray = [selectedEdge];
         selectedEdgeArray.forEach((edge) => {
-            console.log(edge);
-            console.log(typeof edge);
             const splitedEdge = edge.split(" ");
             const from = splitedEdge[0];
             const to = splitedEdge[2];
             ymapRef.current.delete(`Edge ${from} to ${to}`);
+            pushUserActionStack({ action: "delete", deletedEdge: [edge] });
         });
         setIsEdgeContextMenuVisible(false);
     };
@@ -790,10 +690,13 @@ const MindMap = ({
                 removeTextInput();
             } else {
                 let quadrant = "";
+                let nodeGroup;
                 if (selectedNode.id === 1) {
+                    nodeGroup = ymapRef.current.get("GroupCount");
                     quadrant = (ymapRef.current.get("RootQuadrant") % 4) + 1;
                     ymapRef.current.set("RootQuadrant", ymapRef.current.get("RootQuadrant") + 1);
                 } else {
+                    nodeGroup = selectedNode.group;
                     quadrant = checkquadrant(selectedNode.x, selectedNode.y);
                 }
                 const newNode = {
@@ -801,34 +704,12 @@ const MindMap = ({
                     label: label,
                     x: selectedNode.x + nx[quadrant - 1],
                     y: selectedNode.y + ny[quadrant - 1],
-                    color: "#FBD85D",
+                    // color: NORMAL_NODE_COLOR,
+                    group: nodeGroup,
+                    widthConstraint: { minimum: 50, maximum: 100 },
+                    heightConstraint: { minimum: 50, maximum: 100 },
                 };
-                setUserActionStack((prev) => {
-                    // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
-                    if (prev.length >= MAX_STACK_LENGTH) {
-                        setUserActionStackPointer(prev.length - 1);
-                        return [
-                            ...prev.slice(1),
-                            {
-                                action: "create",
-                                nodeId: newNode.id,
-                                newNode: newNode,
-                            },
-                        ];
-                    }
-                    // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
-                    else {
-                        setUserActionStackPointer(prev.length);
-                        return [
-                            ...prev,
-                            {
-                                action: "create",
-                                nodeId: newNode.id,
-                                newNode: newNode,
-                            },
-                        ];
-                    }
-                });
+                pushUserActionStack({ action: "create", nodeId: newNode.id, newNode: newNode });
 
                 ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
                 ymapRef.current.set(
@@ -839,6 +720,7 @@ const MindMap = ({
                         id: `${selectedNodeId} to ${nodeId}`,
                     })
                 );
+                selectedNode.id === 1 && ymapRef.current.set("GroupCount", nodeGroup + 1);
                 mindMapRef.current.focus();
 
                 removeTextInput();
@@ -873,38 +755,41 @@ const MindMap = ({
     const handleCreateImage = (url, searchWord) => {
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
 
-        const image = new Image();
-        image.crossOrigin = "Anonymous";
-        image.onload = function () {
-            const aspectRatio = image.width / image.height;
-            const newWidth = 250;
-            const newHeight = newWidth / aspectRatio;
-            const canvas = document.createElement("canvas");
-            canvas.width = newWidth;
-            canvas.height = newHeight;
-            const ctx = canvas.getContext("2d");
+        if (url.includes("data:image")) {
+            createNodeWithImage(nodeId, url, searchWord);
+        } else {
+            fetch(`/api/proxyImage?url=${encodeURIComponent(url)}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    const proxyDataUrl = data.dataUrl;
+                    createNodeWithImage(nodeId, searchWord, proxyDataUrl);
+                })
+                .catch((error) => {
+                    console.error("이미지 다운로드 및 전달 중 에러:", error);
+                    createNodeWithImage(nodeId, null, searchWord);
+                });
+        }
+    };
 
-            ctx.drawImage(image, 0, 0, newWidth, newHeight);
-
-            const dataURL = canvas.toDataURL();
-            const coord = networkRef.current.DOMtoCanvas({
-                x: window.innerWidth / 2,
-                y: window.innerHeight / 2,
-            });
-            const newNode = {
-                id: nodeId,
-                label: searchWord,
-                shape: "image",
-                image: dataURL,
-                x: coord.x,
-                y: coord.y,
-                physics: false,
-                size: 20,
-            };
-
-            ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
+    const createNodeWithImage = (nodeId, searchWord, dataUrl) => {
+        console.log("이미지 다운로드 및 전달 완료:", dataUrl);
+        const coord = networkRef.current.DOMtoCanvas({
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2,
+        });
+        const newNode = {
+            id: nodeId,
+            label: searchWord,
+            shape: "image",
+            image: dataUrl,
+            x: coord.x,
+            y: coord.y,
+            physics: false,
+            size: 50,
         };
-        image.src = url;
+
+        pushUserActionStack({ action: "create", nodeId: newNode.id, newNode: newNode });
+        ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));
     };
 
     const closeNodeContextMenu = () => {
@@ -922,33 +807,11 @@ const MindMap = ({
     const modifyNode = (nodeId, newLabel) => {
         const node = JSON.parse(ymapRef.current.get(`Node ${nodeId}`));
         if (node) {
-            setUserActionStack((prev) => {
-                // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
-                if (prev.length >= MAX_STACK_LENGTH) {
-                    setUserActionStackPointer(prev.length - 1);
-                    return [
-                        ...prev.slice(1),
-                        {
-                            action: "modify",
-                            nodeId: nodeId,
-                            prevLabel: node.label,
-                            newLabel: newLabel,
-                        },
-                    ];
-                }
-                // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
-                else {
-                    setUserActionStackPointer(prev.length);
-                    return [
-                        ...prev,
-                        {
-                            action: "modify",
-                            nodeId: nodeId,
-                            prevLabel: node.label,
-                            newLabel: newLabel,
-                        },
-                    ];
-                }
+            pushUserActionStack({
+                action: "modify",
+                nodeId: nodeId,
+                prevLabel: node.label,
+                newLabel: newLabel,
             });
             node.label = newLabel;
             ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(node));
@@ -956,33 +819,58 @@ const MindMap = ({
     };
 
     const bookMarkNode = () => {
-        let selectedNodeObject = JSON.parse(ymapRef.current.get(`Node ${selectedNode}`));
-        // 북마크가 되어있지 않다면 북마크 추가
-        if (!selectedNodeObject.bookMarked) {
-            const bookMarkId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
-            const BookMarkNode = {
-                id: bookMarkId,
-                shape: "icon",
-                icon: {
-                    face: "'FontAwesome'",
-                    code: "\uf08d",
-                    size: BOOKMARK_SIZE,
-                    color: "#EF6262",
-                },
-                x: selectedNodeObject.x,
-                y: selectedNodeObject.y - BOOKMARK_OFFSET,
-                fixed: true,
-            };
-            selectedNodeObject.bookMarked = bookMarkId;
-            ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
-            ymapRef.current.set(`BookMark ${bookMarkId}`, JSON.stringify(BookMarkNode));
+        ymapRef.current.forEach((value, key) => {
+            console.log(value);
+        });
+        const nodeKey = `Node ${selectedNode}`;
+        let selectedNodeObject = JSON.parse(ymapRef.current.get(nodeKey));
+
+        pushUserActionStack({
+            action: "bookmark",
+            nodeId: selectedNode,
+            prevBookMarked: selectedNodeObject.bookMarked,
+            newBookMarked: !selectedNodeObject.bookMarked,
+        });
+
+        // 북마크 상태 토글
+        selectedNodeObject.bookMarked = !selectedNodeObject.bookMarked;
+
+        // 북마크 상태에 따라 라벨과 폰트 설정 변경
+        const isImageShape = selectedNodeObject.shape === "image";
+        const bookmarkIconLabel = `${BOOKMARK_ICON}\n`;
+
+        if (selectedNodeObject.bookMarked) {
+            selectedNodeObject.label =
+                (isImageShape ? BOOKMARK_ICON : bookmarkIconLabel) +
+                selectedNodeObject.label +
+                "\n ";
+            selectedNodeObject.font = { multi: true };
+        } else {
+            const regex = isImageShape
+                ? new RegExp(`${BOOKMARK_ICON}|(\\n\\s)`, "g")
+                : new RegExp(`${BOOKMARK_ICON}\\n|(\\n\\s)`, "g");
+            selectedNodeObject.label = selectedNodeObject.label.replace(regex, "");
+            selectedNodeObject.font = { multi: false };
         }
-        // 북마크가 되어있다면
-        else {
-            ymapRef.current.delete(`BookMark ${selectedNodeObject.bookMarked}`);
-            selectedNodeObject.bookMarked = false;
-            ymapRef.current.set(`Node ${selectedNode}`, JSON.stringify(selectedNodeObject));
-        }
+
+        ymapRef.current.set(nodeKey, JSON.stringify(selectedNodeObject));
+    };
+
+    const handleZoomEvent = () => {
+        networkRef.current.on("zoom", function () {
+            if (networkRef.current.getScale() <= 0.5) {
+                networkRef.current.moveTo({
+                    scale: 0.5,
+                    position: lastZoomPositionRef.current,
+                });
+            }
+            if (networkRef.current.getScale() >= 1.6) {
+                networkRef.current.moveTo({
+                    scale: 1.6,
+                    position: lastZoomPositionRef.current,
+                });
+            }
+        });
     };
 
     useEffect(() => {
@@ -995,17 +883,12 @@ const MindMap = ({
             setSelectedImage(false);
         }
 
-        const handleAddNode = (event) => {
-            if (!selectedNode) {
-                return;
-            }
-            createNode(selectedNode);
-        };
-
         const handleSwitchMemo = (event) => {
             setIsMemoVisible((prev) => !prev);
         };
         const __handleMouseWheel = (event) => {
+            setZoomRandered((prev) => !prev);
+            lastZoomPositionRef.current = networkRef.current.getViewPosition();
             if (selectedNode) {
                 handleMouseWheel(event, selectedNode, ymapRef);
             }
@@ -1017,13 +900,15 @@ const MindMap = ({
         window.addEventListener("switchMemo", handleSwitchMemo);
         window.addEventListener("wheel", __handleMouseWheel);
         window.addEventListener("setTimer", __handleSetTimer);
+        networkRef.current && networkRef.current.on("zoom", handleZoomEvent);
         return () => {
             document.removeEventListener("click", handleClickOutside);
             window.removeEventListener("switchMemo", handleSwitchMemo);
             window.removeEventListener("wheel", __handleMouseWheel);
             window.removeEventListener("setTimer", __handleSetTimer);
+            networkRef.current && networkRef.current.off("zoom", handleZoomEvent);
         };
-    }, [selectedNode, memoizedHandleClickOutside, selectedImage]);
+    }, [selectedNode, memoizedHandleClickOutside, selectedImage, zoomRandered]);
 
     const deleteRecursion = (nodeId) => {
         const childNodes = Array.from(ymapRef.current.keys())
@@ -1045,8 +930,11 @@ const MindMap = ({
 
         setUserActionStack((prev) => {
             if (willDeleteNode) {
+                // 되돌리기 시 하이라이트된 노드들의 색상을 지우기 위해
+                let willDeleteNodeobject = JSON.parse(willDeleteNode);
+                delete willDeleteNodeobject.color;
                 let lastAction = prev[prev.length - 1];
-                lastAction.deletedNodes.push(JSON.parse(willDeleteNode));
+                lastAction.deletedNodes.push(willDeleteNodeobject);
                 prev[prev.length - 1] = lastAction;
                 return [...prev];
             } else {
@@ -1054,8 +942,6 @@ const MindMap = ({
             }
         });
 
-        const willDeleteNodeObject = JSON.parse(willDeleteNode);
-        ymapRef.current.delete(`BookMark ${willDeleteNodeObject.bookMarked}`);
         ymapRef.current.delete(`Node ${nodeId}`);
         ymapRef.current.get(`User ${tempUserId} selected`) === `Node ${nodeId}` &&
             ymapRef.current.delete(`User ${tempUserId} selected`);
@@ -1068,31 +954,7 @@ const MindMap = ({
             return;
         }
 
-        setUserActionStack((prev) => {
-            // 스택의 길이가 최대 길이를 초과할 경우, 가장 오래된 기록을 삭제
-            if (prev.length >= MAX_STACK_LENGTH) {
-                setUserActionStackPointer(prev.length - 1);
-                return [
-                    ...prev.slice(1),
-                    {
-                        action: "delete",
-                        deletedNodes: [],
-                    },
-                ];
-            }
-            // 새로운 동작을 하였으므로, 스택 포인터를 스택의 가장 마지막 인덱스로 설정
-            else {
-                setUserActionStackPointer(prev.length);
-                return [
-                    ...prev,
-                    {
-                        action: "delete",
-                        deletedNodes: [],
-                    },
-                ];
-            }
-        });
-
+        pushUserActionStack({ action: "delete", deletedNodes: [] });
         deleteRecursion(nodeId);
     };
 
@@ -1103,15 +965,13 @@ const MindMap = ({
 
         const clickedNodeId = nodes[0];
         setClickedNodeId(clickedNodeId);
-        console.log("clickedNodeId:", clickedNodeId);
         const clickedNode = JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`));
-        console.log("x:", clickedNode.x, "y:", clickedNode.y);
         if (!clickedNode) {
             return;
         }
 
         const connectedNodeLabels = getConnectedNodeLabels(clickedNodeId, ymapRef);
-        const allNodeLabels = getAllNodeLabels(ymapRef);
+        const allNodeLabels = getAllNodeLabels(ymapRef, clickedNodeId);
         const newNodeLabels = await fetchNewNodeLabels(connectedNodeLabels, allNodeLabels);
 
         if (newNodeLabels.length === 0) {
@@ -1151,7 +1011,7 @@ const MindMap = ({
     const [MindMap, setMindMap] = useState(() => {
         return {
             graph: {
-                nodes: templateNodes,
+                nodes: [rootNode],
                 edges: [],
             },
         };
@@ -1169,17 +1029,18 @@ const MindMap = ({
                         const div = clonedDocument.createElement("div");
                         div.innerText = textArea.value;
                         div.style.position = "fixed";
-                        div.style.top = "10vh";
+                        div.style.top = "11vh";
                         div.style.right = "2vh";
-                        div.style.width = "250px";
-                        div.style.height = "15%";
+                        div.style.width = "22%";
+                        div.style.height = "20%";
                         div.style.backgroundColor = "#fbeeac";
                         div.style.border = "2px solid #e8c55b";
                         div.style.borderRadius = "5px";
                         div.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)";
                         div.style.padding = "15px";
                         div.style.fontFamily = '"Noto Sans KR", sans-serif';
-                        div.style.fontSize = "16px";
+                        div.style.fontSize = "22px";
+                        div.style.fontWeight = "bold";
                         div.style.lineHeight = "1.6";
                         div.style.color = "#333";
                         div.style.zIndex = "1";
@@ -1200,210 +1061,258 @@ const MindMap = ({
     const { nodes, edges } = graph;
 
     return (
-        <div
-            onKeyDown={handleKeyPress}
-            onMouseMove={(e) => handleMouseMove(e)}
-            style={{
-                position: "absolute",
-                width: "100vw",
-                height: "100vh",
-                zIndex: 0,
-            }}
-            tabIndex={0}
-            ref={mindMapRef}
-        >
-            <UserMouseMove
-                userMouseData={mouseCoordinates}
-                networkRef={networkRef}
-                userName={userName}
-                userList={getUserListFromYMap()}
-            />
-            <TopBar
-                onExportClick={handleExportClick}
-                sessionId={sessionId}
-                leaveSession={leaveSession}
-                toggleAudio={toggleAudio}
-                audioEnabled={audioEnabled}
-                userList={getUserListFromYMap()}
-                userName={userName}
-                speakingUserName={speakingUserName}
-                ymapRef={ymapRef}
-                isLoading={isLoading}
-            />
-            <div ref={captureRef} style={{ width: "100%", height: "100%" }}>
-                <div type="text" value={sessionId} style={{ position: "absolute", zIndex: 1 }} />
-                <div
-                    className={`
-                ${isTimerVisible ? "visible" : "hidden"}`}
-                >
-                    <Timer
-                        sessionId={sessionId}
-                        isTimerRunning={isTimerRunning}
-                        setIsTimerRunning={setIsTimerRunning}
-                    />
-                </div>
-                {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
-                <Graph
-                    graph={MindMap.graph}
-                    options={options}
-                    events={{
-                        ...MindMap.events,
-                        dragStart: (events) =>
-                            handleNodeDragStart(
-                                events,
-                                ymapRef,
-                                setUserActionStack,
-                                setUserActionStackPointer
-                            ),
-                        dragging: (events) => handleNodeDragging(events, ymapRef, userName),
-                        dragEnd: (events) =>
-                            handleNodeDragEnd(events, ymapRef, setSelectedNode, setUserActionStack),
-                        drag: handleCanvasDrag,
-                        click: (events) => {
-                            handleAddTextNode(
-                                events,
-                                isCreatingText,
-                                ymapRef,
-                                setSelectedNode,
-                                setSelectedEdge,
-                                setIsCreatingText,
-                                networkRef
-                            );
-                        },
-                        select: handleUserSelect,
-                        oncontext: openNodeContextMenu,
-                        doubleClick: (events) =>
-                            handleDoubleClick(
-                                events,
-                                ymapRef,
-                                modifyNode,
-                                setAlertMessage,
-                                setIsAlertMessageVisible,
-                                networkRef
-                            ),
-                    }}
-                    style={{ height: "100%", width: "100%" }}
-                    getNetwork={(network) => {
-                        network.on("initRedraw", () => {
-                            networkRef.current = network;
-                        });
-                    }}
+        <div className="mind-map-container">
+            <div
+                onMouseMove={(e) => handleMouseMove(e)}
+                style={{
+                    position: "absolute",
+                    width: "100vw",
+                    height: "100vh",
+                    zIndex: 0,
+                }}
+                tabIndex={0}
+                ref={mindMapRef}
+            >
+                <UserMouseMove
+                    userMouseData={mouseCoordinates}
+                    networkRef={networkRef}
+                    userName={userName}
+                    userList={getUserListFromYMap()}
                 />
-                {isNodeContextMenuVisible && (
+                <TopBar
+                    onExportClick={handleExportClick}
+                    sessionId={sessionId}
+                    leaveSession={leaveSession}
+                    toggleAudio={toggleAudio}
+                    audioEnabled={audioEnabled}
+                    userList={getUserListFromYMap()}
+                    userName={userName}
+                    speakingUserName={speakingUserName}
+                    ymapRef={ymapRef}
+                    isLoading={isLoading}
+                    setInfoMessage={setInfoMessage}
+                    setIsInfoMessageVisible={setIsInfoMessageVisible}
+                />
+                <div
+                    ref={captureRef}
+                    style={{ width: "100%", height: "100%" }}
+                    onKeyDown={handleKeyPress}
+                >
                     <div
-                        ref={contextMenuRef}
-                        className="context-menu"
-                        style={{
-                            position: "absolute",
-                            left: contextMenuPos.xPos,
-                            top: contextMenuPos.yPos,
-                        }}
+                        type="text"
+                        value={sessionId}
+                        style={{ position: "absolute", zIndex: 1 }}
+                    />
+                    <div
+                        className={`
+                ${isTimerVisible ? "visible" : "hidden"}`}
                     >
-                        <NodeContextMenu
-                            selectedNode={selectedNode}
-                            onClose={closeNodeContextMenu}
-                            deleteNode={deleteNodes}
-                            createNode={createNode}
-                            bookMarkNode={bookMarkNode}
-                            setIsCreatingEdge={setIsCreatingEdge}
-                            setFromNode={setFromNode}
-                            handleNodeSelect={handleNodeSelect}
-                            setInfoMessage={setInfoMessage}
-                            setIsInfoMessageVisible={setIsInfoMessageVisible}
+                        <Timer
+                            sessionId={sessionId}
+                            isTimerRunning={isTimerRunning}
+                            setIsTimerRunning={setIsTimerRunning}
                         />
                     </div>
+                    <Graph
+                        graph={MindMap.graph}
+                        options={options}
+                        events={{
+                            ...MindMap.events,
+                            dragStart: (events) =>
+                                handleNodeDragStart(
+                                    events,
+                                    ymapRef,
+                                    setUserActionStack,
+                                    setUserActionStackPointer
+                                ),
+                            dragging: (events) => handleNodeDragging(events, ymapRef, userName),
+                            dragEnd: (events) =>
+                                handleNodeDragEnd(
+                                    events,
+                                    ymapRef,
+                                    networkRef,
+                                    setSelectedNode,
+                                    setUserActionStack,
+                                    lastZoomPositionRef
+                                ),
+                            drag: handleCanvasDrag,
+                            click: (events) => {
+                                handleAddTextNode(
+                                    events,
+                                    isCreatingText,
+                                    ymapRef,
+                                    setSelectedNode,
+                                    setSelectedEdge,
+                                    setIsCreatingText,
+                                    setIsImageSearchVisible,
+                                    setIsMarkdownVisible,
+                                    networkRef
+                                );
+                            },
+                            select: handleUserSelect,
+                            oncontext: openNodeContextMenu,
+                            doubleClick: (events) =>
+                                handleDoubleClick(
+                                    events,
+                                    ymapRef,
+                                    modifyNode,
+                                    setAlertMessage,
+                                    setIsAlertMessageVisible,
+                                    networkRef
+                                ),
+                        }}
+                        style={{ height: "100%", width: "100%" }}
+                        getNetwork={(network) => {
+                            network.on("initRedraw", () => {
+                                networkRef.current = network;
+                            });
+                            network.on("beforeDrawing", (ctx) => {
+                                let patternCanvas = document.createElement("canvas");
+                                patternCanvas.width = 60; // 작은 점 이미지의 가로 크기
+                                patternCanvas.height = 60; // 작은 점 이미지의 세로 크기
+                                let patternCtx = patternCanvas.getContext("2d");
+
+                                // 작은 점 이미지 그리기
+                                patternCtx.fillStyle = "gray"; // 점의 색상
+                                patternCtx.fillRect(0, 0, 3, 3); // 점의 크기
+
+                                let pattern = ctx.createPattern(patternCanvas, "repeat");
+
+                                var domtocanvas = network.DOMtoCanvas({
+                                    x: window.screenX,
+                                    y: window.screenY,
+                                });
+                                ctx.fillStyle = pattern;
+                                ctx.fillRect(
+                                    domtocanvas.x * 100,
+                                    domtocanvas.y * 100,
+                                    -domtocanvas.x * 200,
+                                    -domtocanvas.y * 200
+                                );
+                            });
+                        }}
+                    />
+                    {isNodeContextMenuVisible && (
+                        <div
+                            ref={contextMenuRef}
+                            className="context-menu"
+                            style={{
+                                position: "absolute",
+                                left: contextMenuPos.xPos,
+                                top: contextMenuPos.yPos,
+                            }}
+                        >
+                            <NodeContextMenu
+                                selectedNode={selectedNode}
+                                onClose={closeNodeContextMenu}
+                                deleteNode={deleteNodes}
+                                createNode={createNode}
+                                bookMarkNode={bookMarkNode}
+                                setIsCreatingEdge={setIsCreatingEdge}
+                                setFromNode={setFromNode}
+                                handleNodeSelect={handleNodeSelect}
+                                setInfoMessage={setInfoMessage}
+                                setIsInfoMessageVisible={setIsInfoMessageVisible}
+                            />
+                        </div>
+                    )}
+                    {isEdgeContextMenuVisible && (
+                        <div
+                            ref={contextMenuRef}
+                            className="context-menu"
+                            style={{
+                                position: "absolute",
+                                left: contextMenuPos.xPos,
+                                top: contextMenuPos.yPos,
+                            }}
+                        >
+                            <EdgeContextMenu
+                                selectedEdge={contextMenuPos.selectedEdge}
+                                onClose={closeEdgeContextMenu}
+                                deleteEdge={deleteEdge}
+                            />
+                        </div>
+                    )}
+                    {isTextContextMenuVisible && (
+                        <div
+                            ref={contextMenuRef}
+                            className="context-menu"
+                            style={{
+                                position: "absolute",
+                                left: contextMenuPos.xPos,
+                                top: contextMenuPos.yPos,
+                            }}
+                        >
+                            <TextContextMenu
+                                selectedText={selectedNode}
+                                onClose={closeTextContextMenu}
+                                deleteNode={deleteNodes}
+                            />
+                        </div>
+                    )}
+                    {isMemoVisible && <Memo memo={memo} handleMemoChange={handleMemoChange} />}
+                </div>
+                <LowToolBar
+                    FocusButton={handleFocusButtonClick}
+                    NodeButton={createNode}
+                    TextButton={handleTextButton}
+                    isImageSearchVisible={isImageSearchVisible}
+                    setIsImageSearchVisible={setIsImageSearchVisible}
+                    isMarkdownVisible={isMarkdownVisible}
+                    setIsMarkdownVisible={setIsMarkdownVisible}
+                    selectedNode={selectedNode}
+                    onExportClick={handleExportClick}
+                    setAlertMessage={setAlertMessage}
+                    setIsAlertMessageVisible={setIsAlertMessageVisible}
+                    userActionStack={userActionStack}
+                    setUserActionStack={setUserActionStack}
+                    userActionStackPointer={userActionStackPointer}
+                    setUserActionStackPointer={setUserActionStackPointer}
+                    setMindMap={setMindMap}
+                    setMemo={setMemo}
+                    setMouseCoordinates={setMouseCoordinates}
+                    ymapRef={ymapRef}
+                />
+                <GraphToMarkdown
+                    style={{ height: isMemoVisible ? "calc(80% - 23%)" : "80%" }}
+                    nodes={nodes}
+                    edges={edges}
+                    isMarkdownVisible={isMarkdownVisible}
+                    setIsMarkdownVisible={setIsMarkdownVisible}
+                    handleFocusButtonClick={handleFocusButtonClick}
+                    ymapRef={ymapRef}
+                />
+                <ImageSearch
+                    style={{ height: isTimerVisible ? "calc(80% - 13%)" : "80%" }}
+                    createImage={handleCreateImage}
+                    isImageSearchVisible={isImageSearchVisible}
+                    setIsImageSearchVisible={setIsImageSearchVisible}
+                />
+                <SnackbarProvider maxSnack={3}>
+                    <AlertToast
+                        message={alertMessage}
+                        open={isAlertMessageVisible}
+                        visible={setIsAlertMessageVisible}
+                    />
+                    <InformationToast
+                        message={infoMessage}
+                        open={isInfoMessageVisible}
+                        visible={setIsInfoMessageVisible}
+                    />
+                </SnackbarProvider>
+                {showPopup && (
+                    <NodeLabelsPopup
+                        newNodeLabels={newNodeLabels}
+                        onDelete={handleDeleteLabel}
+                        onCreate={handleCreate}
+                        onClose={handleClosePopup}
+                        onRestart={handleRestart}
+                    />
                 )}
-                {isEdgeContextMenuVisible && (
-                    <div
-                        ref={contextMenuRef}
-                        className="context-menu"
-                        style={{
-                            position: "absolute",
-                            left: contextMenuPos.xPos,
-                            top: contextMenuPos.yPos,
-                        }}
-                    >
-                        <EdgeContextMenu
-                            selectedEdge={contextMenuPos.selectedEdge}
-                            onClose={closeEdgeContextMenu}
-                            deleteEdge={deleteEdge}
-                        />
-                    </div>
-                )}
-                {isTextContextMenuVisible && (
-                    <div
-                        ref={contextMenuRef}
-                        className="context-menu"
-                        style={{
-                            position: "absolute",
-                            left: contextMenuPos.xPos,
-                            top: contextMenuPos.yPos,
-                        }}
-                    >
-                        <TextContextMenu
-                            selectedText={selectedNode}
-                            onClose={closeTextContextMenu}
-                            deleteNode={deleteNodes}
-                        />
-                    </div>
+                {highLightPos && (
+                    <HighLighter pos={highLightPos} setHighLightPos={setHighLightPos} />
                 )}
             </div>
-            <LowToolBar
-                FocusButton={handleFocusButtonClick}
-                NodeButton={createNode}
-                TextButton={handleTextButton}
-                isImageSearchVisible={isImageSearchVisible}
-                setIsImageSearchVisible={setIsImageSearchVisible}
-                isMarkdownVisible={isMarkdownVisible}
-                setIsMarkdownVisible={setIsMarkdownVisible}
-                selectedNode={selectedNode}
-                onExportClick={handleExportClick}
-                setAlertMessage={setAlertMessage}
-                setIsAlertMessageVisible={setIsAlertMessageVisible}
-                userActionStack={userActionStack}
-                setUserActionStack={setUserActionStack}
-                userActionStackPointer={userActionStackPointer}
-                setUserActionStackPointer={setUserActionStackPointer}
-                setMindMap={setMindMap}
-                setMemo={setMemo}
-                setMouseCoordinates={setMouseCoordinates}
-                ymapRef={ymapRef}
-            />
-            <GraphToMarkdown
-                style={{ height: isMemoVisible ? "calc(80% - 23%)" : "80%" }}
-                nodes={nodes}
-                edges={edges}
-                isMarkdownVisible={isMarkdownVisible}
-                setIsMarkdownVisible={setIsMarkdownVisible}
-                networkRef={networkRef}
-            />
-            <ImageSearch
-                style={{ height: isTimerVisible ? "calc(80% - 13%)" : "80%" }}
-                createImage={handleCreateImage}
-                isImageSearchVisible={isImageSearchVisible}
-                setIsImageSearchVisible={setIsImageSearchVisible}
-            />
-            <SnackbarProvider maxSnack={3}>
-                <AlertToast
-                    message={alertMessage}
-                    open={isAlertMessageVisible}
-                    visible={setIsAlertMessageVisible}
-                />
-                <InformationToast
-                    message={infoMessage}
-                    open={isInfoMessageVisible}
-                    visible={setIsInfoMessageVisible}
-                />
-            </SnackbarProvider>
-            {showPopup && (
-                <NodeLabelsPopup
-                    newNodeLabels={newNodeLabels}
-                    onDelete={handleDeleteLabel}
-                    onCreate={handleCreate}
-                    onClose={handleClosePopup}
-                    onRestart={handleRestart}
-                />
-            )}
         </div>
     );
 };

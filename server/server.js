@@ -24,6 +24,8 @@ const app = express();
 const OpenVidu = require("openvidu-node-client").OpenVidu;
 const audio_server = http.createServer(app);
 
+const childProcess = require("child_process");
+
 // // Environment variable: PORT where the node server is listening
 let SERVER_PORT = process.env.SERVER_PORT || 5050;
 // // Environment variable: URL where our OpenVidu server is listening
@@ -48,7 +50,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 server.on("upgrade", (request, socket, head) => {
     // You may check auth of request here..
-    // See https://github.com/websockets/ws#client-authentication
     /**
      * @param {any} ws
      */
@@ -70,7 +71,6 @@ app.post("/api/generate", generatorHandler);
 app.post("/api/sessions", async (req, res) => {
     var session = await openvidu.createSession(req.body);
     res.send(session.sessionId);
-    wss.createConnection();
 });
 
 app.post("/api/sessions/:sessionId/connections", async (req, res) => {
@@ -84,10 +84,37 @@ app.post("/api/sessions/:sessionId/connections", async (req, res) => {
     }
 });
 
+app.get("/api/sessions/:sessionId/validate", (req, res) => {
+    const sessionId = req.params.sessionId;
+    const sessionExists = openvidu.activeSessions.find((s) => s.sessionId === sessionId);
+    if (sessionExists) {
+        res.send(true);
+    } else {
+        res.send(false);
+    }
+});
+
 // // Serve application
 audio_server.listen(SERVER_PORT, () => {
     console.log("Application started on port: ", SERVER_PORT);
     console.warn("Application server connecting to OpenVidu at " + OPENVIDU_URL);
+    startProxyServer();
 });
+
+function startProxyServer() {
+    const proxyServer = childProcess.spawn("node", ["proxy-server.js"]);
+
+    proxyServer.stdout.on("data", (data) => {
+        console.log(`프록시 서버: ${data}`);
+    });
+
+    proxyServer.stderr.on("data", (data) => {
+        console.error(`프록시 서버 에러: ${data}`);
+    });
+
+    proxyServer.on("close", (code) => {
+        console.log(`프록시 서버 종료. 종료 코드: ${code}`);
+    });
+}
 
 process.on("uncaughtException", (err) => console.error(err));

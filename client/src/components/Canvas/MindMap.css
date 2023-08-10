@@ -37,3 +37,11 @@ div.vis-network div.vis-manipulation {
 .hidden {
     visibility: hidden;
 }
+
+/* div.vis-network {
+    background: #ffffff;
+    background-image: radial-gradient(#515151 3%, transparent 0),
+        radial-gradient(#504f4f 3%, transparent 0);
+    background-position: 0px 400px, 00px 400px;
+    background-size: 50px 50px;
+} */

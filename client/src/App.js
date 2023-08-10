@@ -1,4 +1,4 @@
-import React, { Component, useState } from "react";
+import React, { Component } from "react";
 import MindMap from "./components/Canvas/MindMap";
 import { OpenVidu } from "openvidu-browser";
 import axios from "axios";
@@ -9,6 +9,10 @@ import LoadingBox from "./components/LoadingScreen/LoadingBox";
 import "./App.css";
 import "./Fonts/Font.css";
 
+import { HashRouter as Router, Routes, Route } from "react-router-dom";
+import HomePage from "./components/Page/HomePage";
+import SessionPage from "./components/Page/SessionPage";
+
 const APPLICATION_SERVER_URL =
     process.env.NODE_ENV === "production" ? "" : "https://somethink.online/";
 
@@ -17,12 +21,7 @@ class App extends Component {
         super(props);
 
         this.state = {
-            isLoading: false,
-        };
-
-        // These properties are in the state's component in order to re-render the HTML whenever their values change
-        this.state = {
-            mySessionId: "RoomA",
+            mySessionId: undefined,
             myUserName: "User" + Math.floor(Math.random() * 200),
             session: undefined,
             mainStreamManager: undefined,
@@ -30,6 +29,7 @@ class App extends Component {
             subscribers: [],
             audioEnabled: false,
             speakingUserName: [],
+            isLoading: false,
         };
 
         this.joinSession = this.joinSession.bind(this);
@@ -38,10 +38,22 @@ class App extends Component {
         this.handleChangeSessionId = this.handleChangeSessionId.bind(this);
         this.handleChangeUserName = this.handleChangeUserName.bind(this);
         this.handleMainVideoStream = this.handleMainVideoStream.bind(this);
-        this.onbeforeunload = this.onbeforeunload.bind(this);
+        // this.onbeforeunload = this.onbeforeunload.bind(this);
+        this.handleCreateSession = this.handleCreateSession.bind(this);
+        this.handleJoinSession = this.handleJoinSession.bind(this);
     }
 
     componentDidMount() {
+        const storedSessionId = sessionStorage.getItem("sessionId");
+        const storedUserName = sessionStorage.getItem("userName");
+        if (storedSessionId) {
+            this.setState({ mySessionId: storedSessionId, myUserName: storedUserName }, () => {
+                this.joinSession();
+            });
+        } else {
+            // window.location.href = "/";
+            // this.handleCreateSession();
+        }
         window.addEventListener("beforeunload", this.onbeforeunload);
     }
 
@@ -49,14 +61,54 @@ class App extends Component {
         window.removeEventListener("beforeunload", this.onbeforeunload);
     }
 
-    onbeforeunload(event) {
-        this.leaveSession();
-    }
+    // onbeforeunload(event) {
+    //     this.leaveSession();
+    // }
 
     handleChangeSessionId(e) {
+        const sessionId = e.target.value.replace(/#/g, "");
+        if (sessionId.match(/^[a-zA-Z0-9]+$/)) {
+            this.setState({
+                mySessionId: sessionId,
+            });
+        }
+    }
+
+    makeid(length) {
+        let result = "";
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        const charactersLength = characters.length;
+        let counter = 0;
+        while (counter < length) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            counter += 1;
+        }
+        return result;
+    }
+
+    handleCreateSession() {
         this.setState({
-            mySessionId: e.target.value,
+            mySessionId: this.makeid(8),
         });
+        this.joinSession();
+    }
+
+    handleJoinSession(callback) {
+        const mySessionId = this.state.mySessionId;
+        if (mySessionId === undefined || mySessionId === "") {
+            alert("존재하지 않는 방입니다.");
+            callback(false);
+        } else {
+            this.validateSessionId(mySessionId).then((response) => {
+                if (response === true) {
+                    this.joinSession();
+                    callback(true);
+                } else {
+                    alert("존재하지 않는 방입니다.");
+                    callback(false);
+                }
+            });
+        }
     }
 
     handleChangeUserName(e) {
@@ -138,8 +190,6 @@ class App extends Component {
 
                 // On every new Stream received...
                 mySession.on("streamCreated", (event) => {
-                    // Subscribe to the Stream to receive it. Second parameter is undefined
-                    // so OpenVidu doesn't create an HTML video by its own
                     var subscriber = mySession.subscribe(event.stream, undefined);
                     var subscribers = this.state.subscribers;
                     subscribers.push(subscriber);
@@ -162,13 +212,11 @@ class App extends Component {
                 });
 
                 mySession.on("publisherStartSpeaking", (event) => {
-                    // console.log(event.connection.connectionId + " start speaking");
                     const userName = JSON.parse(event.connection.data).clientData;
                     this.handleSpeakingUser(userName);
                 });
 
                 mySession.on("publisherStopSpeaking", (event) => {
-                    // console.log(event.connection.connectionId + " stop speaking");
                     const userName = JSON.parse(event.connection.data).clientData;
                     this.handleDeleteSpeakingUser(userName);
                 });
@@ -182,26 +230,24 @@ class App extends Component {
                     mySession
                         .connect(token, { clientData: this.state.myUserName })
                         .then(async () => {
-                            // --- 5) Get your own camera stream ---
-
-                            // Init a publisher passing undefined as targetElement (we don't want OpenVidu to insert a video
-                            // element: we will manage it on our own) and with the desired properties
+                            // --- 5) Get your own audio stream ---
                             let publisher = await this.OV.initPublisherAsync(undefined, {
-                                audioSource: undefined, // The source of audio. If undefined default microphone
-                                videoSource: false, // The source of video. If undefined default webcam
-                                publishAudio: false, // Whether you want to start publishing with your audio unmuted or not
-                                publishVideo: false, // Whether you want to start publishing with your video enabled or not
+                                audioSource: undefined,
+                                videoSource: false,
+                                publishAudio: false,
+                                publishVideo: false,
                             });
 
                             // --- 6) Publish your stream ---
 
                             mySession.publish(publisher);
 
-                            // Set the main video in the page to display our webcam and store our Publisher
                             this.setState({
                                 mainStreamManager: publisher,
                                 publisher: publisher,
                             });
+                            sessionStorage.setItem("sessionId", this.state.mySessionId);
+                            sessionStorage.setItem("userName", this.state.myUserName);
                             this.handleSessionJoin();
                         })
                         .catch((error) => {
@@ -218,7 +264,8 @@ class App extends Component {
 
     leaveSession() {
         // --- 7) Leave the session by calling 'disconnect' method over the Session object ---
-
+        sessionStorage.removeItem("sessionId");
+        sessionStorage.removeItem("userName");
         const mySession = this.state.session;
         document.body.style.backgroundColor = "#fbd85d";
         if (mySession) {
@@ -238,18 +285,20 @@ class App extends Component {
                 console.error("Error leaving the session on the server:", error);
             });
 
-        window.location.reload();
+        // window.location.reload();
 
         // Empty all properties...
         this.OV = null;
         this.setState({
             session: undefined,
             subscribers: [],
-            mySessionId: "RoomA",
+            mySessionId: undefined,
             myUserName: "User" + Math.floor(Math.random() * 200),
             mainStreamManager: undefined,
             publisher: undefined,
         });
+
+        window.location.href = "/";
     }
 
     toggleAudio() {
@@ -270,108 +319,46 @@ class App extends Component {
         const myUserName = this.state.myUserName;
         const audioEnabled = this.state.audioEnabled;
         return (
-            <div className="container">
-                {this.state.session === undefined ? (
-                    <div id="join">
-                        <div className="big-circles" style={{ pointerEvents: "none" }}>
-                            <div className="big-circle"></div>
-                            <div className="big-circle"></div>
-                            <div className="big-circle"></div>
-                        </div>
-                        <section id="home">
-                            <div className="slide-wrapper">
-                                <div className="smallcircles" style={{ pointerEvents: "none" }}>
-                                    <div className="small-circle"></div>
-                                    <div className="small-circle"></div>
-                                    <div className="small-circle"></div>
-                                    <div className="small-circle"></div>
-                                    <div className="small-circle"></div>
-                                    <div className="small-circle"></div>
-                                </div>
-                                <div id="join-dialog" className="jumbotron vertical-center">
-                                    <h1 className="logo"></h1>
-                                    <form className="form-group" onSubmit={this.joinSession}>
-                                        <p>
-                                            <label>Name </label>
-                                            <input
-                                                className="form-control"
-                                                type="text"
-                                                id="userName"
-                                                value={myUserName}
-                                                onChange={this.handleChangeUserName}
-                                                required
-                                            />
-                                        </p>
-                                        <p>
-                                            <label> Room </label>
-                                            <input
-                                                className="form-control"
-                                                type="text"
-                                                id="sessionId"
-                                                value={mySessionId}
-                                                onChange={this.handleChangeSessionId}
-                                                style={{ pointerEvents: "auto" }}
-                                                pattern="[0-9A-Za-z]+"
-                                                title="영어나 숫자만 입력해주세요"
-                                                required
-                                            />
-                                        </p>
-                                        <p className="text-center">
-                                            <input
-                                                onClick={() => {
-                                                    this.setState(
-                                                        {
-                                                            isLoading: true,
-                                                        },
-                                                        () => {
-                                                            this.forceUpdate();
-                                                        }
-                                                    );
-                                                }}
-                                                className="btn btn-lg btn-success"
-                                                name="commit"
-                                                type="submit"
-                                                value="JOIN"
-                                            />
-                                        </p>
-                                    </form>
-                                </div>
-                            </div>
-                        </section>
-                    </div>
-                ) : null}
-
-                {this.state.session !== undefined ? (
-                    <div id="session">
-                        <div id="session-header">
-                            <MindMap
-                                sessionId={mySessionId}
+            <Router>
+                <Routes>
+                    <Route
+                        exact
+                        path="/"
+                        element={
+                            <HomePage
+                                myUserName={myUserName}
+                                handleChangeUserName={this.handleChangeUserName}
+                                handleCreateSession={this.handleCreateSession}
+                                handleJoinSession={this.handleJoinSession}
+                                isLoading={isLoading}
+                                mySessionId={mySessionId}
+                                handleChangeSessionId={this.handleChangeSessionId}
+                                // handleSetisLoading={this.handleSetisLoading}
+                            />
+                        }
+                    />
+                    <Route
+                        exact
+                        path="/session"
+                        element={
+                            <SessionPage
+                                session={this.state.session}
+                                mySessionId={mySessionId}
+                                myUserName={myUserName}
+                                audioEnabled={audioEnabled}
+                                handleMainVideoStream={this.handleMainVideoStream}
+                                subscribers={this.state.subscribers}
+                                publisher={this.state.publisher}
                                 leaveSession={this.leaveSession}
                                 toggleAudio={this.toggleAudio}
-                                audioEnabled={audioEnabled}
-                                userName={myUserName}
-                                onSessionJoin={this.handleSessionJoin}
                                 speakingUserName={this.state.speakingUserName}
                                 isLoading={isLoading}
+                                handleSessionJoin={this.handleSessionJoin}
                             />
-                        </div>
-
-                        <div id="video-container">
-                            {this.state.publisher !== undefined ? (
-                                <div>
-                                    <UserVideoComponent streamManager={this.state.publisher} />
-                                </div>
-                            ) : null}
-                            {this.state.subscribers.map((sub, i) => (
-                                <div>
-                                    <UserVideoComponent streamManager={sub} />
-                                </div>
-                            ))}
-                        </div>
-                        {isLoading && <LoadingBox roomNumb={mySessionId} />}
-                    </div>
-                ) : null}
-            </div>
+                        }
+                    />
+                </Routes>
+            </Router>
         );
     }
 
@@ -392,6 +379,7 @@ class App extends Component {
      */
     async getToken() {
         const sessionId = await this.createSession(this.state.mySessionId);
+        console.log("세션 아이디 : " + sessionId);
         return await this.createToken(sessionId);
     }
 
@@ -415,6 +403,16 @@ class App extends Component {
             }
         );
         return response.data; // The token
+    }
+
+    async validateSessionId(sessionId) {
+        const response = await axios.get(
+            APPLICATION_SERVER_URL + "api/sessions/" + sessionId + "/validate",
+            {
+                headers: { "Content-Type": "application/json" },
+            }
+        );
+        return response.data;
     }
 }
 

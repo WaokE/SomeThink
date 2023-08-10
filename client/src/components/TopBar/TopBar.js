@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import clipboardCopy from "clipboard-copy";
 import "./TopBar.css";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
@@ -9,6 +10,8 @@ import MicSharpIcon from "@mui/icons-material/MicSharp";
 import MicOffSharpIcon from "@mui/icons-material/MicOffSharp";
 import Switch from "@mui/material/Switch";
 import { ExitToApp } from "@mui/icons-material";
+import { rootNode } from "../../Constant";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const colors = [
     "#FF5733", // 빨간색
@@ -33,9 +36,22 @@ function TopBar({
     speakingUserName,
     ymapRef,
     isLoading,
+    setInfoMessage,
+    setIsInfoMessageVisible,
 }) {
     // userName과 일치하는 아바타를 찾아서 따로 저장합니다.
     const userAvatar = userList.find((user) => user === userName);
+
+    const location = useLocation();
+    const { keyword } = location.state || {}; // location.state가 null일 경우를 대비하여 기본 객체를 생성
+
+    rootNode.label = keyword || "";
+
+    const navigate = useNavigate();
+    const handleLeaveSession = () => {
+        leaveSession();
+        navigate("/");
+    };
 
     const getCurrentTime = () => {
         const date = new Date();
@@ -52,6 +68,18 @@ function TopBar({
     const [currentTime, setCurrentTime] = useState(getCurrentTime());
     const [prevUserListLength, setPrevUserListLength] = useState(userList.length);
 
+    const handleRoomCodeClick = () => {
+        clipboardCopy(sessionId)
+            .then(() => {
+                setInfoMessage("방 코드가 복사되었습니다.");
+                setIsInfoMessageVisible(true);
+            })
+            .catch((err) => {
+                setInfoMessage("복사 중 에러가 발생했습니다.", err);
+                setIsInfoMessageVisible(true);
+            });
+    };
+
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentTime(getCurrentTime());
@@ -62,22 +90,9 @@ function TopBar({
     useEffect(() => {
         if (userList.length >= prevUserListLength) {
             if (!isLoading && userList.length === 1) {
-                ymapRef.current.set(
-                    `Node 1`,
-                    JSON.stringify({
-                        id: 1,
-                        label: "start",
-                        x: 0,
-                        y: 0,
-                        physics: false,
-                        fixed: true,
-                        color: "#f5b252",
-                        widthConstraint: { minimum: 100, maximum: 200 }, // 너비를 100으로 고정
-                        heightConstraint: { minimum: 100, maximum: 200 }, // 높이를 100으로 고정
-                        font: { size: 30 },
-                    })
-                );
+                ymapRef.current.set(`Node 1`, JSON.stringify(rootNode));
                 ymapRef.current.set("RootQuadrant", 0);
+                ymapRef.current.set("GroupCount", 0);
                 ymapRef.current.set(userName, true);
             }
         }
@@ -94,10 +109,24 @@ function TopBar({
 
     return (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1 }}>
-            <AppBar position="static" style={{ backgroundColor: "#FBEEAC", marginBottom: "10px" }}>
+            <AppBar
+                position="static"
+                style={{
+                    backgroundColor: "#FBEEAC",
+                    marginBottom: "10px",
+                    height: "9vh",
+                    justifyContent: "center",
+                }}
+            >
                 <Toolbar className="top-bar-container">
                     <div className="topbar-menu">
-                        <p className="code">#{sessionId}</p>
+                        <p
+                            className="code"
+                            onClick={handleRoomCodeClick}
+                            style={{ cursor: "pointer" }}
+                        >
+                            #{sessionId}
+                        </p>
                     </div>
                     <div style={{ margin: "0 10px" }}></div>
                     <div className="avatar-group-container" style={{ display: "flex", gap: "8px" }}>
@@ -116,10 +145,13 @@ function TopBar({
                                 }
                                 label={userAvatar}
                                 sx={{
+                                    padding: "8px",
+                                    height: "36px",
+                                    fontSize: "18px",
                                     boxShadow: speakingUserName.includes(userName)
-                                        ? `inset 0px 0px 0px 2px #76e465`
+                                        ? `inset 0px 0px 0px 4px #76e465`
                                         : `inset 0px 0px 0px 1px white`,
-                                    borderRadius: "15px", // Rounded border for the entire Chip
+                                    borderRadius: "23px", // Rounded border for the entire Chip
                                 }}
                             />
                         )}
@@ -138,14 +170,17 @@ function TopBar({
                                         }
                                         label={user}
                                         sx={{
+                                            padding: "8px",
+                                            height: "36px",
+                                            fontSize: "18px",
                                             boxShadow:
                                                 // if user in speakingUserName list
 
                                                 speakingUserName.includes(user)
-                                                    ? `inset 0px 0px 0px 2px #76e465`
+                                                    ? `inset 0px 0px 0px 4px #76e465`
                                                     : ``,
                                             borderRadius: speakingUserName.includes(user)
-                                                ? "15px"
+                                                ? "23px"
                                                 : "", // Rounded border for the entire Chip
                                         }}
                                     />
@@ -169,7 +204,11 @@ function TopBar({
                         {/* <IconButton aria-label="CameraAltIcon" size="large" onClick={onExportClick}>
                             <CameraAltIcon fontSize="inherit" />
                         </IconButton> */}
-                        <IconButton aria-label="ExitToApp" size="large" onClick={leaveSession}>
+                        <IconButton
+                            aria-label="ExitToApp"
+                            size="large"
+                            onClick={handleLeaveSession}
+                        >
                             <ExitToApp fontSize="inherit" />
                         </IconButton>
                     </div>

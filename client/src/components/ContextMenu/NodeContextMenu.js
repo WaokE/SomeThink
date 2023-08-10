@@ -52,7 +52,7 @@ const NodeContextMenu = ({
     };
 
     return (
-        <Paper sx={{ width: 150, maxWidth: "100%" }}>
+        <Paper sx={{ width: 150, maxWidth: "100%", zIndex: 15, position: "fixed" }}>
             <MenuList>
                 <MenuItem onClick={handleAddChildNode}>
                     <ListItemIcon>

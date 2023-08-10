@@ -1,3 +1,4 @@
+import { NORMAL_NODE_COLOR } from "../../Constant";
 const getConnectedNodeLabels = (clickedNodeId, ymapRef) => {
     const connectedNodeIds = [clickedNodeId];
     let currentNodeId = clickedNodeId;
@@ -23,13 +24,37 @@ const getConnectedNodeLabels = (clickedNodeId, ymapRef) => {
     return connectedNodeLabels;
 };
 
-const getAllNodeLabels = (ymapRef) => {
-    const allNodeLabels = Array.from(ymapRef.current.keys())
-        .filter((key) => key.startsWith("Node "))
-        .map((key) => {
-            const node = JSON.parse(ymapRef.current.get(key));
-            return node ? node.label : null;
+const getAllNodeLabels = (ymapRef, currentNodeId) => {
+    const allNodeLabels = [];
+    const visitedNodes = new Set();
+    const queue = [];
+    queue.push({ node: currentNodeId, depth: 0 });
+    visitedNodes.add(currentNodeId);
+
+    while (queue.length > 0) {
+        const { node, depth } = queue.shift();
+        if (depth > 1) {
+            break;
+        }
+
+        ymapRef.current.forEach((value, key) => {
+            if (key.startsWith("Edge ")) {
+                const edge = JSON.parse(value);
+                if (edge.from === node || edge.to === node) {
+                    const connectedNodeId = edge.from === node ? edge.to : edge.from;
+                    if (!visitedNodes.has(connectedNodeId)) {
+                        const connectedNodeData = ymapRef.current.get(`Node ${connectedNodeId}`);
+                        if (connectedNodeData) {
+                            const connectedNodeLabel = JSON.parse(connectedNodeData).label;
+                            allNodeLabels.push(connectedNodeLabel);
+                            queue.push({ node: connectedNodeId, depth: depth + 1 });
+                            visitedNodes.add(connectedNodeId);
+                        }
+                    }
+                }
+            }
         });
+    }
 
     return allNodeLabels;
 };
@@ -69,6 +94,14 @@ const addNewNodesAndEdges = (clickedNode, newNodeLabels, clickedNodeId, ymapRef)
         const x = clickedNode.x + distanceFromCenter * Math.cos(angle);
         const y = clickedNode.y + distanceFromCenter * Math.sin(angle);
 
+        let nodeGroup;
+        if (clickedNodeId === 1) {
+            nodeGroup = ymapRef.current.get("GroupCount");
+            ymapRef.current.set("GroupCount", nodeGroup + 1);
+        } else {
+            nodeGroup = JSON.parse(ymapRef.current.get(`Node ${clickedNodeId}`)).group;
+        }
+
         const nodeId = Math.floor(Math.random() * 1000 + Math.random() * 1000000);
         const newNode = {
             id: nodeId,
@@ -76,8 +109,10 @@ const addNewNodesAndEdges = (clickedNode, newNodeLabels, clickedNodeId, ymapRef)
             x: x,
             y: y,
             physics: false,
-            color: "#FBD85D",
-            size: 30,
+            // color: NORMAL_NODE_COLOR,
+            group: nodeGroup,
+            widthConstraint: { minimum: 50, maximum: 100 },
+            heightConstraint: { minimum: 50, maximum: 100 },
         };
 
         ymapRef.current.set(`Node ${nodeId}`, JSON.stringify(newNode));

@@ -3,7 +3,6 @@ import { handleUndo, handleRedo } from "../Canvas/EventHandler";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import ContentPasteRoundedIcon from "@mui/icons-material/ContentPasteRounded";
 import EditNoteRoundedIcon from "@mui/icons-material/EditNoteRounded";
 import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
@@ -25,15 +24,16 @@ import FileUploader from "../Canvas/SnapshotUpload";
 
 const styles = {
     bottomNav: {
-        width: "520px", // 너비 조정
-        height: "50px", // 높이 조정
+        width: "50%", // 너비 조정
+        height: "7%", // 높이 조정
         borderRadius: "100px", // 라운드를 위한 값
         border: "2px solid #d9d9d9", // 테두리 설정
         position: "fixed",
-        bottom: "40px", // 하단 간격 조정
+        bottom: "7%", // 하단 간격 조정
         left: "50%",
         transform: "translateX(-50%)", // 가운데 정렬
-        padding: "0px 20px", // 좌우 간격 조정
+        padding: "0% 0.9%", // 좌우 간격 조정
+        zIndex: "10",
     },
     action: {
         borderRadius: "100px", // 테두리를 둥글게 만듦
@@ -44,7 +44,7 @@ const styles = {
         position: "absolute",
     },
     icon: {
-        fontSize: "20px",
+        fontSize: "250%",
         "&:hover": { color: "#FFE17B" },
     },
 };
@@ -56,10 +56,6 @@ export default function LowToolBar(props) {
     const makeText = () => {
         props.TextButton();
     };
-    const makeImage = () => {
-        if (!props.isImageSearchVisible) props.setIsImageSearchVisible(true);
-        else props.setIsImageSearchVisible(false);
-    };
     const switchMemo = () => {
         window.dispatchEvent(new CustomEvent("switchMemo"));
     };
@@ -67,7 +63,7 @@ export default function LowToolBar(props) {
         window.dispatchEvent(new CustomEvent("setTimer"));
     };
     const focusMindMap = () => {
-        props.FocusButton();
+        props.FocusButton(0, 0);
     };
     const resetNode = () => {
         window.dispatchEvent(new CustomEvent("resetNode"));
@@ -77,8 +73,8 @@ export default function LowToolBar(props) {
         props.onExportClick();
     };
 
-    const makeMarkdown = () => {
-        window.dispatchEvent(new CustomEvent("makeMarkdown"));
+    const downloadSnapshot = () => {
+        window.dispatchEvent(new CustomEvent("downloadSnapshot"));
     };
 
     const openMarkdown = () => {
@@ -146,6 +142,10 @@ export default function LowToolBar(props) {
                 x: content.x,
                 y: content.y,
                 shape: content.shape,
+                font: { size: 20 },
+                shadow: {
+                    enabled: false,
+                },
                 widthConstraint: false,
             };
         } else {
@@ -154,7 +154,11 @@ export default function LowToolBar(props) {
                 label: content.label,
                 x: content.x,
                 y: content.y,
-                color: "#FBD85D",
+                color: content.color,
+                group: content.group,
+                bookMarked: content.bookMarked,
+                widthConstraint: { minimum: 50, maximum: 100 },
+                heightConstraint: { minimum: 50, maximum: 100 },
             };
         }
 
@@ -205,6 +209,15 @@ export default function LowToolBar(props) {
             }
         });
         setIsUploading(false);
+        let prevGroupCount = 0;
+        props.ymapRef.current.forEach((value, key) => {
+            const data = JSON.parse(value);
+            if (data.group !== undefined && data.group > prevGroupCount) {
+                prevGroupCount = data.group;
+            }
+        });
+        console.log(`Max = ${prevGroupCount}`);
+        props.ymapRef.current.set("GroupCount", prevGroupCount + 1);
     };
 
     const handleUploadCancelled = () => {
@@ -214,9 +227,8 @@ export default function LowToolBar(props) {
 
     const actions = [
         { icon: <CameraAltIcon />, name: "화면 캡처", onclick: hendleExportClick },
-        { icon: <SaveIcon />, name: "마인드맵 저장", onclick: makeMarkdown },
+        { icon: <SaveIcon />, name: "마인드맵 저장", onclick: downloadSnapshot },
         { icon: <Upload />, name: "마인드맵 불러오기", onclick: handleUploadSnapshotClick },
-        { icon: <FormatListBulletedSharpIcon />, name: "바로가기 열기", onclick: openMarkdown },
     ];
 
     return (
@@ -254,12 +266,20 @@ export default function LowToolBar(props) {
                         onClick={makeText}
                     />
                 </Tooltip>
-                <Tooltip title="이미지 생성" placement="top" sx={styles.tooltip}>
+                <Tooltip title="포커스" placement="top" sx={styles.tooltip}>
                     <BottomNavigationAction
-                        value="image"
-                        icon={<AddPhotoAlternateIcon sx={styles.icon} />}
+                        value="focus"
+                        icon={<CenterFocusStrongIcon sx={styles.icon} />}
                         sx={styles.action}
-                        onClick={makeImage}
+                        onClick={focusMindMap}
+                    />
+                </Tooltip>
+                <Tooltip title="바로가기 열기" placement="top" sx={styles.tooltip}>
+                    <BottomNavigationAction
+                        value="reset"
+                        icon={<FormatListBulletedSharpIcon sx={styles.icon} />}
+                        sx={styles.action}
+                        onClick={openMarkdown}
                     />
                 </Tooltip>
                 <Tooltip title="메모 토글" placement="top" sx={styles.tooltip}>
@@ -268,14 +288,6 @@ export default function LowToolBar(props) {
                         icon={<ContentPasteRoundedIcon sx={styles.icon} />}
                         sx={styles.action}
                         onClick={switchMemo}
-                    />
-                </Tooltip>
-                <Tooltip title="포커스" placement="top" sx={styles.tooltip}>
-                    <BottomNavigationAction
-                        value="focus"
-                        icon={<CenterFocusStrongIcon sx={styles.icon} />}
-                        sx={styles.action}
-                        onClick={focusMindMap}
                     />
                 </Tooltip>
                 <Tooltip title="타이머 토글" placement="top" sx={styles.tooltip}>

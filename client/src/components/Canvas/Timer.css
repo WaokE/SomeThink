@@ -1,28 +1,107 @@
-.timer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+.base-timer {
     position: fixed;
-    top: 10vh;
-    left: 3vh;
-    padding: 10px;
-    background-color: #f0f0f0;
-    color: black;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    font-size: 30px;
+    top: 11vh;
+    left: 2vw;
+    height: 160px;
+    width: 160px;
     z-index: 1;
 }
 
+.base-timer__circle {
+    fill: none;
+    stroke: none;
+}
+
+.base-timer__path-elapsed {
+    stroke-width: 9px;
+    stroke: rgb(157, 156, 156);
+}
+
+.base-timer__label {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+}
+
+.timer-input-container {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timer-input-separator {
+    font-size: 40px;
+    /* margin: 0 5px; */
+}
+
+.timer-input {
+    display: inline-block;
+    width: 55px;
+    height: 40px;
+    font-size: 40px;
+    text-align: center;
+    border: none;
+    background-color: transparent;
+    outline: none;
+}
+
+.base-timer__path-remaining {
+    stroke-width: 9px;
+    stroke-linecap: round;
+    transform: rotate(90deg);
+    transform-origin: center;
+    /* transition: 1s linear all; */
+    transition: stroke-dashoffset 0.7s ease-in-out;
+    stroke: currentColor;
+    fill-rule: nonzero;
+}
+
+.base-timer__svg {
+    transform: scaleX(-1);
+}
+
+.base-timer__path-remaining.yellow {
+    color: #fbd85d;
+}
+
+.base-timer__path-remaining.red {
+    color: red;
+}
+
+.buttons {
+    position: absolute;
+    bottom: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    width: 70%;
+}
+
+.buttons button {
+    width: 30%;
+    border: none;
+    background: none;
+}
 .timer.red {
     color: red;
 }
 
-.timer .timer-input {
-    color: black;
-    width: 43px;
-    height: 30px;
-    font-size: 20px;
-    border: 1;
+/* input[type="number"] {
+    -moz-appearance: textfield;
+} */
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }

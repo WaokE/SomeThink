@@ -1,19 +1,8 @@
 import React from "react";
+import { colors, DECIMAL_PLACES } from "../../Constant";
 
 const UserMouseMove = (props) => {
     const { userMouseData, networkRef, userName, userList } = props;
-    const colors = [
-        "#FF5733", // 빨간색
-        "#33A7FF", // 파란색
-        "#9A33FF", // 보라색
-        "#FF33E4", // 분홍색
-        "#33FFC4", // 청록색
-        "#336DFF", // 하늘색
-        "#FF33A9", // 자홍색
-        "#33FF49", // 녹색
-        "#FF8C33", // 적갈색
-        "#9AFF33", // 연두색
-    ];
 
     const filteredUserMouseData = userMouseData.filter((data) => {
         const [id] = data;
@@ -25,9 +14,8 @@ const UserMouseMove = (props) => {
         const userIndex = userList.indexOf(id);
         const color = colors[userIndex % colors.length];
         const coord = networkRef.current.canvasToDOM({ x: x, y: y });
-        const nx = coord.x;
-        const ny = coord.y;
-
+        const nx = parseFloat(coord.x.toFixed(DECIMAL_PLACES)); // 절삭된 X 좌표
+        const ny = parseFloat(coord.y.toFixed(DECIMAL_PLACES)); // 절삭된 Y 좌표
         // 만약 id가 userName과 일치하면 출력하지 않도록 처리합니다.
         if (id === userName) {
             return null;
