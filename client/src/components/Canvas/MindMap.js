@@ -709,7 +709,7 @@ const MindMap = ({
                         id: `${selectedNodeId} to ${nodeId}`,
                     })
                 );
-                ymapRef.current.set("GroupCount", nodeGroup + 1);
+                selectedNode.id === 1 && ymapRef.current.set("GroupCount", nodeGroup + 1);
                 mindMapRef.current.focus();
 
                 removeTextInput();
