@@ -1167,9 +1167,6 @@ const MindMap = ({
                         }}
                         style={{ height: "100%", width: "100%" }}
                         getNetwork={(network) => {
-                            network.on("initRedraw", () => {
-                                networkRef.current = network;
-                            });
                             network.on("beforeDrawing", (ctx) => {
                                 let patternCanvas = document.createElement("canvas");
                                 patternCanvas.width = 60; // 작은 점 이미지의 가로 크기
@@ -1195,6 +1192,7 @@ const MindMap = ({
                                 );
                             });
                             network.once("afterDrawing", () => {
+                                networkRef.current = network;
                                 network.focus(String(ROOTNODE_ID), {
                                     scale: ANIMATION_ZOOM_SCALE,
                                     animation: {
