@@ -45,7 +45,7 @@ function TopBar({
     const location = useLocation();
     const { keyword } = location.state || {}; // location.state가 null일 경우를 대비하여 기본 객체를 생성
 
-    const updatedRootNode = { ...rootNode, label: keyword || "keyword" };
+    rootNode.label = keyword || "";
 
     const navigate = useNavigate();
     const handleLeaveSession = () => {
@@ -90,7 +90,7 @@ function TopBar({
     useEffect(() => {
         if (userList.length >= prevUserListLength) {
             if (!isLoading && userList.length === 1) {
-                ymapRef.current.set(`Node 1`, JSON.stringify(updatedRootNode));
+                ymapRef.current.set(`Node 1`, JSON.stringify(rootNode));
                 ymapRef.current.set("RootQuadrant", 0);
                 ymapRef.current.set("GroupCount", 0);
                 ymapRef.current.set(userName, true);

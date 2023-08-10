@@ -54,6 +54,7 @@ import InformationToast from "../ToastMessage/Information";
 import GraphToMarkdown from "./MarkDown";
 import { SnackbarProvider } from "notistack";
 import HighLighter from "./HighLighter";
+import { useLocation } from "react-router-dom";
 
 import "./MindMap.css";
 
@@ -148,6 +149,11 @@ const MindMap = ({
         [contextMenuRef, setIsNodeContextMenuVisible]
     );
 
+    const location = useLocation();
+    const { keyword } = location.state || {}; // location.state가 null일 경우를 대비하여 기본 객체를 생성
+
+    rootNode.label = [keyword];
+
     const openNodeContextMenu = (event) => {
         const VisEvent = event;
         const DOMEvent = event.event;
@@ -241,6 +247,10 @@ const MindMap = ({
         ymapRef.current = ydocRef.current.getMap("MindMap");
 
         ymapRef.current.observe((event) => {
+            if (ymapRef.current.get(`Node 1`)) {
+                rootNode.label = JSON.parse(ymapRef.current.get(`Node 1`)).label;
+                console.log("rootNode label", rootNode.label);
+            }
             const updatedGraph = {
                 nodes: [],
                 edges: [],

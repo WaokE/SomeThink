@@ -52,9 +52,9 @@ export const mindMapOptions = {
     },
 };
 
-export const rootNode = {
+export let rootNode = {
     id: 1,
-    label: "start",
+    label: "",
     x: 0,
     y: 0,
     physics: false,
