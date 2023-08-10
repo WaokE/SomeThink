@@ -59,8 +59,8 @@
     stroke-linecap: round;
     transform: rotate(90deg);
     transform-origin: center;
-    transition: 1s linear all;
-    /* transition: stroke-dashoffset 1 linear all; */
+    /* transition: 1s linear all; */
+    transition: stroke-dashoffset 0.7s ease-in-out;
     stroke: currentColor;
     fill-rule: nonzero;
 }
