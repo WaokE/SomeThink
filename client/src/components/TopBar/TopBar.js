@@ -45,7 +45,7 @@ function TopBar({
     const location = useLocation();
     const { keyword } = location.state || {}; // location.state가 null일 경우를 대비하여 기본 객체를 생성
 
-    const updatedRootNode = { ...rootNode, label: keyword };
+    const updatedRootNode = { ...rootNode, label: keyword || "keyword" };
 
     const navigate = useNavigate();
     const handleLeaveSession = () => {
