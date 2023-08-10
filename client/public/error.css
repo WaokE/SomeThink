@@ -23,8 +23,9 @@ h1.MainTitle {
     font-weight: lighter;
     margin-top: 5vh;
     position: fixed;
-    bottom: 90;
+    bottom: 5vh;
 }
+
 html,
 body {
     position: relative;
