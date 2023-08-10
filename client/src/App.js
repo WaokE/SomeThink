@@ -9,7 +9,6 @@ import LoadingBox from "./components/LoadingScreen/LoadingBox";
 import "./App.css";
 import "./Fonts/Font.css";
 
-// import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./components/Page/HomePage";
 import SessionPage from "./components/Page/SessionPage";
@@ -21,7 +20,6 @@ class App extends Component {
     constructor(props) {
         super(props);
 
-        // These properties are in the state's component in order to re-render the HTML whenever their values change
         this.state = {
             mySessionId: undefined,
             myUserName: "User" + Math.floor(Math.random() * 200),
@@ -100,17 +98,17 @@ class App extends Component {
         if (mySessionId === undefined || mySessionId === "") {
             alert("존재하지 않는 방입니다.");
             callback(false);
+        } else {
+            this.validateSessionId(mySessionId).then((response) => {
+                if (response === true) {
+                    this.joinSession();
+                    callback(true);
+                } else {
+                    alert("존재하지 않는 방입니다.");
+                    callback(false);
+                }
+            });
         }
-
-        this.validateSessionId(mySessionId).then((response) => {
-            if (response === true) {
-                this.joinSession();
-                callback(true);
-            } else {
-                alert("존재하지 않는 방입니다.");
-                callback(false);
-            }
-        });
     }
 
     handleChangeUserName(e) {
