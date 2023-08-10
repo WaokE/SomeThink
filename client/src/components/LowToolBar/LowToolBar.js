@@ -209,6 +209,15 @@ export default function LowToolBar(props) {
             }
         });
         setIsUploading(false);
+        let prevGroupCount = 0;
+        props.ymapRef.current.forEach((value, key) => {
+            const data = JSON.parse(value);
+            if (data.group !== undefined && data.group > prevGroupCount) {
+                prevGroupCount = data.group;
+            }
+        });
+        console.log(`Max = ${prevGroupCount}`);
+        props.ymapRef.current.set("GroupCount", prevGroupCount + 1);
     };
 
     const handleUploadCancelled = () => {
