@@ -620,8 +620,8 @@ const MindMap = ({
         }
 
         newEdgeList.forEach((edge) => {
-            const from = edge.split(" ")[1];
-            const to = edge.split(" ")[3];
+            const from = Number(edge.split(" ")[1]);
+            const to = Number(edge.split(" ")[3]);
             ymapRef.current.set(
                 `Edge ${from} to ${to}`,
                 JSON.stringify({
