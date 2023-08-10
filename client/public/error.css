@@ -21,9 +21,8 @@ a.logo {
 h1.MainTitle {
     font-size: 3rem;
     font-weight: lighter;
-    margin-top: 5vh;
     position: fixed;
-    bottom: 5vh;
+    bottom: 3vh;
 }
 
 html,
@@ -72,6 +71,8 @@ body {
     height: 15rem;
     transition: easeInOutQuint();
     animation: CogAnimation2 25s linear infinite;
+    margin-left: 500px;
+    margin-bottom: 250px;
 }
 
 .world {
