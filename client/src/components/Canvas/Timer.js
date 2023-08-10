@@ -85,10 +85,10 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
                 // remaining -= 1000;
                 setRemainingTime(remaining);
                 if (remaining <= 0) {
-                    setIsTimerRunning(false);
-                    ymapRef.current.set("TimerRunning", false);
-                    setRemainingTime(0);
-                    alert("Time OVER!");
+                    const audio = new Audio("timer2.mp3");
+                    audio.volume = 0.5;
+                    audio.play();
+                    handleStop();
                 }
                 setCircleDasharray();
             }, 1000);
