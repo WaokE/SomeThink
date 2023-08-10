@@ -39,7 +39,6 @@ function HomePage(props) {
     const redirectToSessionPage2 = () => {
         handleJoinSession((response) => {
             if (response) {
-                // handleSetisLoading(true);
                 navigate("/session"); // SessionPage로 이동
             }
         });
@@ -152,6 +151,12 @@ function HomePage(props) {
                             onChange={(e) => setRootWord(e.target.value)}
                             size="small"
                             margin="dense"
+                            autoFocus
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    redirectToSessionPage();
+                                }
+                            }}
                         />
                         <div
                             style={{
