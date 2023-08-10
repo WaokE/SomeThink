@@ -5,10 +5,14 @@ import {
     rootNode,
     MAX_STACK_LENGTH,
     ROOT_NODE_COLOR,
-    NORMAL_NODE_COLOR,
     BOOKMARK_ICON,
     throttle,
     DECIMAL_PLACES,
+    MAX_ZOOM_SCALE,
+    MIN_ZOOM_SCALE,
+    ANIMATION_ZOOM_SCALE,
+    ANIMATION_DURATION,
+    ROOTNODE_ID,
 } from "../../Constant";
 
 import Graph from "react-graph-vis";
@@ -858,15 +862,15 @@ const MindMap = ({
 
     const handleZoomEvent = () => {
         networkRef.current.on("zoom", function () {
-            if (networkRef.current.getScale() <= 0.5) {
+            if (networkRef.current.getScale() <= MIN_ZOOM_SCALE) {
                 networkRef.current.moveTo({
-                    scale: 0.5,
+                    scale: MIN_ZOOM_SCALE,
                     position: lastZoomPositionRef.current,
                 });
             }
-            if (networkRef.current.getScale() >= 1.6) {
+            if (networkRef.current.getScale() >= MAX_ZOOM_SCALE) {
                 networkRef.current.moveTo({
-                    scale: 1.6,
+                    scale: MAX_ZOOM_SCALE,
                     position: lastZoomPositionRef.current,
                 });
             }
@@ -1163,9 +1167,6 @@ const MindMap = ({
                         }}
                         style={{ height: "100%", width: "100%" }}
                         getNetwork={(network) => {
-                            network.on("initRedraw", () => {
-                                networkRef.current = network;
-                            });
                             network.on("beforeDrawing", (ctx) => {
                                 let patternCanvas = document.createElement("canvas");
                                 patternCanvas.width = 60; // 작은 점 이미지의 가로 크기
@@ -1189,6 +1190,16 @@ const MindMap = ({
                                     -domtocanvas.x * 200,
                                     -domtocanvas.y * 200
                                 );
+                            });
+                            network.once("afterDrawing", () => {
+                                networkRef.current = network;
+                                network.focus(String(ROOTNODE_ID), {
+                                    scale: ANIMATION_ZOOM_SCALE,
+                                    animation: {
+                                        duration: ANIMATION_DURATION,
+                                        easingFunction: "easeInOutQuad",
+                                    },
+                                });
                             });
                         }}
                     />
