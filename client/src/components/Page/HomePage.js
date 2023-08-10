@@ -154,6 +154,7 @@ function HomePage(props) {
                             autoFocus
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") {
+                                    e.preventDefault();
                                     redirectToSessionPage();
                                 }
                             }}
