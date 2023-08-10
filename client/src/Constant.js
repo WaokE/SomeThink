@@ -68,7 +68,6 @@ export let rootNode = {
 export const MAX_STACK_LENGTH = 10;
 
 export const ROOT_NODE_COLOR = "#f5b252";
-export const NORMAL_NODE_COLOR = "#FBD85D";
 
 export const throttle = (callback, delay) => {
     let previousCall = new Date().getTime();
@@ -82,6 +81,13 @@ export const throttle = (callback, delay) => {
     };
 };
 
+export const ROOTNODE_ID = 1;
 export const BOOKMARK_ICON = "🔻";
 
 export const DECIMAL_PLACES = 0;
+
+export const MAX_ZOOM_SCALE = 1.6;
+export const MIN_ZOOM_SCALE = 0.4;
+
+export const ANIMATION_ZOOM_SCALE = 0.4;
+export const ANIMATION_DURATION = 1000;

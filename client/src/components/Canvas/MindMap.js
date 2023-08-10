@@ -5,10 +5,14 @@ import {
     rootNode,
     MAX_STACK_LENGTH,
     ROOT_NODE_COLOR,
-    NORMAL_NODE_COLOR,
     BOOKMARK_ICON,
     throttle,
     DECIMAL_PLACES,
+    MAX_ZOOM_SCALE,
+    MIN_ZOOM_SCALE,
+    ANIMATION_ZOOM_SCALE,
+    ANIMATION_DURATION,
+    ROOTNODE_ID,
 } from "../../Constant";
 
 import Graph from "react-graph-vis";
@@ -858,15 +862,15 @@ const MindMap = ({
 
     const handleZoomEvent = () => {
         networkRef.current.on("zoom", function () {
-            if (networkRef.current.getScale() <= 0.4) {
+            if (networkRef.current.getScale() <= MIN_ZOOM_SCALE) {
                 networkRef.current.moveTo({
-                    scale: 0.4,
+                    scale: MIN_ZOOM_SCALE,
                     position: lastZoomPositionRef.current,
                 });
             }
-            if (networkRef.current.getScale() >= 1.6) {
+            if (networkRef.current.getScale() >= MAX_ZOOM_SCALE) {
                 networkRef.current.moveTo({
-                    scale: 1.6,
+                    scale: MAX_ZOOM_SCALE,
                     position: lastZoomPositionRef.current,
                 });
             }
@@ -1191,10 +1195,10 @@ const MindMap = ({
                                 );
                             });
                             network.once("afterDrawing", () => {
-                                network.focus("1", {
-                                    scale: 0.4,
+                                network.focus(String(ROOTNODE_ID), {
+                                    scale: ANIMATION_ZOOM_SCALE,
                                     animation: {
-                                        duration: 1000,
+                                        duration: ANIMATION_DURATION,
                                         easingFunction: "easeInOutQuad",
                                     },
                                 });
