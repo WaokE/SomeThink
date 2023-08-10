@@ -249,7 +249,6 @@ const MindMap = ({
         ymapRef.current.observe((event) => {
             if (ymapRef.current.get(`Node 1`)) {
                 rootNode.label = JSON.parse(ymapRef.current.get(`Node 1`)).label;
-                console.log("rootNode label", rootNode.label);
             }
             const updatedGraph = {
                 nodes: [],
@@ -567,13 +566,12 @@ const MindMap = ({
             const currentUserData = getUserListFromYMap();
 
             pushUserActionStack({ action: "reset", prevYmap: ymapRef.current.toJSON() });
-
+            rootNode.label = JSON.parse(ymapRef.current.get(`Node 1`)).label;
             ymapRef.current.forEach((value, key) => {
                 if (!currentUserData.includes(key)) {
                     ymapRef.current.delete(key);
                 }
             });
-
             ymapRef.current.set(`Node 1`, JSON.stringify(rootNode));
             ymapRef.current.set("RootQuadrant", 0);
             ymapRef.current.set("GroupCount", 0);
