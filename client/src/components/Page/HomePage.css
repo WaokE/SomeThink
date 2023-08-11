@@ -67,7 +67,7 @@ body {
     padding-bottom: 30px;
 }
 
-h1.logo {
+a.logo {
     background-image: url("../../img/icon/logo.png");
     background-size: contain;
     background-repeat: no-repeat;

@@ -162,7 +162,9 @@ function HomePage(props) {
                         <div className="small-circle"></div>
                     </div>
                     <div id="join-dialog" className="jumbotron vertical-center">
-                        <h1 className="logo"></h1>
+                        <a href="https://somethink.online/dino" className="logo" draggable="false">
+                            {" "}
+                        </a>
                         <form className="form-group name" onSubmit={redirectToSessionPage}>
                             <p>
                                 <label> NAME </label>
