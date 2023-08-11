@@ -3,6 +3,7 @@ import {
     colors,
     MAX_STACK_LENGTH,
     rootNode,
+    NORMAL_NODE_COLOR,
     ROOT_NODE_COLOR,
     throttle,
     BOOKMARK_ICON,
@@ -38,6 +39,9 @@ export const handleDoubleClick = (
                             setIsAlertMessageVisible(true);
                             textField.value = node.label;
                         } else {
+                            if (selectedNodeId === 1) {
+                                rootNode.label = newLabel;
+                            }
                             if (node.label.startsWith(BOOKMARK_ICON)) {
                                 if (node.shape === "image") {
                                     newLabel = `${BOOKMARK_ICON}${newLabel}`;
@@ -46,9 +50,6 @@ export const handleDoubleClick = (
                                 }
                             }
                             modifyNode(selectedNodeId, newLabel);
-                            if (selectedNodeId === 1) {
-                                rootNode.label = newLabel;
-                            }
                         }
                         document.body.removeChild(textField);
                     },

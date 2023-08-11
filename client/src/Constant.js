@@ -90,4 +90,4 @@ export const MAX_ZOOM_SCALE = 1.6;
 export const MIN_ZOOM_SCALE = 0.4;
 
 export const ANIMATION_ZOOM_SCALE = 0.4;
-export const ANIMATION_DURATION = 1000;
+export const ANIMATION_DURATION = 2000;
