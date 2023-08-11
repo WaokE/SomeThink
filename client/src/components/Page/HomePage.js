@@ -286,16 +286,20 @@ function HomePage(props) {
                                 width: "100%",
                                 border: "none",
                                 height: "1px",
-                                backgroundColor: "#ddd",
-                                margin: "8px 0",
+                                backgroundColor: "#AAA",
+                                margin: "28px 0",
                             }}
                         />
-                        <p className="text-center">새로운 키워드</p>
+                        <p
+                            className="text-center"
+                            style={{ marginBottom: "-10px", marginTop: "30px" }}
+                        >
+                            새로운 키워드
+                        </p>
                         <div
                             style={{
                                 display: "flex",
                                 justifyContent: "flex-end",
-                                marginTop: "16px",
                             }}
                         >
                             <TextField
