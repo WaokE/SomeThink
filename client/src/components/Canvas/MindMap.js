@@ -792,7 +792,6 @@ const MindMap = ({
     };
 
     const createNodeWithImage = (nodeId, searchWord, dataUrl) => {
-        console.log("이미지 다운로드 및 전달 완료:", dataUrl);
         const coord = networkRef.current.DOMtoCanvas({
             x: window.innerWidth / 2,
             y: window.innerHeight / 2,

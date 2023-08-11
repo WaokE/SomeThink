@@ -616,7 +616,7 @@ export const handleRedo = (
     }
     // 이전 동작이 delete 인 경우
     if (action === "delete") {
-        if (userActionStack[prevPointer].deletedNods) {
+        if (userActionStack[prevPointer].deletedNodes) {
             const deletedNodes = userActionStack[prevPointer].deletedNodes;
             deletedNodes.forEach((node) => {
                 ymapRef.current.delete(`Node ${node.id}`);
