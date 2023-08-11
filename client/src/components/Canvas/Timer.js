@@ -74,15 +74,27 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
                 setIsTimerRunning(newIsTimerRunning);
             }
         });
+        ymapRef.current.observe((event, transaction) => {
+            if (transaction.origin === null) {
+                return;
+            }
+            if (event.keysChanged.has("InputMinutes")) {
+                const newInputMinutes = ymapRef.current.get("InputMinutes");
+                setInputMinutes(newInputMinutes);
+            }
+
+            if (event.keysChanged.has("InputSeconds")) {
+                const newInputSeconds = ymapRef.current.get("InputSeconds");
+                setInputSeconds(newInputSeconds);
+            }
+        });
     }, []);
 
     useEffect(() => {
         let timer;
-        // let remaining = remainingTime;
         if (isTimerRunning) {
             timer = setInterval(() => {
                 const remaining = calculateRemainingTime();
-                // remaining -= 1000;
                 setRemainingTime(remaining);
                 if (remaining <= 0) {
                     const audio = new Audio("timer2.mp3");
@@ -116,6 +128,10 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
         setIsTimerRunning(false);
         ymapRef.current.set("TimerRunning", false);
         handleDurationChange(0);
+        handleInputMinutesChange("00");
+        handleInputSecondsChange("00");
+        setInputMinutes("00");
+        setInputSeconds("00");
     };
 
     const remainingMinutes = Math.trunc(remainingTime / (60 * 1000)) || 0;
@@ -138,6 +154,43 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
         }
     };
     const timerColorClass = isTimerRunning ? (remainingTime <= 10000 ? "red" : "yellow") : "";
+
+    const [inputMinutes, setInputMinutes] = useState(
+        remainingMinutes < 10 ? "0" + remainingMinutes : remainingMinutes
+    );
+    const [inputSeconds, setInputSeconds] = useState(
+        remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds
+    );
+
+    const handleInputMinutesChange = (newInputMinutes) => {
+        if (!isNaN(newInputMinutes)) {
+            if (newInputMinutes.length === 1) {
+                newInputMinutes = "0" + newInputMinutes;
+            }
+            ymapRef.current.set("InputMinutes", newInputMinutes);
+        }
+    };
+
+    const handleInputSecondsChange = (newInputSeconds) => {
+        if (!isNaN(newInputSeconds)) {
+            if (newInputSeconds.length === 1) {
+                newInputSeconds = "0" + newInputSeconds;
+            }
+            ymapRef.current.set("InputSeconds", newInputSeconds);
+        }
+    };
+    const handleBlur = () => {
+        if (inputMinutes === "") {
+            setInputMinutes(remainingMinutes < 10 ? "0" + remainingMinutes : remainingMinutes);
+        } else if (inputSeconds === "") {
+            setInputSeconds(remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds);
+        } else if (inputMinutes.length === 1) {
+            setInputMinutes("0" + inputMinutes);
+        } else if (inputSeconds.length === 1) {
+            setInputSeconds("0" + inputSeconds);
+        }
+    };
+
     return (
         <div className={`timer ${isTimerRunning && remainingTime <= 10000 ? "red" : ""}`}>
             <div className="base-timer">
@@ -169,14 +222,16 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
                             min="0"
                             max="99"
                             maxLength={2}
-                            value={
-                                remainingMinutes < 10 ? "0" + remainingMinutes : remainingMinutes
-                            }
-                            onChange={(e) =>
+                            value={inputMinutes}
+                            onChange={(e) => {
+                                setInputMinutes(e.target.value);
+                                handleInputMinutesChange(e.target.value);
                                 handleDurationChange(
                                     e.target.value * 60 * 1000 + remainingSeconds * 1000
-                                )
-                            }
+                                );
+                            }}
+                            onFocus={() => setInputMinutes("")}
+                            onBlur={handleBlur}
                             onInput={maxLengthCheck}
                         />
                         <span className="timer-input-separator">:</span>
@@ -186,14 +241,17 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
                             min="0"
                             max="59"
                             maxLength={2}
-                            value={
-                                remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds
-                            }
-                            onChange={(e) =>
+                            value={inputSeconds}
+                            onChange={(e) => {
+                                setInputSeconds(e.target.value);
+                                handleInputSecondsChange(e.target.value);
                                 handleDurationChange(
                                     remainingMinutes * 60 * 1000 + e.target.value * 1000
-                                )
-                            }
+                                );
+                            }}
+                            onFocus={() => setInputSeconds("")}
+                            onBlur={handleBlur}
+                            onInput={maxLengthCheck}
                         />
                         <div className="buttons">
                             <button onClick={handleReset} style={{ marginRight: "10px" }}>

@@ -5,10 +5,14 @@ import {
     rootNode,
     MAX_STACK_LENGTH,
     ROOT_NODE_COLOR,
-    NORMAL_NODE_COLOR,
     BOOKMARK_ICON,
     throttle,
     DECIMAL_PLACES,
+    MAX_ZOOM_SCALE,
+    MIN_ZOOM_SCALE,
+    ANIMATION_ZOOM_SCALE,
+    ANIMATION_DURATION,
+    ROOTNODE_ID,
 } from "../../Constant";
 
 import Graph from "react-graph-vis";
@@ -55,8 +59,8 @@ import GraphToMarkdown from "./MarkDown";
 import { SnackbarProvider } from "notistack";
 import HighLighter from "./HighLighter";
 import { useLocation } from "react-router-dom";
-
 import "./MindMap.css";
+import { handleUpload } from "../LowToolBar/LowToolBar";
 
 const isCyclic = (graph, fromNode, toNode) => {
     const insertEdge = `Edge ${fromNode} to ${toNode}`;
@@ -135,7 +139,6 @@ const MindMap = ({
     const [connectedNodeLabels, setConnectedNodeLabels] = useState([]);
     const [allNodeLabels, setAllNodeLabels] = useState([]);
     const [highLightPos, setHighLightPos] = useState(false);
-
     const [zoomRandered, setZoomRandered] = useState({ x: 0, y: 0 });
     const lastZoomPositionRef = useRef({ x: 0, y: 0 });
 
@@ -150,8 +153,7 @@ const MindMap = ({
     );
 
     const location = useLocation();
-    const { keyword } = location.state || {}; // location.state가 null일 경우를 대비하여 기본 객체를 생성
-
+    const { keyword, textData } = location.state || {}; // location.state가 null일 경우를 대비하여 기본 객체를 생성
     rootNode.label = [keyword];
 
     const openNodeContextMenu = (event) => {
@@ -285,7 +287,7 @@ const MindMap = ({
         });
 
         const handleResetNode = () => {
-            handleReset();
+            handleReset(false);
         };
 
         window.addEventListener("resetNode", handleResetNode);
@@ -559,8 +561,8 @@ const MindMap = ({
         setIsInfoMessageVisible(true);
     };
 
-    const handleReset = () => {
-        const IsReset = window.confirm("모든 노드를 삭제하시겠습니까?");
+    const handleReset = (IsReset) => {
+        if (IsReset === false) IsReset = window.confirm("모든 노드를 삭제하시겠습니까?");
         if (ymapRef.current && IsReset) {
             // Create a copy of currentUserData to preserve the original data
             const currentUserData = getUserListFromYMap();
@@ -608,6 +610,7 @@ const MindMap = ({
 
     const sortEdgesCorrectly = (edges, createdEdge) => {
         let edgeList = edges.filter((edge) => edge !== createdEdge);
+        const originalEdgeList = [...edgeList];
         let newEdgeList = [];
         let bfsq = [`${createdEdge.split(" ")[3]}`];
         while (bfsq.length > 0) {
@@ -639,6 +642,24 @@ const MindMap = ({
                 })
             );
         });
+
+        const parentNodeGroup = JSON.parse(
+            ymapRef.current.get(`Node ${createdEdge.split(" ")[1]}`)
+        ).group;
+        let bfsq2 = [`${createdEdge.split(" ")[3]}`];
+        while (bfsq2.length > 0) {
+            const currentNode = bfsq2.shift();
+            const currentNodeObject = JSON.parse(ymapRef.current.get(`Node ${currentNode}`));
+            ymapRef.current.set(
+                `Node ${currentNode}`,
+                JSON.stringify({ ...currentNodeObject, group: parentNodeGroup })
+            );
+            originalEdgeList.forEach((edge) => {
+                if (edge.startsWith(`Edge ${currentNode} to `)) {
+                    bfsq2.push(edge.split(" ")[3]);
+                }
+            });
+        }
     };
 
     const deleteEdge = () => {
@@ -770,7 +791,6 @@ const MindMap = ({
     };
 
     const createNodeWithImage = (nodeId, searchWord, dataUrl) => {
-        console.log("이미지 다운로드 및 전달 완료:", dataUrl);
         const coord = networkRef.current.DOMtoCanvas({
             x: window.innerWidth / 2,
             y: window.innerHeight / 2,
@@ -817,9 +837,6 @@ const MindMap = ({
     };
 
     const bookMarkNode = () => {
-        ymapRef.current.forEach((value, key) => {
-            console.log(value);
-        });
         const nodeKey = `Node ${selectedNode}`;
         let selectedNodeObject = JSON.parse(ymapRef.current.get(nodeKey));
 
@@ -856,15 +873,15 @@ const MindMap = ({
 
     const handleZoomEvent = () => {
         networkRef.current.on("zoom", function () {
-            if (networkRef.current.getScale() <= 0.5) {
+            if (networkRef.current.getScale() <= MIN_ZOOM_SCALE) {
                 networkRef.current.moveTo({
-                    scale: 0.5,
+                    scale: MIN_ZOOM_SCALE,
                     position: lastZoomPositionRef.current,
                 });
             }
-            if (networkRef.current.getScale() >= 1.6) {
+            if (networkRef.current.getScale() >= MAX_ZOOM_SCALE) {
                 networkRef.current.moveTo({
-                    scale: 1.6,
+                    scale: MAX_ZOOM_SCALE,
                     position: lastZoomPositionRef.current,
                 });
             }
@@ -1161,9 +1178,6 @@ const MindMap = ({
                         }}
                         style={{ height: "100%", width: "100%" }}
                         getNetwork={(network) => {
-                            network.on("initRedraw", () => {
-                                networkRef.current = network;
-                            });
                             network.on("beforeDrawing", (ctx) => {
                                 let patternCanvas = document.createElement("canvas");
                                 patternCanvas.width = 60; // 작은 점 이미지의 가로 크기
@@ -1187,6 +1201,23 @@ const MindMap = ({
                                     -domtocanvas.x * 200,
                                     -domtocanvas.y * 200
                                 );
+                            });
+                            network.once("afterDrawing", () => {
+                                networkRef.current = network;
+                                if (
+                                    textData !== null &&
+                                    textData !== undefined &&
+                                    textData !== "" &&
+                                    textData !== " "
+                                )
+                                    handleUpload(textData, ymapRef);
+                                networkRef.current.focus(String(ROOTNODE_ID), {
+                                    scale: ANIMATION_ZOOM_SCALE,
+                                    animation: {
+                                        duration: ANIMATION_DURATION,
+                                        easingFunction: "easeInOutQuad",
+                                    },
+                                });
                             });
                         }}
                     />
@@ -1270,6 +1301,8 @@ const MindMap = ({
                     setMemo={setMemo}
                     setMouseCoordinates={setMouseCoordinates}
                     ymapRef={ymapRef}
+                    networkRef={networkRef}
+                    handleReset={handleReset}
                 />
                 <GraphToMarkdown
                     style={{ height: isMemoVisible ? "calc(80% - 23%)" : "80%" }}

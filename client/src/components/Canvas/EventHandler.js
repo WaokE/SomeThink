@@ -39,6 +39,9 @@ export const handleDoubleClick = (
                             setIsAlertMessageVisible(true);
                             textField.value = node.label;
                         } else {
+                            if (selectedNodeId === 1) {
+                                rootNode.label = newLabel;
+                            }
                             if (node.label.startsWith(BOOKMARK_ICON)) {
                                 if (node.shape === "image") {
                                     newLabel = `${BOOKMARK_ICON}${newLabel}`;
@@ -47,9 +50,6 @@ export const handleDoubleClick = (
                                 }
                             }
                             modifyNode(selectedNodeId, newLabel);
-                            if (selectedNodeId === 1) {
-                                rootNode.label = newLabel;
-                            }
                         }
                         document.body.removeChild(textField);
                     },
@@ -616,7 +616,7 @@ export const handleRedo = (
     }
     // 이전 동작이 delete 인 경우
     if (action === "delete") {
-        if (userActionStack[prevPointer].deletedNods) {
+        if (userActionStack[prevPointer].deletedNodes) {
             const deletedNodes = userActionStack[prevPointer].deletedNodes;
             deletedNodes.forEach((node) => {
                 ymapRef.current.delete(`Node ${node.id}`);

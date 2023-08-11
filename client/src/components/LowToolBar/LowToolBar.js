@@ -49,6 +49,100 @@ const styles = {
     },
 };
 
+const uploadNdoe = (content, ymapRef) => {
+    let node;
+    if (content.shape === "image") {
+        node = {
+            id: content.id,
+            label: content.label,
+            x: content.x,
+            y: content.y,
+            shape: content.shape,
+            image: content.image,
+            size: content.size,
+        };
+    } else if (content.shape === "text") {
+        node = {
+            id: content.id,
+            label: content.label,
+            x: content.x,
+            y: content.y,
+            shape: content.shape,
+            font: { size: 20 },
+            shadow: {
+                enabled: false,
+            },
+            widthConstraint: false,
+        };
+    } else {
+        node = {
+            id: content.id,
+            label: content.label,
+            x: content.x,
+            y: content.y,
+            color: content.color,
+            group: content.group,
+            bookMarked: content.bookMarked,
+            widthConstraint: { minimum: 50, maximum: 100 },
+            heightConstraint: { minimum: 50, maximum: 100 },
+        };
+    }
+
+    if (content.id === 1) {
+        node = {
+            id: 1,
+            label: content.label,
+            x: 0,
+            y: 0,
+            physics: false,
+            fixed: true,
+            color: "#f5b252",
+            widthConstraint: { minimum: 100, maximum: 200 },
+            heightConstraint: { minimum: 100, maximum: 200 },
+            font: { size: 30 },
+        };
+    }
+    ymapRef.current.set(`Node ${content.id}`, JSON.stringify(node));
+};
+
+const uploadEdge = (content, ymapRef) => {
+    ymapRef.current.set(
+        `Edge ${content.from} to ${content.to}`,
+        JSON.stringify({
+            from: content.from,
+            to: content.to,
+            id: `${content.from} to ${content.to}`,
+        })
+    );
+};
+export function handleUpload(content, ymapRef) {
+    const dataArray = content.split("\n");
+    let isNodeUploading = true;
+
+    dataArray.forEach((line) => {
+        if (line.includes('"nodes"')) {
+            isNodeUploading = true;
+        } else if (line.includes('"edges"')) {
+            isNodeUploading = false;
+        } else {
+            const data = JSON.parse(line);
+            if (isNodeUploading) {
+                uploadNdoe(data, ymapRef);
+            } else {
+                uploadEdge(data, ymapRef);
+            }
+        }
+    });
+    let prevGroupCount = 0;
+    ymapRef.current.forEach((value, key) => {
+        const data = JSON.parse(value);
+        if (data.group !== undefined && data.group > prevGroupCount) {
+            prevGroupCount = data.group;
+        }
+    });
+    ymapRef.current.set("GroupCount", prevGroupCount + 1);
+}
+
 export default function LowToolBar(props) {
     const makeNode = () => {
         props.NodeButton(props.selectedNode);
@@ -191,6 +285,7 @@ export default function LowToolBar(props) {
     };
 
     const handleUploadDone = (content, ymapRef) => {
+        props.handleReset(true);
         const dataArray = content.split("\n");
         let isNodeUploading = true;
 
@@ -216,12 +311,10 @@ export default function LowToolBar(props) {
                 prevGroupCount = data.group;
             }
         });
-        console.log(`Max = ${prevGroupCount}`);
         props.ymapRef.current.set("GroupCount", prevGroupCount + 1);
     };
 
     const handleUploadCancelled = () => {
-        console.log("upload cancelled");
         setIsUploading(false);
     };
 

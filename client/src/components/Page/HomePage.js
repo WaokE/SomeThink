@@ -21,6 +21,16 @@ function HomePage(props) {
     const [showModal, setShowModal] = useState(false);
     const [rootWord, setRootWord] = useState("");
 
+    const handleCreateSessionWithText = (keyword) => {
+        if (!keyword) {
+            alert("Please enter a keyword.");
+            return;
+        }
+
+        handleCreateSession();
+        navigate("/session", { state: { keyword } });
+    };
+
     const navigate = useNavigate();
 
     const redirectToSessionPage = () => {
@@ -52,6 +62,88 @@ function HomePage(props) {
         setShowModal(false);
     };
 
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const file = e.dataTransfer.files[0] || e.target.files[0];
+        if (file && file.type === "text/plain") {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const textContent = event.target.result;
+
+                try {
+                    // 줄 단위로 나누어서 각 JSON 객체 파싱
+                    const lines = textContent.split("\n");
+                    for (const line of lines) {
+                        if (line.trim() === "") {
+                            continue;
+                        }
+
+                        const data = JSON.parse(line);
+                        if (data.id === 1 && data.label) {
+                            const label = data.label;
+                            setRootWord(label);
+                            handleCreateSession();
+                            navigate("/session", {
+                                state: {
+                                    keyword: label,
+                                    textData: textContent,
+                                },
+                            });
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    alert("Error parsing JSON.");
+                }
+            };
+            reader.readAsText(file);
+        } else {
+            alert("Please drop a valid text file.");
+        }
+    };
+    const handleFileSelection = (event) => {
+        const file = event.target.files[0];
+        if (file && file.type === "text/plain") {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const textContent = event.target.result;
+
+                try {
+                    // Extract the keyword from the text content (similar to your handleDrop logic)
+                    const lines = textContent.split("\n");
+                    for (const line of lines) {
+                        if (line.trim() === "") {
+                            continue;
+                        }
+
+                        const data = JSON.parse(line);
+                        if (data.id === 1 && data.label) {
+                            const label = data.label;
+                            setRootWord(label);
+                            handleCreateSession();
+                            navigate("/session", {
+                                state: {
+                                    keyword: label,
+                                    textData: textContent,
+                                },
+                            });
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    alert("Error parsing JSON.");
+                }
+            };
+            reader.readAsText(file);
+        } else {
+            alert("Please select a valid text file.");
+        }
+    };
+
+    const fileInputRef = React.createRef();
+
     return (
         <div id="join">
             <div className="big-circles" style={{ pointerEvents: "none" }}>
@@ -70,7 +162,9 @@ function HomePage(props) {
                         <div className="small-circle"></div>
                     </div>
                     <div id="join-dialog" className="jumbotron vertical-center">
-                        <h1 className="logo"></h1>
+                        <a href="https://somethink.online/dino" className="logo" draggable="false">
+                            {" "}
+                        </a>
                         <form className="form-group name" onSubmit={redirectToSessionPage}>
                             <p>
                                 <label> NAME </label>
@@ -136,39 +230,116 @@ function HomePage(props) {
                     TransitionComponent={Transition}
                     aria-labelledby="modal-title"
                     aria-describedby="modal-description"
+                    sx={{
+                        "& .MuiDialog-paper": {
+                            borderRadius: "20px",
+                        },
+                    }}
                     BackdropProps={{
                         onClick: (event) => {
                             event.stopPropagation(); // 이벤트 전파 중지
                         },
                     }}
                 >
-                    <DialogTitle id="modal-title">새로운 주제를 생성하세요</DialogTitle>
                     <DialogContent>
-                        <TextField
-                            label="keyword"
-                            variant="outlined"
-                            value={rootWord}
-                            onChange={(e) => setRootWord(e.target.value)}
-                            size="small"
-                            margin="dense"
-                            autoFocus
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                    redirectToSessionPage();
-                                }
-                            }}
-                        />
+                        {/* 드래그 앤 드롭 박스 */}
                         <div
                             style={{
                                 display: "flex",
                                 justifyContent: "flex-end",
                                 marginTop: "16px",
+                                flexDirection: "column",
                             }}
                         >
-                            <Button onClick={redirectToSessionPage} variant="outlined">
-                                start
-                            </Button>
+                            <p className="text-center">마인드맵 파일을 넣으세요</p>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "center", // 가로 가운데 정렬
+                                    alignItems: "center", // 세로 가운데 정렬
+                                    border: "2px dashed #aaa",
+                                    borderRadius: "4px",
+                                    padding: "8px",
+                                    cursor: "pointer",
+                                }}
+                                onClick={() => fileInputRef.current.click()}
+                                onDragOver={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }}
+                                onDrop={handleDrop}
+                            >
+                                <p
+                                    style={{
+                                        display: "block",
+                                        margin: "0 auto",
+                                        maxWidth: "100%",
+                                        maxHeight: "100%",
+                                    }}
+                                >
+                                    drag & drop
+                                </p>
+                            </div>
                         </div>
+                        <hr
+                            style={{
+                                width: "100%",
+                                border: "none",
+                                height: "1px",
+                                backgroundColor: "#AAA",
+                                margin: "28px 0",
+                            }}
+                        />
+                        <p
+                            className="text-center"
+                            style={{ marginBottom: "-10px", marginTop: "30px" }}
+                        >
+                            새로운 키워드
+                        </p>
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "flex-end",
+                            }}
+                        >
+                            <TextField
+                                id="outlined-required"
+                                value={rootWord}
+                                onChange={(e) => setRootWord(e.target.value)}
+                                size="small"
+                                margin="normal"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        handleCreateSessionWithText(rootWord, "");
+                                    }
+                                }}
+                                sx={{
+                                    "& .MuiInputBase-root": {
+                                        borderRadius: "20px",
+                                        width: "100%",
+                                        marginTop: "16px",
+                                    },
+                                }}
+                            />
+                            <p className="text-center">
+                                <input
+                                    className="btn btn-lg btn-start"
+                                    name="commit"
+                                    type="submit"
+                                    onClick={redirectToSessionPage}
+                                    variant="contained"
+                                />
+                            </p>
+                        </div>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            style={{ display: "none" }}
+                            accept=".txt" // Limit accepted file types
+                            onChange={handleFileSelection}
+                        />
                     </DialogContent>
                 </Dialog>
             )}
