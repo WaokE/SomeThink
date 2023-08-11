@@ -54,7 +54,7 @@ export const mindMapOptions = {
 
 export let rootNode = {
     id: 1,
-    label: "",
+    label: "팀 여행",
     x: 0,
     y: 0,
     physics: false,
