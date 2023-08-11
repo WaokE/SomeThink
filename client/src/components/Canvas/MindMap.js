@@ -611,6 +611,7 @@ const MindMap = ({
 
     const sortEdgesCorrectly = (edges, createdEdge) => {
         let edgeList = edges.filter((edge) => edge !== createdEdge);
+        const originalEdgeList = [...edgeList];
         let newEdgeList = [];
         let bfsq = [`${createdEdge.split(" ")[3]}`];
         while (bfsq.length > 0) {
@@ -642,6 +643,24 @@ const MindMap = ({
                 })
             );
         });
+
+        const parentNodeGroup = JSON.parse(
+            ymapRef.current.get(`Node ${createdEdge.split(" ")[1]}`)
+        ).group;
+        let bfsq2 = [`${createdEdge.split(" ")[3]}`];
+        while (bfsq2.length > 0) {
+            const currentNode = bfsq2.shift();
+            const currentNodeObject = JSON.parse(ymapRef.current.get(`Node ${currentNode}`));
+            ymapRef.current.set(
+                `Node ${currentNode}`,
+                JSON.stringify({ ...currentNodeObject, group: parentNodeGroup })
+            );
+            originalEdgeList.forEach((edge) => {
+                if (edge.startsWith(`Edge ${currentNode} to `)) {
+                    bfsq2.push(edge.split(" ")[3]);
+                }
+            });
+        }
     };
 
     const deleteEdge = () => {
@@ -820,9 +839,6 @@ const MindMap = ({
     };
 
     const bookMarkNode = () => {
-        ymapRef.current.forEach((value, key) => {
-            console.log(value);
-        });
         const nodeKey = `Node ${selectedNode}`;
         let selectedNodeObject = JSON.parse(ymapRef.current.get(nodeKey));
 
