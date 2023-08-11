@@ -20,15 +20,12 @@ function HomePage(props) {
     } = props;
     const [showModal, setShowModal] = useState(false);
     const [rootWord, setRootWord] = useState("");
-    const [sessions, setSessions] = useState([]);
 
     const handleCreateSessionWithText = (keyword) => {
         if (!keyword) {
             alert("Please enter a keyword.");
             return;
         }
-
-        setSessions((prevSessions) => [...prevSessions, keyword]);
 
         handleCreateSession();
         navigate("/session", { state: { keyword } });
@@ -64,6 +61,88 @@ function HomePage(props) {
     const closeCreatePopup = () => {
         setShowModal(false);
     };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const file = e.dataTransfer.files[0] || e.target.files[0];
+        if (file && file.type === "text/plain") {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const textContent = event.target.result;
+
+                try {
+                    // 줄 단위로 나누어서 각 JSON 객체 파싱
+                    const lines = textContent.split("\n");
+                    for (const line of lines) {
+                        if (line.trim() === "") {
+                            continue;
+                        }
+
+                        const data = JSON.parse(line);
+                        if (data.id === 1 && data.label) {
+                            const label = data.label;
+                            setRootWord(label);
+                            handleCreateSession();
+                            navigate("/session", {
+                                state: {
+                                    keyword: label,
+                                    textData: textContent,
+                                },
+                            });
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    alert("Error parsing JSON.");
+                }
+            };
+            reader.readAsText(file);
+        } else {
+            alert("Please drop a valid text file.");
+        }
+    };
+    const handleFileSelection = (event) => {
+        const file = event.target.files[0];
+        if (file && file.type === "text/plain") {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const textContent = event.target.result;
+
+                try {
+                    // Extract the keyword from the text content (similar to your handleDrop logic)
+                    const lines = textContent.split("\n");
+                    for (const line of lines) {
+                        if (line.trim() === "") {
+                            continue;
+                        }
+
+                        const data = JSON.parse(line);
+                        if (data.id === 1 && data.label) {
+                            const label = data.label;
+                            setRootWord(label);
+                            handleCreateSession();
+                            navigate("/session", {
+                                state: {
+                                    keyword: label,
+                                    textData: textContent,
+                                },
+                            });
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    alert("Error parsing JSON.");
+                }
+            };
+            reader.readAsText(file);
+        } else {
+            alert("Please select a valid text file.");
+        }
+    };
+
+    const fileInputRef = React.createRef();
 
     return (
         <div id="join">
@@ -167,76 +246,45 @@ function HomePage(props) {
                                 display: "flex",
                                 justifyContent: "flex-end",
                                 marginTop: "16px",
-                                flexDirection: "column", // 열 방향으로 정렬
+                                flexDirection: "column",
                             }}
                         >
-                            <p className="text-center">Drop text file here:</p>
+                            <p className="text-center">마인드맵 파일을 넣으세요</p>
                             <div
-                                // 드래그 앤 드롭 영역 스타일 지정
                                 style={{
+                                    display: "flex",
+                                    justifyContent: "center", // 가로 가운데 정렬
+                                    alignItems: "center", // 세로 가운데 정렬
                                     border: "2px dashed #aaa",
                                     borderRadius: "4px",
                                     padding: "8px",
-                                    display: "flex",
-                                    alignItems: "center",
                                     cursor: "pointer",
                                 }}
+                                onClick={() => fileInputRef.current.click()}
                                 onDragOver={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
                                 }}
-                                onDrop={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-
-                                    const file = e.dataTransfer.files[0];
-                                    if (file && file.type === "text/plain") {
-                                        const reader = new FileReader();
-                                        reader.onload = (event) => {
-                                            const textContent = event.target.result;
-
-                                            try {
-                                                // 줄 단위로 나누어서 각 JSON 객체 파싱
-                                                const lines = textContent.split("\n");
-                                                for (const line of lines) {
-                                                    if (line.trim() === "") {
-                                                        continue;
-                                                    }
-
-                                                    const data = JSON.parse(line);
-                                                    if (data.id === 1 && data.label) {
-                                                        const label = data.label;
-                                                        setRootWord(label);
-                                                        handleCreateSession();
-                                                        navigate("/session", {
-                                                            state: {
-                                                                keyword: label,
-                                                                textData: textContent,
-                                                            },
-                                                        });
-                                                        break;
-                                                    }
-                                                }
-                                            } catch (error) {
-                                                alert("Error parsing JSON.");
-                                            }
-                                        };
-                                        reader.readAsText(file);
-                                    } else {
-                                        alert("Please drop a valid text file.");
-                                    }
-                                }}
+                                onDrop={handleDrop}
                             >
-                                {/* 드래그 앤 드롭 박스 내용 */}
-                                <p>Drag & Drop</p>
+                                <p
+                                    style={{
+                                        display: "block",
+                                        margin: "0 auto",
+                                        maxWidth: "100%",
+                                        maxHeight: "100%",
+                                    }}
+                                >
+                                    drag & drop
+                                </p>
                             </div>
                         </div>
                         <hr
                             style={{
                                 width: "100%",
                                 border: "none",
-                                height: "1px", // 가로 선의 높이
-                                backgroundColor: "#ddd", // 가로 선의 색상
+                                height: "1px",
+                                backgroundColor: "#ddd",
                                 margin: "8px 0",
                             }}
                         />
@@ -279,6 +327,13 @@ function HomePage(props) {
                                 />
                             </p>
                         </div>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            style={{ display: "none" }}
+                            accept=".txt" // Limit accepted file types
+                            onChange={handleFileSelection}
+                        />
                     </DialogContent>
                 </Dialog>
             )}

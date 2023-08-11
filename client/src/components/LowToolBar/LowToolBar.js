@@ -20,7 +20,10 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import FormatListBulletedSharpIcon from "@mui/icons-material/FormatListBulletedSharp";
 import { Upload } from "@mui/icons-material";
 
+import { useLocation } from "react-router-dom";
+
 import FileUploader from "../Canvas/SnapshotUpload";
+import { ANIMATION_DURATION, ANIMATION_ZOOM_SCALE, ROOTNODE_ID } from "../../Constant";
 
 const styles = {
     bottomNav: {
@@ -96,6 +99,28 @@ export default function LowToolBar(props) {
             props.ymapRef
         );
     };
+
+    const location = useLocation();
+    const { textData } = location.state || {};
+
+    if (
+        props.networkRef.current !== null &&
+        props.networkRef.current !== undefined &&
+        textData !== undefined &&
+        textData !== null
+    ) {
+        props.networkRef.current.once("afterDrawing", () => {
+            console.log("afterDrawings");
+            handleUploadDone(textData, props.ymapRef);
+            // props.network.current.focus(String(ROOTNODE_ID), {
+            //     scale: ANIMATION_ZOOM_SCALE,
+            //     animation: {
+            //         duration: ANIMATION_DURATION,
+            //         easingFunction: "easeInOutQuad",
+            //     },
+            // });
+        });
+    }
 
     const redoAction = () => {
         handleRedo(
@@ -216,7 +241,6 @@ export default function LowToolBar(props) {
                 prevGroupCount = data.group;
             }
         });
-        console.log(`Max = ${prevGroupCount}`);
         ymapRef.current.set("GroupCount", prevGroupCount + 1);
     };
 
