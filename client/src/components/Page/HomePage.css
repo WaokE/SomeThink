@@ -122,6 +122,65 @@ p {
     transition: transform 0.2s ease-in-out;
 }
 
+.btn-success {
+    font-weight: bold;
+    font-size: 24px;
+    padding: 15px 30px;
+    border-radius: 50px;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+
+    margin: 10px 0px 10px 20px;
+    background-color: #fbd85d;
+    color: black;
+    display: block;
+}
+
+.btn-success.create {
+    font-weight: bold;
+    font-size: 24px;
+    padding: 15px 30px;
+    border-radius: 50px;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+
+    margin: 15px 15px 0px 0px;
+    background-color: #fbd85d;
+    color: black;
+    display: block;
+}
+
+.btn-success:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease-in-out;
+}
+
+.btn-start {
+    font-weight: bold;
+    font-size: 24px;
+    padding: 7.5px 15px;
+    border-radius: 50px;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+    margin: 10px 0px 10px 20px;
+    background-color: #fbd85d;
+    color: black;
+    display: block;
+}
+
+.btn-start.create {
+    font-weight: bold;
+    font-size: 24px;
+    padding: 3.75px 7.5px; /* 1/4로 크기 조정 */
+    border-radius: 50px;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+    margin: 15px 15px 0px 0px;
+    background-color: #fbd85d;
+    color: black;
+    display: block;
+}
+
+.btn-start:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease-in-out;
+}
 /* .circle {
     border-radius: 190px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);

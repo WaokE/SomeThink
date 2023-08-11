@@ -20,6 +20,19 @@ function HomePage(props) {
     } = props;
     const [showModal, setShowModal] = useState(false);
     const [rootWord, setRootWord] = useState("");
+    const [sessions, setSessions] = useState([]);
+
+    const handleCreateSessionWithText = (keyword) => {
+        if (!keyword) {
+            alert("Please enter a keyword.");
+            return;
+        }
+
+        setSessions((prevSessions) => [...prevSessions, keyword]);
+
+        handleCreateSession();
+        navigate("/session", { state: { keyword } });
+    };
 
     const navigate = useNavigate();
 
@@ -136,28 +149,98 @@ function HomePage(props) {
                     TransitionComponent={Transition}
                     aria-labelledby="modal-title"
                     aria-describedby="modal-description"
+                    sx={{
+                        "& .MuiDialog-paper": {
+                            borderRadius: "20px",
+                        },
+                    }}
                     BackdropProps={{
                         onClick: (event) => {
                             event.stopPropagation(); // 이벤트 전파 중지
                         },
                     }}
                 >
-                    <DialogTitle id="modal-title">새로운 주제를 생성하세요</DialogTitle>
                     <DialogContent>
-                        <TextField
-                            label="keyword"
-                            variant="outlined"
-                            value={rootWord}
-                            onChange={(e) => setRootWord(e.target.value)}
-                            size="small"
-                            margin="dense"
-                            autoFocus
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                    redirectToSessionPage();
-                                }
+                        {/* 드래그 앤 드롭 박스 */}
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "flex-end",
+                                marginTop: "16px",
+                                flexDirection: "column", // 열 방향으로 정렬
+                            }}
+                        >
+                            <p className="text-center">Drop text file here:</p>
+                            <div
+                                // 드래그 앤 드롭 영역 스타일 지정
+                                style={{
+                                    border: "2px dashed #aaa",
+                                    borderRadius: "4px",
+                                    padding: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    cursor: "pointer",
+                                }}
+                                onDragOver={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }}
+                                onDrop={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+
+                                    const file = e.dataTransfer.files[0];
+                                    if (file && file.type === "text/plain") {
+                                        const reader = new FileReader();
+                                        reader.onload = (event) => {
+                                            const textContent = event.target.result;
+
+                                            try {
+                                                // 줄 단위로 나누어서 각 JSON 객체 파싱
+                                                const lines = textContent.split("\n");
+                                                for (const line of lines) {
+                                                    if (line.trim() === "") {
+                                                        continue;
+                                                    }
+
+                                                    const data = JSON.parse(line);
+                                                    if (data.id === 1 && data.label) {
+                                                        const label = data.label;
+                                                        setRootWord(label);
+                                                        handleCreateSession();
+                                                        navigate("/session", {
+                                                            state: {
+                                                                keyword: label,
+                                                                textData: textContent,
+                                                            },
+                                                        });
+                                                        break;
+                                                    }
+                                                }
+                                            } catch (error) {
+                                                alert("Error parsing JSON.");
+                                            }
+                                        };
+                                        reader.readAsText(file);
+                                    } else {
+                                        alert("Please drop a valid text file.");
+                                    }
+                                }}
+                            >
+                                {/* 드래그 앤 드롭 박스 내용 */}
+                                <p>Drag & Drop</p>
+                            </div>
+                        </div>
+                        <hr
+                            style={{
+                                width: "100%",
+                                border: "none",
+                                height: "1px", // 가로 선의 높이
+                                backgroundColor: "#ddd", // 가로 선의 색상
+                                margin: "8px 0",
                             }}
                         />
+                        <p className="text-center">새로운 키워드</p>
                         <div
                             style={{
                                 display: "flex",
@@ -165,9 +248,36 @@ function HomePage(props) {
                                 marginTop: "16px",
                             }}
                         >
-                            <Button onClick={redirectToSessionPage} variant="outlined">
-                                start
-                            </Button>
+                            <TextField
+                                id="outlined-required"
+                                value={rootWord}
+                                onChange={(e) => setRootWord(e.target.value)}
+                                size="small"
+                                margin="normal"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        handleCreateSessionWithText(rootWord, "");
+                                    }
+                                }}
+                                sx={{
+                                    "& .MuiInputBase-root": {
+                                        borderRadius: "20px",
+                                        width: "100%",
+                                        marginTop: "16px",
+                                    },
+                                }}
+                            />
+                            <p className="text-center">
+                                <input
+                                    className="btn btn-lg btn-start"
+                                    name="commit"
+                                    type="submit"
+                                    onClick={redirectToSessionPage}
+                                    variant="contained"
+                                />
+                            </p>
                         </div>
                     </DialogContent>
                 </Dialog>
