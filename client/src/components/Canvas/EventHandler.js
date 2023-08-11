@@ -3,6 +3,7 @@ import {
     colors,
     MAX_STACK_LENGTH,
     rootNode,
+    NORMAL_NODE_COLOR,
     ROOT_NODE_COLOR,
     throttle,
     BOOKMARK_ICON,
@@ -46,9 +47,6 @@ export const handleDoubleClick = (
                                 }
                             }
                             modifyNode(selectedNodeId, newLabel);
-                            if (selectedNodeId === 1) {
-                                rootNode.label = newLabel;
-                            }
                         }
                         document.body.removeChild(textField);
                     },

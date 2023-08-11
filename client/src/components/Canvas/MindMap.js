@@ -60,6 +60,7 @@ import { SnackbarProvider } from "notistack";
 import HighLighter from "./HighLighter";
 import { useLocation } from "react-router-dom";
 import "./MindMap.css";
+import { handleUpload } from "../LowToolBar/LowToolBar";
 
 const isCyclic = (graph, fromNode, toNode) => {
     const insertEdge = `Edge ${fromNode} to ${toNode}`;
@@ -1189,7 +1190,20 @@ const MindMap = ({
                             });
                             network.once("afterDrawing", () => {
                                 networkRef.current = network;
-                                
+                                if (
+                                    textData !== null &&
+                                    textData !== undefined &&
+                                    textData !== "" &&
+                                    textData !== " "
+                                )
+                                    handleUpload(textData, ymapRef);
+                                networkRef.current.focus(String(ROOTNODE_ID), {
+                                    scale: ANIMATION_ZOOM_SCALE,
+                                    animation: {
+                                        duration: ANIMATION_DURATION,
+                                        easingFunction: "easeInOutQuad",
+                                    },
+                                });
                             });
                         }}
                     />
