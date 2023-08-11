@@ -24,15 +24,15 @@ import FileUploader from "../Canvas/SnapshotUpload";
 
 const styles = {
     bottomNav: {
-        width: "50%", // 너비 조정
-        height: "7%", // 높이 조정
+        width: "555px", // 너비 조정
+        height: "50px", // 높이 조정
         borderRadius: "100px", // 라운드를 위한 값
         border: "2px solid #d9d9d9", // 테두리 설정
         position: "fixed",
-        bottom: "7%", // 하단 간격 조정
+        bottom: "40px", // 하단 간격 조정
         left: "50%",
         transform: "translateX(-50%)", // 가운데 정렬
-        padding: "0% 0.9%", // 좌우 간격 조정
+        padding: "0px 20px", // 좌우 간격 조정
         zIndex: "10",
     },
     action: {
@@ -44,7 +44,7 @@ const styles = {
         position: "absolute",
     },
     icon: {
-        fontSize: "250%",
+        fontSize: "20px",
         "&:hover": { color: "#FFE17B" },
     },
 };
