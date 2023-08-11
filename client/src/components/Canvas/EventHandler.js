@@ -39,6 +39,9 @@ export const handleDoubleClick = (
                             setIsAlertMessageVisible(true);
                             textField.value = node.label;
                         } else {
+                            if (selectedNodeId === 1) {
+                                rootNode.label = newLabel;
+                            }
                             if (node.label.startsWith(BOOKMARK_ICON)) {
                                 if (node.shape === "image") {
                                     newLabel = `${BOOKMARK_ICON}${newLabel}`;
