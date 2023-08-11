@@ -616,7 +616,6 @@ export const handleRedo = (
     }
     // 이전 동작이 delete 인 경우
     if (action === "delete") {
-        console.log(userActionStack, prevPointer);
         if (userActionStack[prevPointer].deletedNodes) {
             const deletedNodes = userActionStack[prevPointer].deletedNodes;
             deletedNodes.forEach((node) => {

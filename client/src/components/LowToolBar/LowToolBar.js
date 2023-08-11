@@ -116,7 +116,6 @@ const uploadEdge = (content, ymapRef) => {
     );
 };
 export function handleUpload(content, ymapRef) {
-    console.log(content);
     const dataArray = content.split("\n");
     let isNodeUploading = true;
 
@@ -286,7 +285,6 @@ export default function LowToolBar(props) {
     };
 
     const handleUploadDone = (content, ymapRef) => {
-        console.log(content);
         props.handleReset(true);
         const dataArray = content.split("\n");
         let isNodeUploading = true;
@@ -313,12 +311,10 @@ export default function LowToolBar(props) {
                 prevGroupCount = data.group;
             }
         });
-        console.log(`Max = ${prevGroupCount}`);
         props.ymapRef.current.set("GroupCount", prevGroupCount + 1);
     };
 
     const handleUploadCancelled = () => {
-        console.log("upload cancelled");
         setIsUploading(false);
     };
 
