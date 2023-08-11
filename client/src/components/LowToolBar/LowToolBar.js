@@ -20,8 +20,6 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import FormatListBulletedSharpIcon from "@mui/icons-material/FormatListBulletedSharp";
 import { Upload } from "@mui/icons-material";
 
-import { useLocation } from "react-router-dom";
-
 import FileUploader from "../Canvas/SnapshotUpload";
 
 const styles = {
@@ -289,6 +287,7 @@ export default function LowToolBar(props) {
 
     const handleUploadDone = (content, ymapRef) => {
         console.log(content);
+        props.handleReset(true);
         const dataArray = content.split("\n");
         let isNodeUploading = true;
 

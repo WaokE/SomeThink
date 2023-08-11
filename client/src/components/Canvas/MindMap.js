@@ -287,7 +287,7 @@ const MindMap = ({
         });
 
         const handleResetNode = () => {
-            handleReset();
+            handleReset(false);
         };
 
         window.addEventListener("resetNode", handleResetNode);
@@ -561,8 +561,8 @@ const MindMap = ({
         setIsInfoMessageVisible(true);
     };
 
-    const handleReset = () => {
-        const IsReset = window.confirm("모든 노드를 삭제하시겠습니까?");
+    const handleReset = (IsReset) => {
+        if (IsReset === false) IsReset = window.confirm("모든 노드를 삭제하시겠습니까?");
         if (ymapRef.current && IsReset) {
             // Create a copy of currentUserData to preserve the original data
             const currentUserData = getUserListFromYMap();
@@ -1288,6 +1288,7 @@ const MindMap = ({
                     setMouseCoordinates={setMouseCoordinates}
                     ymapRef={ymapRef}
                     networkRef={networkRef}
+                    handleReset={handleReset}
                 />
                 <GraphToMarkdown
                     style={{ height: isMemoVisible ? "calc(80% - 23%)" : "80%" }}
