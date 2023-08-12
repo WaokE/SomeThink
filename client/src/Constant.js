@@ -86,8 +86,8 @@ export const BOOKMARK_ICON = "🔻";
 
 export const DECIMAL_PLACES = 0;
 
-export const MAX_ZOOM_SCALE = 1.6;
-export const MIN_ZOOM_SCALE = 0.4;
+export const MAX_ZOOM_SCALE = 2.5;
+export const MIN_ZOOM_SCALE = 0.2;
 
 export const ANIMATION_ZOOM_SCALE = 0.4;
 export const ANIMATION_DURATION = 2000;
