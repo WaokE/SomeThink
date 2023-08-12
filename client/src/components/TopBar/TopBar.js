@@ -114,8 +114,6 @@ function TopBar({
                 style={{
                     backgroundColor: "#FBEEAC",
                     marginBottom: "10px",
-                    height: "9vh",
-                    justifyContent: "center",
                 }}
             >
                 <Toolbar className="top-bar-container">
