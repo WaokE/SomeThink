@@ -19,11 +19,11 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
         setRemainingTime(newDuration);
     };
 
-    const setTimerRunning = (isRunning) => {
-        if (ymapRef.current) {
-            ymapRef.current.set("TimerRunning", isRunning);
-        }
-    };
+    // const setTimerRunning = (isRunning) => {
+    //     if (ymapRef.current) {
+    //         ymapRef.current.set("TimerRunning", isRunning);
+    //     }
+    // };
 
     const calculateRemainingTime = () => {
         const ymap = ymapRef.current;
@@ -122,6 +122,10 @@ const Timer = ({ sessionId, isTimerRunning, setIsTimerRunning }) => {
         setIsTimerRunning(false);
         ymapRef.current.set("TimerRunning", false);
         handleDurationChange(remainingTime);
+        handleInputMinutesChange(remainingMinutes < 10 ? "0" + remainingMinutes : remainingMinutes);
+        handleInputSecondsChange(remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds);
+        setInputMinutes(remainingMinutes < 10 ? "0" + remainingMinutes : remainingMinutes);
+        setInputSeconds(remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds);
     };
 
     const handleReset = () => {
