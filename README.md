@@ -1,10 +1,8 @@
-# 시연 사이트
+<a href="https://somethink.online">
+ <img src="/client/src/img/icon/logo.png">
+</a>
 
-[SOMETHINK](https://somethink.online, "site link")
-
-# SOMETHINK 💡
-
-<img src="/client/src/img/icon/logo.png">
+### 배너를 클릭하여 SOMETHINK로 이동할 수 있습니다!
 
 # 목차 📜
 
